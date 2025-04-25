@@ -4,6 +4,8 @@ from django.db import connection
 
 def list_prescriptions(request):
     with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+
         cursor.execute("""
             SELECT
               po.kode_perawatan,
@@ -38,6 +40,8 @@ def create_prescription(request):
         qty            = int(request.POST['quantity'])
 
         with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
             cursor.execute("""
                 INSERT INTO perawatan_obat (kode_perawatan, kode_obat, kuantitas_obat)
                 VALUES (%s, %s, %s)
@@ -47,6 +51,8 @@ def create_prescription(request):
 
     # GET: ambil daftar perawatan & obat
     with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+
         cursor.execute("""
             SELECT kode_perawatan, nama_perawatan
             FROM perawatan
@@ -73,6 +79,8 @@ def delete_prescription(request):
 
     if request.method == 'POST':
         with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
             cursor.execute(
                 "DELETE FROM perawatan_obat WHERE kode_perawatan=%s AND kode_obat=%s",
                 [kode_p, kode_o]
