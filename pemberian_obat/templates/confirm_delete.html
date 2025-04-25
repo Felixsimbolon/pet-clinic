@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
 {% block title %}Delete Prescription{% endblock %}
+
 {% block content %}
 <h1 class="h3 text-danger mb-4">Delete Prescription</h1>
 
 <p>
   Apakah kamu yakin untuk menghapus Prescription untuk  
-  <strong class="text-danger">{{ prescription.treatment_type.code }}</strong>  
-  Jenis Perawatan dengan Obat  
-  <strong class="text-danger">{{ prescription.medicine.code }}</strong>?
+  <strong class="text-danger">{{ treatment_code }}</strong>  
+  dengan Obat  
+  <strong class="text-danger">{{ medicine_code }}</strong>?
 </p>
 
 <form method="post">

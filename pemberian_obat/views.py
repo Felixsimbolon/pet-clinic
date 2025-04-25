@@ -1,4 +1,3 @@
-# views.py
 from django.shortcuts import render, redirect
 from django.db import connection
 
@@ -49,7 +48,6 @@ def create_prescription(request):
 
         return redirect('prescription_list')
 
-    # GET: ambil daftar perawatan & obat
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
 
@@ -74,17 +72,16 @@ def create_prescription(request):
 
 
 def delete_prescription(request):
-    kode_p = request.GET['kode_perawatan']
-    kode_o = request.GET['kode_obat']
+    kode_p = request.GET.get('kode_perawatan')
+    kode_o = request.GET.get('kode_obat')
 
     if request.method == 'POST':
         with connection.cursor() as cursor:
             cursor.execute("SET search_path TO pet_clinic;")
-
-            cursor.execute(
-                "DELETE FROM perawatan_obat WHERE kode_perawatan=%s AND kode_obat=%s",
-                [kode_p, kode_o]
-            )
+            cursor.execute("""
+                DELETE FROM perawatan_obat
+                WHERE kode_perawatan = %s AND kode_obat = %s
+            """, [kode_p, kode_o])
         return redirect('prescription_list')
 
     return render(request, 'confirm_delete.html', {
