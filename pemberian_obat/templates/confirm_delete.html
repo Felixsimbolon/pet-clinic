@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Delete Prescription{% endblock %}
+{% block content %}
+<h1 class="h3 text-danger mb-4">Delete Prescription</h1>
+
+<p>
+  Apakah kamu yakin untuk menghapus Prescription untuk  
+  <strong class="text-danger">{{ prescription.treatment_type.code }}</strong>  
+  Jenis Perawatan dengan Obat  
+  <strong class="text-danger">{{ prescription.medicine.code }}</strong>?
+</p>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="d-flex justify-content-end">
+    <a href="{% url 'prescription_list' %}" class="btn btn-light me-2">Cancel</a>
+    <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+  </div>
+</form>
+{% endblock %}
