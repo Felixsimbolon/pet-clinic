@@ -1,0 +1,76 @@
+<!-- templates/create_treatment.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Create New Treatment</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="max-w-3xl mx-auto mt-12 p-8 bg-white rounded-lg shadow">
+    <h1 class="text-2xl font-semibold mb-6">Create New Treatment</h1>
+
+    <form method="POST" class="space-y-6">
+      {% csrf_token %}
+
+      <!-- Dropdown Kunjungan -->
+      <div class=" border-gray-300 rounded-md p-1">
+        <label for="kunjungan" class="block mb-1 font-medium text-gray-700">Kunjungan</label>
+        <select
+          id="kunjungan"
+          name="kunjungan"
+          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
+        >
+          <option value="" disabled selected>-- Pilih Kunjungan --</option>
+          {% for k in kunjungan_list %}
+          <option value="{{ k }}">{{ k }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Dropdown Jenis Perawatan -->
+      <div class=" border-gray-300 rounded-md p-1">
+        <label for="jenis_perawatan" class="block mb-1 font-medium text-gray-700">Jenis Perawatan</label>
+        <select
+          id="jenis_perawatan"
+          name="jenis_perawatan"
+          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
+        >
+          <option value="" disabled selected>-- Pilih Jenis Perawatan --</option>
+          {% for kode, nama in jenis_list %}
+          <option value="{{ kode }}">{{ kode }} – {{ nama }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Catatan Medis -->
+      <div class="border-gray-300 rounded-md p-1">
+        <label for="catatan" class="block mb-1 font-medium text-gray-700">Catatan Medis (Optional)</label>
+        <textarea
+          id="catatan"
+          name="catatan"
+          rows="3"
+          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
+          placeholder="Hewan d jaga terus ya!"
+        ></textarea>
+      </div>
+
+      <div class="flex justify-end space-x-4">
+        <a
+          href="{% url 'daftar_perawatan' %}"
+          class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+        >
+          Cancel
+        </a>
+        <button
+          type="submit"
+          class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Create
+        </button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

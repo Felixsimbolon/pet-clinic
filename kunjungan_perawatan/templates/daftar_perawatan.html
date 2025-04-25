@@ -6,55 +6,45 @@
   <title>Daftar Perawatan Hewan</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome for icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    body {
-      background-color: #f8f9fa;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .page-container {
-      background-color: white;
-      border-radius: 15px;
-      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-      padding: 2rem;
-      margin-top: 2rem;
-      margin-bottom: 2rem;
-    }
-    .header {
-      border-bottom: 2px solid #eaeaea;
-      padding-bottom: 1.5rem;
-      margin-bottom: 2rem;
-    }
     .table-container {
-      overflow-x: auto;
+        overflow-x: auto;
+        width: 100%; /* Pastikan tabel memanfaatkan lebar penuh layar */
     }
+      
     .table {
-      border-collapse: separate;
-      border-spacing: 0;
+        width: 100%; /* Buat tabel mengambil seluruh lebar */
+        border-collapse: separate;
+        border-spacing: 0;
     }
+      
+    .table thead th, .table tbody td {
+        border-left: 1px solid #dee2e6; /* Garis vertikal antar kolom */
+        border-right: 1px solid #dee2e6; /* Garis vertikal antar kolom */
+        padding: 1rem;
+        word-wrap: break-word; /* Agar teks panjang tidak keluar dari kolom */
+    }
+      
     .table thead th {
-      background-color: #4e73df;
-      color: white;
-      font-weight: 500;
-      border: none;
-      padding: 1rem;
+        background-color: #4e73df;
+        color: white;
+        font-weight: 500;
     }
-    .table thead th:first-child {
-      border-top-left-radius: 10px;
-    }
-    .table thead th:last-child {
-      border-top-right-radius: 10px;
-    }
+      
     .table tbody tr:hover {
-      background-color: rgba(78, 115, 223, 0.05);
+        background-color: rgba(78, 115, 223, 0.05);
     }
+      
     .table td {
-      padding: 1rem;
-      vertical-align: middle;
-      border-top: none;
-      border-bottom: 1px solid #eaeaea;
+        vertical-align: middle;
+        border-top: none;
+        border-bottom: 1px solid #eaeaea;
     }
+      
+    .table td, .table th {
+        text-align: center; /* Membuat teks rata tengah */
+    }
+      
     .status-badge {
       border-radius: 50px;
       padding: 0.35rem 0.85rem;
@@ -127,7 +117,9 @@
         <p class="text-muted mb-0">Manage your pet care treatments</p>
       </div>
       <button class="btn create-btn">
-        <i class="fas fa-plus me-2"></i>Create New Treatment
+        <a href="{% url 'create_treatment' %}" class="btn create-btn">
+            <i class="fas fa-plus me-2"></i>Create New Treatment
+        </a>
       </button>
     </div>
 
@@ -139,7 +131,8 @@
               <tr>
                 <th>No</th>
                 <th>ID Kunjungan</th>
-                <th>Klien & Hewan</th>
+                <th>ID Klien</th>
+                <th>Nama Hewan</th>
                 <th>Perawat</th>
                 <th>Dokter</th>
                 <th>FDO</th>
@@ -153,32 +146,57 @@
               <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ t.id_kunjungan }}</td>
-                <td>
-                  <div>ID: {{ t.no_identitas_klien }}</div>
-                  <div class="pet-name">{{ t.nama_hewan }}</div>
-                </td>
-                <td>{{ t.no_perawat_hewan }}</td>
-                <td>{{ t.no_dokter_hewan }}</td>
-                <td>{{ t.no_front_desk }}</td>
+                <td>{{ t.no_identitas_klien }}</td>
+                <td class="pet-name">{{ t.nama_hewan }}</td>
+                <td>{{ t.perawat_email }}</td>
+                <td>{{ t.dokter_email }}</td>
+                <td>{{ t.fdo_email }}</td>
                 <td><span class="treatment-code">{{ t.kode_perawatan }}</span> {{ t.nama_perawatan }}</td>
                 <td>{{ t.catatan }}</td>
                 <td>
-                  <button class="btn btn-sm action-btn btn-outline-primary">
-                    <i class="fas fa-edit me-1"></i>Edit
-                  </button>
-                  <button class="btn btn-sm action-btn btn-outline-danger">
+                  <a href="{% url 'edit_treatment' t.id_kunjungan %}"
+                     class="btn btn-sm action-btn btn-outline-primary inline-flex items-center">
+                     <i class="fas fa-edit me-1"></i>Edit
+                  </a>
+              
+                  <!-- Tombol delete -->
+                  <button type="button"
+                          class="btn btn-sm action-btn btn-outline-danger"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteModal-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}">
                     <i class="fas fa-trash-alt me-1"></i>Delete
                   </button>
+              
+                  <!-- Modal Delete -->
+                  <div class="modal fade" id="deleteModal-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}" tabindex="-1"
+                       aria-labelledby="deleteModalLabel-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content border border-dark">
+                        <div class="modal-header">
+                          <h5 class="modal-title text-danger fw-bold" id="deleteModalLabel-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}">
+                            Delete Treatment
+                          </h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                          Apakah kamu yakin untuk menghapus Perawatan untuk Kunjungan
+                          <span class="fw-bold text-danger">{{ t.id_kunjungan }}</span>
+                          dengan Perawatan
+                          <span class="fw-bold text-danger">{{ t.kode_perawatan }}</span>?
+                        </div>
+                        <div class="modal-footer justify-content-center">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <form method="POST" action="{% url 'delete_treatment' t.id_kunjungan t.kode_perawatan %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </td>
               </tr>
-              {% empty %}
-              <tr>
-                <td colspan="9" class="no-data">
-                  <img src="/api/placeholder/150/150" alt="No data" class="mb-3">
-                  <h5>Belum ada data perawatan</h5>
-                  <p>Tambahkan data perawatan hewan baru dengan klik tombol 'Create New Treatment'</p>
-                </td>
-              </tr>
+              
               {% endfor %}
             </tbody>
           </table>
@@ -206,5 +224,21 @@
 
   <!-- Bootstrap Bundle with Popper -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script>
+    var deleteModal = document.getElementById('deleteModal');
+    deleteModal.addEventListener('show.bs.modal', function (event) {
+      var btn = event.relatedTarget;
+      var kunjungan = btn.getAttribute('data-kunjungan');
+      var perawatan = btn.getAttribute('data-perawatan');
+  
+      // Update isi teks konfirmasi
+      deleteModal.querySelector('#modalKunjungan').textContent = kunjungan;
+      deleteModal.querySelector('#modalPerawatan').textContent = perawatan;
+  
+      // Atur action form
+      deleteModal.querySelector('#deleteForm').action = `/treatments/${kunjungan}/${perawatan}/delete/`;
+    });
+  </script>
+  
 </body>
 </html>
