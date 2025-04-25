@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'kunjungan_perawatan',
 ]
 
 MIDDLEWARE = [
@@ -81,17 +82,27 @@ WSGI_APPLICATION = 'pet_clinic.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Replace the DATABASES section of your settings.py with this
-DATABASE_URL='postgresql://neondb_owner:npg_wNGaE2ZkHv7M@ep-winter-wildflower-a4ox1ffc-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require'
-tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
+DATABASE_URL='postgresql://neondb_owner:npg_wNGaE2ZkHv7M@ep-winter-wildflower-a4ox1ffc-pooler.us-east-1.aws.neon.tech/petclinic-b-07?sslmode=require'
+# Parse database URL
+DATABASE_URL = os.getenv("DATABASE_URL")
+tmpPostgres = urlparse(DATABASE_URL)
+
+# Fix: Ensure path is properly decoded to string before manipulating
+path = tmpPostgres.path
+if isinstance(path, bytes):
+    path = path.decode('utf-8')
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': tmpPostgres.path.replace('/', ''),
-        'USER': tmpPostgres.username,
-        'PASSWORD': tmpPostgres.password,
-        'HOST': tmpPostgres.hostname,
+        'NAME': 'petclinic-b-07',  # Now working with a string
+        'USER': 'neondb_owner',
+        'PASSWORD': 'npg_wNGaE2ZkHv7M',
+        'HOST': 'ep-winter-wildflower-a4ox1ffc-pooler.us-east-1.aws.neon.tech',
         'PORT': 5432,
+        'OPTIONS': {
+            'sslmode': 'require'
+        }
     }
 }
 
@@ -130,7 +141,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
+# Untuk penggunaan dalam production
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
