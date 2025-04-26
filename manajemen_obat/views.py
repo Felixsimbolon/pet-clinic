@@ -1,3 +1,179 @@
-from django.shortcuts import render
+import re
+from django.shortcuts import render, redirect
+from django.db import connection
 
-# Create your views here.
+def list_medicines(request):
+    q = request.GET.get('q', '').strip()
+
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic,public;")
+
+        if q:
+            cursor.execute("""
+                SELECT kode, nama, harga, stok, dosis
+                FROM obat
+                WHERE nama ILIKE %s
+                ORDER BY kode;
+            """, [f'%{q}%'])
+        else:
+            cursor.execute("""
+                SELECT kode, nama, harga, stok, dosis
+                FROM obat
+                ORDER BY kode;
+            """)
+
+        rows = cursor.fetchall()
+
+    medicines = []
+    for kode, nama, harga, stok, dosis in rows:
+        medicines.append({
+            'kode':      kode,
+            'nama':      nama,
+            'harga_str': f"Rp{harga:,.0f}".replace(',', '.'),
+            'stok':      stok,
+            'dosis':     dosis,
+        })
+
+    return render(request, 'list_medicines.html', {
+        'medicines': medicines,
+        'q':         q,              
+    })
+
+
+def create_medicine(request):
+    error = None
+    if request.method == 'POST':
+        nama  = request.POST.get('nama', '').strip()
+        harga = request.POST.get('harga', '').strip()
+        dosis = request.POST.get('dosis', '').strip()
+        stok  = request.POST.get('stok', '').strip()
+
+        if not nama or not harga.isdigit() or not stok.isdigit():
+            error = "Nama harus diisi; Harga dan Stok harus bilangan bulat"
+        else:
+            harga, stok = int(harga), int(stok)
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic,public;")
+                cursor.execute("""
+                    SELECT kode
+                    FROM obat
+                    ORDER BY kode DESC
+                    LIMIT 1;
+                """)
+                last = cursor.fetchone()
+                if last:
+                    m = re.search(r'MED(\d+)', last[0])
+                    num = int(m.group(1)) + 1 if m else 1
+                else:
+                    num = 1
+                kode_baru = f"MED{num:03d}"
+
+                cursor.execute("""
+                    INSERT INTO obat (kode, nama, harga, stok, dosis)
+                    VALUES (%s, %s, %s, %s, %s);
+                """, [kode_baru, nama, harga, stok, dosis])
+
+            return redirect('medicine_list')
+
+    return render(request, 'create_medicine.html', {
+        'error': error
+    })
+
+
+def update_medicine(request, kode):
+    error = None
+    if request.method == 'POST':
+        nama  = request.POST.get('nama', '').strip()
+        harga = request.POST.get('harga', '').strip()
+        dosis = request.POST.get('dosis', '').strip()
+
+        if not nama or not harga.isdigit():
+            error = "Nama harus diisi dan Harga harus bilangan bulat"
+        else:
+            harga = int(harga)
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic,public;")
+                cursor.execute("""
+                    UPDATE obat
+                    SET nama=%s, harga=%s, dosis=%s
+                    WHERE kode=%s;
+                """, [nama, harga, dosis, kode])
+            return redirect('medicine_list')
+    else:
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic,public;")
+            cursor.execute("""
+                SELECT nama, harga, dosis
+                FROM obat
+                WHERE kode=%s;
+            """, [kode])
+            row = cursor.fetchone()
+        if row:
+            nama, harga, dosis = row
+        else:
+            nama, harga, dosis = '', 0, ''
+
+    return render(request, 'update_medicine.html', {
+        'kode': kode,
+        'nama': nama,
+        'harga': harga,
+        'dosis': dosis,
+        'error': error
+    })
+
+
+def update_medicine_stock(request, kode):
+    error = None
+    if request.method == 'POST':
+        stok = request.POST.get('stok', '').strip()
+        if not stok.isdigit():
+            error = "Stok harus bilangan bulat"
+        else:
+            stok = int(stok)
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic,public;")
+                cursor.execute("""
+                    UPDATE obat
+                    SET stok=%s
+                    WHERE kode=%s;
+                """, [stok, kode])
+            return redirect('medicine_list')
+    else:
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic,public;")
+            cursor.execute("""
+                SELECT nama, stok
+                FROM obat
+                WHERE kode=%s;
+            """, [kode])
+            row = cursor.fetchone()
+        if row:
+            nama, stok = row
+        else:
+            nama, stok = '', 0
+
+    return render(request, 'update_medicine_stock.html', {
+        'kode': kode,
+        'nama': nama,
+        'stok': stok,
+        'error': error
+    })
+
+
+def delete_medicine(request, kode):
+    if request.method == 'POST':
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic,public;")
+            cursor.execute("DELETE FROM obat WHERE kode=%s;", [kode])
+        return redirect('medicine_list')
+
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic,public;")
+        cursor.execute("SELECT nama FROM obat WHERE kode=%s;", [kode])
+        row = cursor.fetchone()
+    nama = row[0] if row else ''
+
+    return render(request, 'confirm_delete_medicine.html', {
+        'kode': kode,
+        'nama': nama
+    })
