@@ -24,4 +24,6 @@ urlpatterns = [
     path('manajemen_obat/', include('manajemen_obat.urls')),
     path('manajemen_perawatan/', include('manajemen_perawatan.urls')),
     path('pemberian_obat/', include('pemberian_obat.urls')),
+    path('rekam/',include('kunjungan_rekam_medis.urls')),
+    path('merah/', include('merah.urls')),
 ]
