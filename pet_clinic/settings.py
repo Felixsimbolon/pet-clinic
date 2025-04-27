@@ -46,6 +46,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'kunjungan_perawatan',
+    'kunjungan_rekam_medis',
+    'pemberian_obat',
+    'manajemen_perawatan',
+    'manajemen_obat',
 ]
 
 MIDDLEWARE = [
