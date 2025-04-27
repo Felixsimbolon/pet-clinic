@@ -11,6 +11,12 @@ from django.shortcuts import render, redirect
 from django.db import connection
 from django.http import Http404
 
+from django.shortcuts import render
+from django.db import connection
+from django.shortcuts import render, redirect
+from django.db import connection
+from django.contrib import messages
+
 def daftar_kunjungan(request):
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
@@ -23,16 +29,34 @@ def daftar_kunjungan(request):
                 TO_CHAR(timestamp_awal, 'DD-MM-YYYY HH24:MI:SS') as waktu_mulai,
                 TO_CHAR(timestamp_akhir, 'DD-MM-YYYY HH24:MI:SS') as waktu_selesai
             FROM kunjungan
-            ORDER BY waktu_mulai DESC
+            ORDER BY timestamp_awal DESC
         """)
-        rows = cursor.fetchall()
+        kunjungan_rows = cursor.fetchall()
 
-    columns = ['id_kunjungan', 'no_identitas_klien', 'nama_hewan', 'tipe_kunjungan', 'waktu_mulai', 'waktu_selesai']
-    data = [dict(zip(columns, row)) for row in rows]
+        # Check if 'suhu' and 'berat_badan' are null in rekam_medis for each kunjungan
+        for i, row in enumerate(kunjungan_rows):
+            id_kunjungan = row[0]
+            cursor.execute("""
+                SELECT suhu, berat_badan
+                FROM kunjungan
+                WHERE id_kunjungan = %s
+            """, [id_kunjungan])
+            rekam_medis_data = cursor.fetchone()
+
+            # Check if both suhu and berat_badan are null
+            suhu_null = rekam_medis_data[0] is None
+            berat_badan_null = rekam_medis_data[1] is None
+
+            # Add flag for modal display if both are null
+            kunjungan_rows[i] = (*row, suhu_null, berat_badan_null)
+
+    columns = ['id_kunjungan', 'no_identitas_klien', 'nama_hewan', 'tipe_kunjungan', 'waktu_mulai', 'waktu_selesai', 'suhu_null', 'berat_badan_null']
+    data = [dict(zip(columns, row)) for row in kunjungan_rows]
 
     return render(request, 'daftar_kunjungan.html', {
         'kunjungan_list': data
     })
+
     
 
 
@@ -177,7 +201,147 @@ def delete_kunjungan(request, id_kunjungan):
 
 
 
+def create_rekam_medis(request, id_kunjungan):
+    # Get the relevant kunjungan data based on id_kunjungan
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""
+            SELECT id_kunjungan, no_identitas_klien, nama_hewan
+            FROM kunjungan
+            WHERE id_kunjungan = %s
+        """, [id_kunjungan])
+        kunjungan_data = cursor.fetchone()
+
+    if request.method == "POST":
+        suhu = request.POST.get('suhu')
+        berat_badan = request.POST.get('berat_badan')
+        kode_perawatan = request.POST.get('jenis_perawatan')
+        catatan = request.POST.get('catatan', '')
+
+        # Insert the data into rekam_medis
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+            cursor.execute("""
+                UPDATE kunjungan
+                SET suhu = %s, berat_badan = %s
+                WHERE id_kunjungan = %s
+            """, [suhu, berat_badan, id_kunjungan])
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+            cursor.execute("""
+                UPDATE kunjungan_keperawatan
+                SET kode_perawatan = %s, catatan = %s
+                WHERE id_kunjungan = %s
+            """, [catatan, id_kunjungan])
+
+        rekam_medis_context = {
+            'suhu': suhu,
+            'berat_badan': berat_badan,
+            'jenis_perawatan': jenis_perawatan,
+            'catatan': catatan,
+            'id_kunjungan': id_kunjungan
+        }
+
+        # Success message
+        messages.success(request, 'Rekam medis berhasil dibuat!')
+
+        # Render the same page (view_rekam_medis) with the updated Rekam Medis data
+        return render(request, 'view_rekam_medis.html', rekam_medis_context)
+
+    # Get the list of jenis perawatan
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""
+            SELECT kode_perawatan, nama_perawatan FROM perawatan
+            ORDER BY kode_perawatan
+        """)
+        jenis_perawatan_list = cursor.fetchall()
+
+    return render(request, 'create_rekam_medis.html', {
+        'id_kunjungan': id_kunjungan,
+        'kunjungan_data': kunjungan_data,
+        'jenis_perawatan_list': jenis_perawatan_list
+    })
 
 
 
-# Create your views here.
+from django.shortcuts import render, redirect
+from django.db import connection
+from django.contrib import messages
+
+def update_rekam_medis(request, id_kunjungan):
+    if request.method == "POST":
+        suhu = request.POST.get('suhu')
+        berat_badan = request.POST.get('berat_badan')
+        jenis_perawatan = request.POST.get('jenis_perawatan')
+        catatan = request.POST.get('catatan', '')
+
+        # Update the rekam medis for this kunjungan
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+            cursor.execute("""
+                UPDATE kunjungan
+                SET suhu = %s, berat_badan = %s
+                WHERE id_kunjungan = %s
+            """, [suhu, berat_badan, id_kunjungan])
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+            cursor.execute("""
+                UPDATE kunjungan_keperawatan
+                SET catatan = %s
+                WHERE id_kunjungan = %s
+            """, [catatan, id_kunjungan])
+        
+        # Redirect to view the updated rekam medis (render view instead of redirect)
+        rekam_medis_context = {
+            'suhu': suhu,
+            'berat_badan': berat_badan,
+            'jenis_perawatan': jenis_perawatan,
+            'catatan': catatan,
+            'id_kunjungan': id_kunjungan
+        }
+
+        # Success message
+        messages.success(request, 'Rekam medis berhasil dibuat!')
+
+        # Render the same page (view_rekam_medis) with the updated Rekam Medis data
+        return render(request, 'view_rekam_medis.html', rekam_medis_context)
+    # If the method is GET, fetch the current rekam medis data to populate the form
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""
+            SELECT
+                k.id_kunjungan,
+                k.no_identitas_klien,
+                k.nama_hewan,
+                k.tipe_kunjungan,
+                k.suhu,
+                k.berat_badan,
+                r.kode_perawatan,
+                r.catatan
+            FROM kunjungan k
+            LEFT JOIN kunjungan_keperawatan r ON k.id_kunjungan = r.id_kunjungan
+            WHERE k.id_kunjungan = %s
+        """, [id_kunjungan])
+        kunjungan_data = cursor.fetchone()
+
+    # Get the list of jenis perawatan for the dropdown menu
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""
+            SELECT kode_perawatan, nama_perawatan FROM perawatan
+            ORDER BY kode_perawatan
+        """)
+        jenis_perawatan_list = cursor.fetchall()
+
+    return render(request, 'update_rekam_medis.html', {
+        'id_kunjungan': id_kunjungan,
+        'no_identitas_klien': kunjungan_data[1],
+        'nama_hewan': kunjungan_data[2],
+        'tipe_kunjungan': kunjungan_data[3],
+        'suhu': kunjungan_data[4],  # Suhu from rekam medis
+        'berat_badan': kunjungan_data[5],  # Berat badan from rekam medis
+        'jenis_perawatan': kunjungan_data[6],  # Jenis perawatan from rekam medis
+        'catatan': kunjungan_data[7],  # Catatan from rekam medis
+        'jenis_perawatan_list': jenis_perawatan_list
+    })
