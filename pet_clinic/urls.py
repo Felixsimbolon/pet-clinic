@@ -26,4 +26,6 @@ urlpatterns = [
     path('pemberian_obat/', include('pemberian_obat.urls')),
     path('rekam/',include('kunjungan_rekam_medis.urls')),
     path('merah/', include('merah.urls')),
+    path('', include('main.urls')),
+    path('jenis-hewan/', include('jenis_hewan.urls')),
 ]
