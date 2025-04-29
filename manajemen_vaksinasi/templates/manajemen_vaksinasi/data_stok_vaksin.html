@@ -1,4 +1,4 @@
-{% extends 'merah/base.html' %}
+{% extends 'manajemen_vaksinasi/base_dokter.html' %}
 {% block title %}Data Stok Vaksin - Klinik Hewan{% endblock %}
 {% block header %}List Vaccine{% endblock %}
 {% block content %}
@@ -150,7 +150,7 @@
                                                 </div>
                                                 <div class="modal-footer justify-content-center">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <form method="post" action="{% url 'merah:delete_vaccine' stok.kode %}">
+                                                    <form method="post" action="{% url 'manajemen_vaksinasi:delete_vaccine' stok.kode %}">
                                                         {% csrf_token %}
                                                         <button type="submit" class="btn btn-danger">Confirm Deletion</button>
                                                     </form>                                                                                     
@@ -186,7 +186,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="createVaccineForm" method="post" action="{% url 'merah:create_vaccine' %}">
+                <form id="createVaccineForm" method="post" action="{% url 'manajemen_vaksinasi:create_vaccine' %}">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="nama" class="form-label">Nama</label>
@@ -227,7 +227,7 @@
                 document.getElementById('update_stock_value').value = stock;
                 
                 // Update form action
-                document.getElementById('updateStockForm').action = '{% url "merah:add_vaccine_stock" %}';
+                document.getElementById('updateStockForm').action = '{% url "manajemen_vaksinasi:add_vaccine_stock" %}';
             });
         });
         
@@ -243,7 +243,7 @@
                 document.getElementById('update_harga').value = price.replace(/[^\d]/g, ''); // Remove non-numeric chars
                 
                 // Update form action
-                document.getElementById('updateVaccineForm').action = '{% url "merah:edit_vaccine" "0" %}'.replace('0', id);
+                document.getElementById('updateVaccineForm').action = '{% url "manajemen_vaksinasi:edit_vaccine" "0" %}'.replace('0', id);
             });
         });
 

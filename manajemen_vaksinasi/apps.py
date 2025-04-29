@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class MerahConfig(AppConfig):
+class ManajemenVaksinConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'merah'
+    name = 'manajemen_vaksinasi'
