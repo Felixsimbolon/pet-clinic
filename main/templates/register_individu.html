@@ -307,10 +307,10 @@
                     // Add specific attributes based on input type
                     if (input.name.includes('email')) {
                         input.setAttribute('type', 'email');
-                        input.setAttribute('placeholder', 'nama@contoh.com');
+                        input.setAttribute('placeholder', 'Email');
                     } else if (input.name.includes('password')) {
                         input.setAttribute('type', 'password');
-                        input.setAttribute('placeholder', 'Minimal 8 karakter');
+                        input.setAttribute('placeholder', 'Password');
                     } else if (input.name.includes('telepon') || input.name.includes('phone')) {
                         input.setAttribute('placeholder', 'Contoh: 081234567890');
                         input.setAttribute('type', 'tel');
@@ -319,7 +319,7 @@
                         const label = input.previousElementSibling;
                         if (label && label.tagName === 'LABEL') {
                             const labelText = label.textContent.trim().replace(':', '');
-                            input.placeholder = `Masukkan ${labelText.toLowerCase()}`;
+                            input.placeholder = `${labelText}`;
                         }
                     }
                 });
