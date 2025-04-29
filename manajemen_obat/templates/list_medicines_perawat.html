@@ -1,0 +1,71 @@
+{% extends 'base_perawat.html' %}
+{% block title %}List Medicines{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3">List Medicines</h1>
+  <form class="d-flex" method="get">
+    <input
+      type="search"
+      class="form-control me-2"
+      placeholder="Search Medicine Name"
+      name="q"
+      value="{{ q }}"
+    >
+    <button class="btn btn-outline-secondary" type="submit">🔍</button>
+  </form>
+  <a href="{% url 'medicine_create_perawat' %}" class="btn btn-primary">
+    + Add New Medicine
+  </a>
+</div>
+
+<table class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th>No</th>
+      <th>Kode Obat</th>
+      <th>Nama Obat</th>
+      <th>Harga Satuan</th>
+      <th>Stok</th>
+      <th>Dosis</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in medicines %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ m.kode }}</td>
+        <td>{{ m.nama }}</td>
+        <td>{{ m.harga_str }}</td>
+        <td>{{ m.stok }}</td>
+        <td>{{ m.dosis }}</td>
+        <td>
+          <a
+            href="{% url 'medicine_update_stock_perawat' m.kode %}"
+            class="btn btn-outline-secondary btn-sm me-1"
+          >
+            Update Stock
+          </a>
+          <a
+            href="{% url 'medicine_update_perawat' m.kode %}"
+            class="btn btn-dark btn-sm me-1"
+          >
+            Update
+          </a>
+          <a
+            href="{% url 'medicine_delete_perawat' m.kode %}"
+            class="btn btn-danger btn-sm"
+          >
+            Delete
+          </a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="7" class="text-center">No medicines found.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

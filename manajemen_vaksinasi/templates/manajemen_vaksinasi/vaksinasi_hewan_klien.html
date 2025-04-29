@@ -1,0 +1,103 @@
+{% extends 'manajemen_vaksinasi/base_klien.html' %}
+
+{% block title %}Vaksinasi Hewan - Klinik Hewan{% endblock %}
+
+{% block header %}List Vaccine for Client's Pet{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <!-- Filters -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start" type="button" id="filterPetDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Filter by Pet
+                            </button>
+                            <ul class="dropdown-menu w-100" aria-labelledby="filterPetDropdown">
+                                <li><a class="dropdown-item" href="{% url 'manajemen_vaksinasi:vaksinasi_hewan_klien' %}">All Pets</a></li>
+                                {% for pet in pet_list %}
+                                <li><a class="dropdown-item" href="{% url 'manajemen_vaksinasi:vaksinasi_hewan_klien' %}?pet={{ pet.nama_hewan }}">{{ pet.nama_hewan }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start" type="button" id="filterVaccineDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Filter by Vaccine
+                            </button>
+                            <ul class="dropdown-menu w-100" aria-labelledby="filterVaccineDropdown">
+                                <li><a class="dropdown-item" href="{% url 'manajemen_vaksinasi:vaksinasi_hewan_klien' %}">All Vaccines</a></li>
+                                {% for vaksin in vaksin_list %}
+                                <li><a class="dropdown-item" href="{% url 'manajemen_vaksinasi:vaksinasi_hewan_klien' %}?vaksin={{ vaksin.kode }}">{{ vaksin.nama }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vaccine List Table -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Pet</th>
+                                <th>Vaksin</th>
+                                <th>ID Vaksin</th>
+                                <th>Harga</th>
+                                <th>Time and Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vaksin in vaksinasi_list %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><a href="{% url 'manajemen_vaksinasi:vaksinasi_hewan_klien' %}?pet={{ vaksin.nama_hewan }}">{{ vaksin.nama_hewan }}</a></td>
+                                <td>{{ vaksin.nama_vaksin }}</td>
+                                <td>{{ vaksin.kode_vaksin }}</td>
+                                <td>Rp{{ vaksin.harga|floatformat:0 }}</td>
+                                <td>{{ vaksin.timestamp_awal|date:"d-m-Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Belum ada data vaksinasi.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update dropdown labels based on selected filter
+    const urlParams = new URLSearchParams(window.location.search);
+    const petParam = urlParams.get('pet');
+    const vaksinParam = urlParams.get('vaksin');
+    
+    if (petParam) {
+        document.getElementById('filterPetDropdown').textContent = petParam;
+    }
+    
+    if (vaksinParam) {
+        // Find the vaccine name from the code
+        const vaksinLinks = document.querySelectorAll('#filterVaccineDropdown + .dropdown-menu .dropdown-item');
+        for (const link of vaksinLinks) {
+            if (link.href.includes(`vaksin=${vaksinParam}`)) {
+                document.getElementById('filterVaccineDropdown').textContent = link.textContent;
+                break;
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

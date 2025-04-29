@@ -1,4 +1,4 @@
-{% extends 'merah/base.html' %}
+{% extends 'manajemen_vaksinasi/base_dokter.html' %}
 
 {% block title %}Vaksinasi Hewan - Klinik Hewan{% endblock %}
 
@@ -60,7 +60,7 @@
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    <form action="{% url 'merah:update_vaksinasi' vaksin.id_kunjungan %}" method="post" id="updateForm-{{ vaksin.id_kunjungan }}">
+                                                    <form action="{% url 'manajemen_vaksinasi:update_vaksinasi' vaksin.id_kunjungan %}" method="post" id="updateForm-{{ vaksin.id_kunjungan }}">
                                                         {% csrf_token %}
                                                         
                                                         <div class="mb-3">
@@ -111,7 +111,7 @@
                                                 </div>
                                                 <div class="modal-footer justify-content-center">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <form method="post" action="{% url 'merah:delete_vaksinasi' vaksin.id_kunjungan %}">
+                                                    <form method="post" action="{% url 'manajemen_vaksinasi:delete_vaksinasi' vaksin.id_kunjungan %}">
                                                         {% csrf_token %}
                                                         <button type="submit" class="btn btn-danger">Confirm Deletion</button>
                                                     </form>                                                                                     
@@ -143,7 +143,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="{% url 'merah:create_vaksinasi' %}" method="post" id="vaccinationForm">
+                <form action="{% url 'manajemen_vaksinasi:create_vaksinasi' %}" method="post" id="vaccinationForm">
                     {% csrf_token %}
                     
                     <div class="mb-3">
@@ -196,19 +196,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Handle dropdown selection for Vaksin in Create modal
+    // Handle dropdown selection for Vaksin in Create modal with stock validation
     document.querySelectorAll('#createVaccinationModal .dropdown-menu[aria-labelledby="vaksin"] .dropdown-item').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
+            
+            // Extract stock quantity from the format "CODE - NAME [STOCK]"
+            const stockText = this.textContent.match(/\[(\d+)\]$/);
+            if (stockText && parseInt(stockText[1]) === 0) {
+                alert('Stok Vaksin yang dipilih sudah habis');
+                return false;
+            }
+            
             document.getElementById('vaksin').value = this.textContent;
             document.getElementById('vaksin_id').value = this.getAttribute('data-value');
         });
     });
     
-    // Handle dropdown selection for Vaksin in Update modals
+    // Handle dropdown selection for Vaksin in Update modals with stock validation
     document.querySelectorAll('[id^="updateModal-"] .dropdown-menu .dropdown-item').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
+            
+            // Extract stock quantity from the format "CODE - NAME [STOCK]"
+            const stockText = this.textContent.match(/\[(\d+)\]$/);
+            if (stockText && parseInt(stockText[1]) === 0) {
+                alert('Stok Vaksin yang dipilih sudah habis');
+                return false;
+            }
+            
             const modalId = this.closest('.modal').id;
             const kunjunganId = modalId.replace('updateModal-', '');
             
