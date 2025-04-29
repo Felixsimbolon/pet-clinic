@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'manajemen_obat',
     'data_klien_hewan',
     'manajemen_vaksinasi',
-    'merah',
     'main',
     'jenis_hewan',
     'hewan_peliharaan'
