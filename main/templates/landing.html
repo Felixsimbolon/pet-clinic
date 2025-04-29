@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pet Clinic - B07</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2a6f97;
+      --secondary-color: #61a5c2;
+      --accent-color: #a9d6e5;
+      --dark-color: #012a4a;
+      --light-color: #f0f5f9;
+    }
+
+    body {
+        background-color: #f0f5f9;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px 15px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding-top: 100px; /* Space untuk navbar */
+    }
+
+    /* Navbar */
+    .navbar-custom {
+    background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+    padding: 15px 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+    }
+
+    .navbar-nav .nav-link {
+    color: white;
+    font-weight: 500;
+    margin-right: 20px;
+    font-size: 1rem;
+    }
+
+    .navbar-nav .nav-link:hover {
+    color: var(--accent-color);
+    }
+
+    /* Content */
+    .container {
+      max-width: 550px;
+      width: 100%;
+      margin-top: 40px;
+      padding: 0 15px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 40px;
+      background-color: white;
+      text-align: center;
+      width: 100%;
+    }
+
+    .hero-section {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      text-align: center;
+      padding: 35px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .logo-container {
+      width: 100px;
+      height: 100px;
+      background-color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 20px;
+      color: var(--primary-color);
+      font-size: 40px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .clinic-name {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .clinic-tagline {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-bottom: 0;
+    }
+
+    .welcome-text {
+      margin-bottom: 20px;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .btn-action {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 12px 30px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.3s;
+      min-width: 150px;
+      border: none;
+    }
+
+    .btn-action:hover {
+      background-color: var(--dark-color);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      color: white;
+    }
+
+    .footer-text {
+      margin-top: 30px;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .card {
+        padding: 25px;
+      }
+      
+      .clinic-name {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+  <div class="container-fluid">
+    <a class="navbar-brand text-white" href="#">🐾 PetCare</a>
+    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Registrasi</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Content -->
+<div class="container">
+  <div class="card">
+    <div class="hero-section">
+      <div class="logo-container">
+        <i class="fas fa-paw"></i>
+      </div>
+      <h1 class="clinic-name">Pet Clinic B07</h1>
+      <p class="clinic-tagline">Pelayanan Kesehatan Hewan Terbaik</p>
+    </div>
+
+    <div class="welcome-text">
+      <h4>Selamat Datang</h4>
+      <p class="text-muted">Silakan login atau daftar untuk mengakses layanan kami</p>
+    </div>
+
+    <div class="button-container">
+      <a href="#" class="btn btn-action">
+        <i class="fas fa-sign-in-alt"></i>Login
+      </a>
+      <a href="#" class="btn btn-action">
+        <i class="fas fa-user-plus"></i>Registrasi
+      </a>
+    </div>
+
+    <div class="footer-text">
+      <p>© 2025 Pet Clinic B07. Semua hak dilindungi.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
