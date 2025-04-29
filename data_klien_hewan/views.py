@@ -6,9 +6,7 @@ from django.contrib import messages
 
 def index(request):
     """View untuk halaman utama aplikasi data klien hewan"""
-    # Data dummy untuk dashboard
     context = {
-        'total_klien': 42,
     }
     return render(request, 'data_klien_hewan/index.html', context)
 

@@ -50,10 +50,8 @@ INSTALLED_APPS = [
     'pemberian_obat',
     'manajemen_perawatan',
     'manajemen_obat',
-    # 'merah',
     'data_klien_hewan',
-    'data_stok_vaksin',
-    'vaksinasi_hewan',
+    'manajemen_vaksinasi',
 ]
 
 MIDDLEWARE = [
