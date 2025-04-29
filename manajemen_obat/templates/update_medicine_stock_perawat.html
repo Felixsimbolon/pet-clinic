@@ -1,0 +1,24 @@
+{% extends 'base_perawat.html' %}
+{% block title %}Update Medicine Stock{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Update Medicine Stock</h1>
+
+<p class="mb-3">{{ kode }} – {{ nama }}</p>
+
+{% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="mb-3">
+    <label for="stok" class="form-label">Stok</label>
+    <input type="number" id="stok" name="stok"
+           class="form-control" value="{{ stok }}" min="0" required>
+  </div>
+  <div class="d-flex justify-content-end">
+    <a href="{% url 'medicine_list_perawat' %}" class="btn btn-light me-2">Cancel</a>
+    <button type="submit" class="btn btn-primary">Update Stock</button>
+  </div>
+</form>
+{% endblock %}
