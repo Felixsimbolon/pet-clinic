@@ -15,18 +15,24 @@
       --light-color: #f8f9fa;
     }
     body {
-      background-color: var(--light-color);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+        background-color: #f0f5f9;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px 15px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding-top: 100px; /* Space untuk navbar */
     }
     /* Navbar */
     .navbar-custom {
-      background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
-      padding: 15px 20px;
-      border-radius: 0 0 15px 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+        padding: 15px 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 999;
     }
     .navbar-nav .nav-link {
       color: white;
@@ -43,7 +49,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 30px 15px;
     }
     .form-container {
       max-width: 650px;
@@ -62,7 +67,7 @@
       text-align: center;
       padding: 25px;
       border-radius: 12px;
-      margin-bottom: 30px;
+      margin-bottom: 1px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     .icon-box {
@@ -183,12 +188,12 @@
 
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label>Nomor Izin Praktik</label>
+            <label class="form-label">Nomor Izin Praktik</label>
             <input type="text" class="form-control" required placeholder="Masukkan nomor izin praktik">
             <div class="invalid-feedback">Nomor izin praktik wajib diisi</div>
           </div>
           <div class="col-md-6 mb-3">
-            <label>Nomor Telepon</label>
+            <label class="form-label">Nomor Telepon</label>
             <input type="tel" class="form-control" required placeholder="Contoh: 081234567890">
             <div class="invalid-feedback">Nomor telepon wajib diisi</div>
           </div>
@@ -196,12 +201,12 @@
 
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label>Email</label>
+            <label class="form-label">Email</label>
             <input type="email" class="form-control" required placeholder="nama@contoh.com">
             <div class="invalid-feedback">Email wajib diisi dengan format yang benar</div>
           </div>
           <div class="col-md-6 mb-3">
-            <label>Password</label>
+            <label class="form-label">Password</label>
             <input type="password" class="form-control" required placeholder="Minimal 8 karakter">
             <div class="invalid-feedback">Password wajib diisi</div>
           </div>
@@ -209,13 +214,13 @@
 
         <div class="row mb-3">
           <div class="col-md-6">
-            <label>Tanggal Diterima</label>
+            <label class="form-label">Tanggal Diterima</label>
             <input type="date" class="form-control">
           </div>
         </div>
 
         <div class="mb-3">
-          <label>Alamat Praktik</label>
+          <label class="form-label">Alamat Praktik</label>
           <textarea class="form-control" rows="3" placeholder="Masukkan alamat lengkap"></textarea>
         </div>
 
@@ -229,11 +234,11 @@
         <div id="certificates-container" class="certificate-section">
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label>Nomor Sertifikat</label>
+              <label class="form-label">Nomor Sertifikat</label>
               <input type="text" class="form-control" placeholder="Nomor sertifikat kompetensi">
             </div>
             <div class="col-md-6 mb-3">
-              <label>Nama Sertifikat</label>
+              <label class="form-label">Nama Sertifikat</label>
               <input type="text" class="form-control" placeholder="Nama sertifikat kompetensi">
             </div>
           </div>

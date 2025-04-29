@@ -14,41 +14,46 @@
       --dark-color: #012a4a;
       --light-color: #f8f9fa;
     }
-
     body {
-      background-color: #f0f5f9;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding-top: 100px; /* Space untuk navbar */
+        background-color: #f0f5f9;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px 15px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding-top: 100px; /* Space untuk navbar */
     }
-
     /* Navbar */
     .navbar-custom {
-      background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
-      padding: 15px 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 999;
+        background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+        padding: 15px 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 999;
     }
-
     .navbar-nav .nav-link {
       color: white;
       font-weight: 500;
       margin-right: 20px;
       font-size: 1rem;
     }
-
     .navbar-nav .nav-link:hover {
       color: var(--accent-color);
     }
-
-    .form-container {
-      max-width: 750px;
-      margin: auto;
-      padding: 30px 15px;
+    /* Content */
+    .page-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-
+    .form-container {
+      max-width: 650px;
+      width: 100%;
+    }
     .card {
       border: none;
       border-radius: 15px;
@@ -56,17 +61,15 @@
       padding: 40px;
       background-color: white;
     }
-
     .card-header {
       background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       color: white;
       text-align: center;
       padding: 25px;
       border-radius: 12px;
-      margin-bottom: 30px;
+      margin-bottom: 1px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
-
     .icon-box {
       width: 60px;
       height: 60px;
@@ -80,55 +83,6 @@
       font-size: 24px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
-
-    .form-label {
-      font-weight: 500;
-      color: #333;
-      margin-bottom: 8px;
-    }
-
-    .form-control, .form-select {
-      border-radius: 8px;
-      padding: 12px;
-      border: 1px solid #ddd;
-      transition: all 0.3s;
-    }
-
-    .form-control:focus, .form-select:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 0.25rem rgba(42, 111, 151, 0.25);
-    }
-
-    .btn-primary {
-      background-color: var(--primary-color);
-      border: none;
-      padding: 12px 20px;
-      font-weight: 600;
-      border-radius: 8px;
-      transition: all 0.3s;
-      width: 100%;
-      margin-top: 20px;
-    }
-
-    .btn-primary:hover {
-      background-color: var(--dark-color);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    .btn-secondary {
-      background-color: var(--secondary-color);
-      border: none;
-      padding: 8px 15px;
-      font-size: 0.9rem;
-      border-radius: 6px;
-      transition: all 0.3s;
-    }
-
-    .btn-secondary:hover {
-      background-color: var(--primary-color);
-    }
-
     .section-title {
       color: var(--primary-color);
       font-weight: 600;
@@ -141,120 +95,133 @@
       justify-content: space-between;
       align-items: center;
     }
-
-    .certificate-section, .schedule-section {
+    .form-control, .form-select {
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      transition: all 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(42,111,151,0.25);
+    }
+    .btn-primary {
+      background-color: var(--primary-color);
+      border: none;
+      padding: 12px 20px;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .btn-primary:hover {
+      background-color: var(--dark-color);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .btn-secondary {
+      background-color: var(--secondary-color);
+      border: none;
+      padding: 8px 15px;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+    .btn-secondary:hover {
+      background-color: var(--primary-color);
+      transform: translateY(-2px);
+    }
+    .certificate-section {
       background-color: #f8fcff;
       border-radius: 10px;
       padding: 15px;
       border-left: 4px solid var(--accent-color);
       margin-bottom: 15px;
     }
-
-    .remove-btn {
-      color: #dc3545;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.1rem;
-      padding: 0 5px;
-    }
-
+    /* Responsive */
     @media (max-width: 768px) {
       .card {
         padding: 20px;
       }
-      body {
-        padding-top: 130px; /* Tambahkan padding lebih banyak di mobile supaya navbar tidak menutupi form */
-      }
     }
   </style>
 </head>
-
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-custom">
-    <div class="container-fluid">
-      <a class="navbar-brand text-white" href="#">🐾 PetCare</a>
-      <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
 
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="#">Login</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Registrasi</a>
-          </li>
-        </ul>
-      </div>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+  <div class="container-fluid">
+    <a class="navbar-brand text-white" href="#">🐾 PetCare</a>
+    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Registrasi</a>
+        </li>
+      </ul>
     </div>
-  </nav>
+  </div>
+</nav>
 
-  <!-- Form Container -->
+<!-- Page Content -->
+<div class="page-content">
   <div class="form-container">
     <div class="card">
       <div class="card-header">
         <div class="icon-box">
-          <i class="fas fa-user-md"></i>
+          <i class="fas fa-user-nurse"></i>
         </div>
         <h3 class="fw-bold mb-2">REGISTRASI DOKTER HEWAN</h3>
         <p class="mb-0">Silakan lengkapi data diri Anda untuk mendaftar</p>
       </div>
 
-      <form method="post" class="needs-validation" novalidate>
-                
+      <form class="needs-validation" novalidate>
         <div class="section-title">
-            <span><i class="fas fa-info-circle me-2"></i>Informasi Umum</span>
-        </div>
-        
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="id_nomor_izin_praktik" class="form-label">Nomor Izin Praktik</label>
-                    <input type="text" name="nomor_izin_praktik" id="id_nomor_izin_praktik" class="form-control" required placeholder="Masukkan nomor izin praktik">
-                    <div class="invalid-feedback">Nomor izin praktik wajib diisi</div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="id_nomor_telepon" class="form-label">Nomor Telepon</label>
-                    <input type="tel" name="nomor_telepon" id="id_nomor_telepon" class="form-control" required placeholder="Contoh: 081234567890">
-                    <div class="invalid-feedback">Nomor telepon wajib diisi</div>
-                </div>
-            </div>
+          <span><i class="fas fa-info-circle me-2"></i>Informasi Umum</span>
         </div>
 
         <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="id_email" class="form-label">Email</label>
-                    <input type="email" name="email" id="id_email" class="form-control" required placeholder="nama@contoh.com">
-                    <div class="invalid-feedback">Email wajib diisi dengan format yang benar</div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="id_password" class="form-label">Password</label>
-                    <input type="password" name="password" id="id_password" class="form-control" required placeholder="Minimal 8 karakter">
-                    <div class="invalid-feedback">Password wajib diisi</div>
-                </div>
-            </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nomor Izin Praktik</label>
+            <input type="text" class="form-control" required placeholder="Masukkan nomor izin praktik">
+            <div class="invalid-feedback">Nomor izin praktik wajib diisi</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="nama" class="form-label">Nomor Telepon</label>
+            <input type="tel" class="form-control" required placeholder="Contoh: 081234567890">
+            <div class="invalid-feedback">Nomor telepon wajib diisi</div>
+          </div>
         </div>
 
         <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="id_tanggal_diterima" class="form-label">Tanggal Diterima</label>
-                    <input type="date" name="tanggal_diterima" id="id_tanggal_diterima" class="form-control">
-                </div>
-            </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" required placeholder="nama@contoh.com">
+            <div class="invalid-feedback">Email wajib diisi dengan format yang benar</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" required placeholder="Minimal 8 karakter">
+            <div class="invalid-feedback">Password wajib diisi</div>
+          </div>
         </div>
 
-        <div class="form-group">
-            <label for="id_alamat" class="form-label">Alamat Praktik</label>
-            <textarea name="alamat" id="id_alamat" class="form-control" rows="3" placeholder="Masukkan alamat lengkap tempat praktik"></textarea>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Tanggal Diterima</label>
+            <input type="date" class="form-control">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Alamat Praktik</label>
+          <textarea class="form-control" rows="3" placeholder="Masukkan alamat lengkap"></textarea>
         </div>
 
         <div class="section-title">
@@ -290,8 +257,8 @@
             </button>
         </div>
 
-        <div id="schedules-container">
-            <div class="schedule-section">
+        <div id="certificates-container">
+            <div class="certificate-section">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -328,110 +295,29 @@
         <button type="submit" class="btn btn-primary">
             <i class="fas fa-paper-plane me-2"></i>DAFTAR SEKARANG
         </button>
-    </form>
-</div>
+      </form>
+
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script>
-// Add certificate functionality
-document.getElementById('add-certificate').addEventListener('click', function() {
-    const container = document.getElementById('certificates-container');
-    const newSection = document.createElement('div');
-    newSection.className = 'certificate-section position-relative mt-3';
-    newSection.innerHTML = `
-        <button type="button" class="remove-btn position-absolute end-0 top-0 mt-2 me-2">
-            <i class="fas fa-times-circle"></i>
-        </button>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="form-label">Nomor Sertifikat</label>
-                    <input type="text" name="nomor_sertifikat" class="form-control" placeholder="Nomor sertifikat kompetensi">
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="form-label">Nama Sertifikat</label>
-                    <input type="text" name="nama_sertifikat" class="form-control" placeholder="Nama sertifikat kompetensi">
-                </div>
-            </div>
-        </div>
-    `;
-    container.appendChild(newSection);
-    
-    // Add remove functionality to the new section
-    newSection.querySelector('.remove-btn').addEventListener('click', function() {
-        container.removeChild(newSection);
-    });
-});
-
-// Add schedule functionality
-document.getElementById('add-schedule').addEventListener('click', function() {
-    const container = document.getElementById('schedules-container');
-    const newSection = document.createElement('div');
-    newSection.className = 'schedule-section position-relative mt-3';
-    newSection.innerHTML = `
-        <button type="button" class="remove-btn position-absolute end-0 top-0 mt-2 me-2">
-            <i class="fas fa-times-circle"></i>
-        </button>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="form-label">Hari Praktik</label>
-                    <select name="hari_praktik" class="form-select form-control">
-                        <option value="">Pilih Hari</option>
-                        <option value="Senin">Senin</option>
-                        <option value="Selasa">Selasa</option>
-                        <option value="Rabu">Rabu</option>
-                        <option value="Kamis">Kamis</option>
-                        <option value="Jumat">Jumat</option>
-                        <option value="Sabtu">Sabtu</option>
-                        <option value="Minggu">Minggu</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="form-label">Jam Praktik</label>
-                    <div class="row">
-                        <div class="col-6">
-                            <input type="time" name="jam_mulai" class="form-control" placeholder="Mulai">
-                        </div>
-                        <div class="col-6">
-                            <input type="time" name="jam_selesai" class="form-control" placeholder="Selesai">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    container.appendChild(newSection);
-    
-    // Add remove functionality to the new section
-    newSection.querySelector('.remove-btn').addEventListener('click', function() {
-        container.removeChild(newSection);
-    });
-});
-
-// Form validation
-(function() {
+  (function() {
     'use strict';
-    
-    // Fetch all forms to apply validation styles to
     var forms = document.querySelectorAll('.needs-validation');
-    
-    // Loop over them and prevent submission
-    Array.prototype.slice.call(forms).forEach(function(form) {
+    Array.prototype.slice.call(forms)
+      .forEach(function(form) {
         form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            form.classList.add('was-validated');
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
         }, false);
-    });
-})();
+      });
+  })();
 </script>
+
 </body>
 </html>
