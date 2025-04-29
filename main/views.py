@@ -138,201 +138,195 @@ def register_perawat(request):
         form = RegisterPerawatForm()
     return render(request, 'register_perawat.html', {'form': form})
 
-def dashboard_dokter(request, id_dokter):
-    dokter_info = {}
-    daftar_sertifikat = []
-    daftar_jadwal = []
+def dashboard_dokter(request):
+    # dokter_info = {}
+    # daftar_sertifikat = []
+    # daftar_jadwal = []
 
-    with connection.cursor() as cursor:
-        # --- Ambil info dokter
-        cursor.execute("""
-            SELECT 
-                dh.no_dokter_hewan,
-                tm.no_izin_praktik, 
-                u.email, 
-                u.alamat, 
-                u.nomor_telepon, 
-                p.tanggal_mulai_kerja, 
-                p.tanggal_akhir_kerja
-            FROM DOKTER_HEWAN dh
-            JOIN TENAGA_MEDIS tm ON dh.no_dokter_hewan = tm.no_tenaga_medis
-            JOIN PEGAWAI p ON tm.no_tenaga_medis = p.no_pegawai
-            JOIN "USER" u ON p.email_user = u.email
-            WHERE dh.no_dokter_hewan = %s
-        """, [str(id_dokter)])
-        row = cursor.fetchone()
-        if row:
-            dokter_info = {
-                'no_dokter_hewan': row[0],
-                'no_izin_praktik': row[1],
-                'email': row[2],
-                'alamat': row[3],
-                'nomor_telepon': row[4],
-                'tanggal_mulai_kerja': row[5].strftime('%d %B %Y') if row[5] else '-',
-                'tanggal_akhir_kerja': row[6].strftime('%d %B %Y') if row[6] else '-'
-            }
+    # with connection.cursor() as cursor:
+    #     # --- Ambil info dokter
+    #     cursor.execute("""
+    #         SELECT 
+    #             dh.no_dokter_hewan,
+    #             tm.no_izin_praktik, 
+    #             u.email, 
+    #             u.alamat, 
+    #             u.nomor_telepon, 
+    #             p.tanggal_mulai_kerja, 
+    #             p.tanggal_akhir_kerja
+    #         FROM DOKTER_HEWAN dh
+    #         JOIN TENAGA_MEDIS tm ON dh.no_dokter_hewan = tm.no_tenaga_medis
+    #         JOIN PEGAWAI p ON tm.no_tenaga_medis = p.no_pegawai
+    #         JOIN "USER" u ON p.email_user = u.email
+    #         WHERE dh.no_dokter_hewan = %s
+    #     """, [str(id_dokter)])
+    #     row = cursor.fetchone()
+    #     if row:
+    #         dokter_info = {
+    #             'no_dokter_hewan': row[0],
+    #             'no_izin_praktik': row[1],
+    #             'email': row[2],
+    #             'alamat': row[3],
+    #             'nomor_telepon': row[4],
+    #             'tanggal_mulai_kerja': row[5].strftime('%d %B %Y') if row[5] else '-',
+    #             'tanggal_akhir_kerja': row[6].strftime('%d %B %Y') if row[6] else '-'
+    #         }
 
-        # --- Ambil daftar sertifikat dokter
-        cursor.execute("""
-            SELECT sk.no_sertifikat_kompetensi, sk.nama_sertifikat
-            FROM SERTIFIKAT_KOMPETENSI sk
-            WHERE sk.no_tenaga_medis = %s
-        """, [str(id_dokter)])
-        rows = cursor.fetchall()
-        daftar_sertifikat = [{'nomor_sertifikat': r[0], 'nama_sertifikat': r[1]} for r in rows]
+    #     # --- Ambil daftar sertifikat dokter
+    #     cursor.execute("""
+    #         SELECT sk.no_sertifikat_kompetensi, sk.nama_sertifikat
+    #         FROM SERTIFIKAT_KOMPETENSI sk
+    #         WHERE sk.no_tenaga_medis = %s
+    #     """, [str(id_dokter)])
+    #     rows = cursor.fetchall()
+    #     daftar_sertifikat = [{'nomor_sertifikat': r[0], 'nama_sertifikat': r[1]} for r in rows]
 
-        # --- Ambil daftar jadwal praktik dokter
-        cursor.execute("""
-            SELECT hari, jam
-            FROM JADWAL_PRAKTIK
-            WHERE no_dokter_hewan = %s
-            ORDER BY 
-                CASE
-                    WHEN lower(hari) = 'senin' THEN 1
-                    WHEN lower(hari) = 'selasa' THEN 2
-                    WHEN lower(hari) = 'rabu' THEN 3
-                    WHEN lower(hari) = 'kamis' THEN 4
-                    WHEN lower(hari) = 'jumat' THEN 5
-                    WHEN lower(hari) = 'sabtu' THEN 6
-                    WHEN lower(hari) = 'minggu' THEN 7
-                    ELSE 8
-                END, jam ASC
-        """, [str(id_dokter)])
-        rows = cursor.fetchall()
-        daftar_jadwal = [{'hari': r[0], 'jam': r[1]} for r in rows]
+    #     # --- Ambil daftar jadwal praktik dokter
+    #     cursor.execute("""
+    #         SELECT hari, jam
+    #         FROM JADWAL_PRAKTIK
+    #         WHERE no_dokter_hewan = %s
+    #         ORDER BY 
+    #             CASE
+    #                 WHEN lower(hari) = 'senin' THEN 1
+    #                 WHEN lower(hari) = 'selasa' THEN 2
+    #                 WHEN lower(hari) = 'rabu' THEN 3
+    #                 WHEN lower(hari) = 'kamis' THEN 4
+    #                 WHEN lower(hari) = 'jumat' THEN 5
+    #                 WHEN lower(hari) = 'sabtu' THEN 6
+    #                 WHEN lower(hari) = 'minggu' THEN 7
+    #                 ELSE 8
+    #             END, jam ASC
+    #     """, [str(id_dokter)])
+    #     rows = cursor.fetchall()
+    #     daftar_jadwal = [{'hari': r[0], 'jam': r[1]} for r in rows]
 
-    return render(request, 'dashboard_dokter.html', {
-        'dokter': dokter_info,
-        'daftar_sertifikat': daftar_sertifikat,
-        'daftar_jadwal': daftar_jadwal,
-    })
+    return render(request, 'dashboard_dokter.html')
 
-def dashboard_perawat(request, id_perawat):
-    perawat_info = {}
-    daftar_sertifikat = []
+def dashboard_perawat(request):
+    # perawat_info = {}
+    # daftar_sertifikat = []
 
-    with connection.cursor() as cursor:
-        # --- Ambil info perawat
-        cursor.execute("""
-            SELECT 
-                ph.no_perawat_hewan,
-                tm.no_izin_praktik,
-                u.email,
-                u.alamat,
-                u.nomor_telepon,
-                p.tanggal_mulai_kerja,
-                p.tanggal_akhir_kerja
-            FROM PERAWAT_HEWAN ph
-            JOIN TENAGA_MEDIS tm ON ph.no_perawat_hewan = tm.no_tenaga_medis
-            JOIN PEGAWAI p ON tm.no_tenaga_medis = p.no_pegawai
-            JOIN "USER" u ON p.email_user = u.email
-            WHERE ph.no_perawat_hewan = %s
-        """, [str(id_perawat)])
-        row = cursor.fetchone()
-        if row:
-            perawat_info = {
-                'no_perawat_hewan': row[0],
-                'no_izin_praktik': row[1],
-                'email': row[2],
-                'alamat': row[3],
-                'nomor_telepon': row[4],
-                'tanggal_mulai_kerja': row[5].strftime('%d %B %Y') if row[5] else '-',
-                'tanggal_akhir_kerja': row[6].strftime('%d %B %Y') if row[6] else '-'
-            }
+    # with connection.cursor() as cursor:
+    #     # --- Ambil info perawat
+    #     cursor.execute("""
+    #         SELECT 
+    #             ph.no_perawat_hewan,
+    #             tm.no_izin_praktik,
+    #             u.email,
+    #             u.alamat,
+    #             u.nomor_telepon,
+    #             p.tanggal_mulai_kerja,
+    #             p.tanggal_akhir_kerja
+    #         FROM PERAWAT_HEWAN ph
+    #         JOIN TENAGA_MEDIS tm ON ph.no_perawat_hewan = tm.no_tenaga_medis
+    #         JOIN PEGAWAI p ON tm.no_tenaga_medis = p.no_pegawai
+    #         JOIN "USER" u ON p.email_user = u.email
+    #         WHERE ph.no_perawat_hewan = %s
+    #     """, [str(id_perawat)])
+    #     row = cursor.fetchone()
+    #     if row:
+    #         perawat_info = {
+    #             'no_perawat_hewan': row[0],
+    #             'no_izin_praktik': row[1],
+    #             'email': row[2],
+    #             'alamat': row[3],
+    #             'nomor_telepon': row[4],
+    #             'tanggal_mulai_kerja': row[5].strftime('%d %B %Y') if row[5] else '-',
+    #             'tanggal_akhir_kerja': row[6].strftime('%d %B %Y') if row[6] else '-'
+    #         }
 
-        # --- Ambil daftar sertifikat kompetensi perawat
-        cursor.execute("""
-            SELECT sk.no_sertifikat_kompetensi, sk.nama_sertifikat
-            FROM SERTIFIKAT_KOMPETENSI sk
-            WHERE sk.no_tenaga_medis = %s
-        """, [str(id_perawat)])
-        rows = cursor.fetchall()
-        daftar_sertifikat = [{'nomor_sertifikat': r[0], 'nama_sertifikat': r[1]} for r in rows]
+    #     # --- Ambil daftar sertifikat kompetensi perawat
+    #     cursor.execute("""
+    #         SELECT sk.no_sertifikat_kompetensi, sk.nama_sertifikat
+    #         FROM SERTIFIKAT_KOMPETENSI sk
+    #         WHERE sk.no_tenaga_medis = %s
+    #     """, [str(id_perawat)])
+    #     rows = cursor.fetchall()
+    #     daftar_sertifikat = [{'nomor_sertifikat': r[0], 'nama_sertifikat': r[1]} for r in rows]
 
-    return render(request, 'dashboard_perawat.html', {
-        'perawat': perawat_info,
-        'daftar_sertifikat': daftar_sertifikat,
-    })
+    return render(request, 'dashboard_perawat.html')
 
-def dashboard_frontdesk(request, id_frontdesk):
-    officer_info = {}
+def dashboard_frontdesk(request):
+    # officer_info = {}
 
-    with connection.cursor() as cursor:
-        # --- Ambil info Front-Desk Officer
-        cursor.execute("""
-            SELECT 
-                fd.no_front_desk,
-                u.email,
-                p.tanggal_mulai_kerja,
-                p.tanggal_akhir_kerja,
-                u.alamat,
-                u.nomor_telepon
-            FROM FRONT_DESK fd
-            JOIN PEGAWAI p ON fd.no_front_desk = p.no_pegawai
-            JOIN "USER" u ON p.email_user = u.email
-            WHERE fd.no_front_desk = %s
-        """, [str(id_frontdesk)])
-        row = cursor.fetchone()
-        if row:
-            officer_info = {
-                'nomor_identitas': row[0],
-                'email': row[1],
-                'tanggal_diterima': row[2].strftime('%d %B %Y') if row[2] else '-',
-                'tanggal_akhir_kerja': row[3].strftime('%d %B %Y') if row[3] else '-',
-                'alamat': row[4],
-                'nomor_telepon': row[5],
-            }
+    # with connection.cursor() as cursor:
+    #     # --- Ambil info Front-Desk Officer
+    #     cursor.execute("""
+    #         SELECT 
+    #             fd.no_front_desk,
+    #             u.email,
+    #             p.tanggal_mulai_kerja,
+    #             p.tanggal_akhir_kerja,
+    #             u.alamat,
+    #             u.nomor_telepon
+    #         FROM FRONT_DESK fd
+    #         JOIN PEGAWAI p ON fd.no_front_desk = p.no_pegawai
+    #         JOIN "USER" u ON p.email_user = u.email
+    #         WHERE fd.no_front_desk = %s
+    #     """, [str(id_frontdesk)])
+    #     row = cursor.fetchone()
+    #     if row:
+    #         officer_info = {
+    #             'nomor_identitas': row[0],
+    #             'email': row[1],
+    #             'tanggal_diterima': row[2].strftime('%d %B %Y') if row[2] else '-',
+    #             'tanggal_akhir_kerja': row[3].strftime('%d %B %Y') if row[3] else '-',
+    #             'alamat': row[4],
+    #             'nomor_telepon': row[5],
+    #         }
 
-    return render(request, 'dashboard_frontdesk.html', {
-        'officer': officer_info,
-    })
+    return render(request, 'dashboard_frontdesk.html')
 
-def dashboard_klien(request, id_klien):
-    klien_info = {}
+def dashboard_klien(request):
+    # klien_info = {}
 
-    with connection.cursor() as cursor:
-        # Cek apakah dia Individu atau Perusahaan
-        cursor.execute("""
-            SELECT 
-                k.no_identitas,
-                u.email,
-                k.tanggal_registrasi,
-                u.alamat,
-                u.nomor_telepon,
-                i.nama_depan,
-                i.nama_tengah,
-                i.nama_belakang,
-                p.nama_perusahaan
-            FROM KLIEN k
-            JOIN "USER" u ON k.email = u.email
-            LEFT JOIN INDIVIDU i ON k.no_identitas = i.no_identitas_klien
-            LEFT JOIN PERUSAHAAN p ON k.no_identitas = p.no_identitas_klien
-            WHERE k.no_identitas = %s
-        """, [str(id_klien)])
+    # with connection.cursor() as cursor:
+    #     # Cek apakah dia Individu atau Perusahaan
+    #     cursor.execute("""
+    #         SELECT 
+    #             k.no_identitas,
+    #             u.email,
+    #             k.tanggal_registrasi,
+    #             u.alamat,
+    #             u.nomor_telepon,
+    #             i.nama_depan,
+    #             i.nama_tengah,
+    #             i.nama_belakang,
+    #             p.nama_perusahaan
+    #         FROM KLIEN k
+    #         JOIN "USER" u ON k.email = u.email
+    #         LEFT JOIN INDIVIDU i ON k.no_identitas = i.no_identitas_klien
+    #         LEFT JOIN PERUSAHAAN p ON k.no_identitas = p.no_identitas_klien
+    #         WHERE k.no_identitas = %s
+    #     """, [str(id_klien)])
         
-        row = cursor.fetchone()
-        if row:
-            nama = ""
-            if row[5]:  # Ada nama_depan => Individu
-                nama_parts = [row[5]]  # nama_depan
-                if row[6]:  # nama_tengah
-                    nama_parts.append(row[6])
-                nama_parts.append(row[7])  # nama_belakang
-                nama = " ".join(nama_parts)
-            elif row[8]:  # Ada nama_perusahaan
-                nama = row[8]
-            else:
-                nama = "-"
+    #     row = cursor.fetchone()
+    #     if row:
+    #         nama = ""
+    #         if row[5]:  # Ada nama_depan => Individu
+    #             nama_parts = [row[5]]  # nama_depan
+    #             if row[6]:  # nama_tengah
+    #                 nama_parts.append(row[6])
+    #             nama_parts.append(row[7])  # nama_belakang
+    #             nama = " ".join(nama_parts)
+    #         elif row[8]:  # Ada nama_perusahaan
+    #             nama = row[8]
+    #         else:
+    #             nama = "-"
 
-            klien_info = {
-                'nomor_identitas': row[0],
-                'email': row[1],
-                'tanggal_pendaftaran': row[2].strftime('%d %B %Y') if row[2] else '-',
-                'alamat': row[3],
-                'nomor_telepon': row[4],
-                'nama': nama,
-            }
+    #         klien_info = {
+    #             'nomor_identitas': row[0],
+    #             'email': row[1],
+    #             'tanggal_pendaftaran': row[2].strftime('%d %B %Y') if row[2] else '-',
+    #             'alamat': row[3],
+    #             'nomor_telepon': row[4],
+    #             'nama': nama,
+    #         }
 
-    return render(request, 'dashboard_klien.html', {
-        'klien': klien_info,
-    })
+    return render(request, 'dashboard_klien.html')
+
+def update_password(request):
+    return render(request, 'update_password.html')
+def update_profile(request):
+    return render(request, 'update_profile.html')
