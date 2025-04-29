@@ -82,59 +82,34 @@
     <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
+
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
-              <i class="fas fa-tachometer-alt me-1"></i> Dashboard
-            </a>
-          </li>
 
-        <!-- Kelola Jenis Hewan -->
         <li class="nav-item">
-            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="#">
-              <i class="fas fa-list-alt me-1"></i> Kelola Jenis Hewan
-            </a>
+          <a class="nav-link" href="#">Dashboard</a>
         </li>
 
-        <!-- Kelola Jenis Peliharaan -->
         <li class="nav-item">
-          <a class="nav-link {% if 'kelola-hewan' in request.path %}active{% endif %}" href="#">
-            <i class="fas fa-paw me-1"></i> Kelola Hewan Peliharaan
-          </a>
-        </li>
-        
-        <!-- Daftar Kunjungan -->
-        <li class="nav-item">
-          <a class="nav-link {% if 'kelola-kunjungan' in request.path %}active{% endif %}" href="{% url 'daftar_kunjungan' %}">
-            <i class="fas fa-calendar-check me-1"></i> Kelola Kunjungan
-          </a>
+          <a class="nav-link" href="#">Kelola Jenis Hewan</a>
         </li>
 
-        <!-- Jenis Perawatan dan Detail Perawatan -->
-        <!-- <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle {% if 'treatment' in request.path %}active{% endif %}" href="#" id="treatmentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-stethoscope me-1"></i> Perawatan
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="treatmentDropdown">
-            <li><a class="dropdown-item" href="{% url 'treatment_list' %}">Jenis Perawatan</a></li>
-            <li><a class="dropdown-item" href="{% url 'daftar_perawatan' %}">Detail Perawatan</a></li>
-          </ul>
-        </li> -->
+        <li class="nav-item">
+          <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
+        </li>
 
-        <!-- Data Klien Hewan -->
         <li class="nav-item">
-          <a class="nav-link {% if 'klien-hewan' in request.path %}active{% endif %}" href="{% url 'data_klien_hewan:data_klien_hewan' %}">
-            <i class="fas fa-users me-1"></i> Daftar Klien
-          </a>
+          <a class="nav-link" href="{% url 'daftar_kunjungan' %}">Kelola Kunjungan</a>
         </li>
-        
-        <!-- Logout -->
+
         <li class="nav-item">
-          <a class="btn btn-logout ms-3" href="/logout/">
-            <i class="fas fa-sign-out-alt me-1"></i> Logout
-          </a>
+          <a class="nav-link" href="{% url 'data_klien_hewan:data_klien_hewan' %}">Daftar Klien</a>
         </li>
+
+        <li class="nav-item">
+          <a class="btn btn-logout ms-3" href="#">Logout</a>
+        </li>
+
       </ul>
     </div>
   </div>

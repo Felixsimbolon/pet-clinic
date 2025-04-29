@@ -1,4 +1,4 @@
-{% extends 'manajemen_vaksinasi/base_dokter.html' %}
+{% extends 'manajemen_vaksinasi/base_perawat.html' %}
 {% block title %}Data Stok Vaksin - Klinik Hewan{% endblock %}
 {% block header %}List Vaccine{% endblock %}
 {% block content %}
@@ -19,7 +19,7 @@
                     <div class="col-md-6">
                         <div class="d-flex justify-content-end">
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createVaccineModal">
-                                Add New Vaccine
+                                Create New Vaccine
                             </button>
                         </div>
                     </div>
@@ -106,11 +106,16 @@
                                                         {% csrf_token %}
                                                         <div class="mb-3">
                                                             <label for="update_id_vaksin" class="form-label">ID Vaksin</label>
-                                                            <input type="text" class="form-control bg-light" id="update_id_vaksin" name="kode" readonly>
+                                                            <input type="text" class="form-control bg-light" 
+                                                                   id="update_id_vaksin" 
+                                                                   name="kode" 
+                                                                   value="{{ stok.kode }}" 
+                                                                   readonly>
                                                         </div>
+                                                        
                                                         <div class="mb-3">
                                                             <label for="update_nama_vaksin" class="form-label">Nama Vaksin</label>
-                                                            <input type="text" class="form-control" id="update_nama_vaksin" name="nama_vaksin" required>
+                                                            <input type="text" class="form-control" id="update_nama_vaksin" name="nama_vaksin" required value="{{ stok.nama }}" >
                                                         </div>
                                                         <div class="mb-3">
                                                             <label for="update_harga" class="form-label">Harga</label>
@@ -238,7 +243,10 @@
                 var name = this.getAttribute('data-name');
                 var price = this.getAttribute('data-price');
                 
-                document.getElementById('update_id_vaksin').value = id;
+                // Display ID as text only
+                document.getElementById('display_id_vaksin').textContent = id;
+                // Still keep ID in hidden field for form submission
+                // document.getElementById('update_id_vaksin').value = id;
                 document.getElementById('update_nama_vaksin').value = name;
                 document.getElementById('update_harga').value = price.replace(/[^\d]/g, ''); // Remove non-numeric chars
                 

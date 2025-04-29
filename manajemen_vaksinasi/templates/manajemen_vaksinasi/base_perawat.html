@@ -87,53 +87,41 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-custom">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">🐾 PetCare</a>
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-
-        <li class="nav-item">
-          <a class="nav-link" href="#">Dashboard</a>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link" href="#">Daftar Jenis Hewan</a>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link" href="#">Perawatan Hewan</a>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'daftar_kunjungan' %}">Daftar Kunjungan</a>
-        </li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="manajemenDropdown" role="button"
-             data-bs-toggle="dropdown" aria-expanded="false">
-            Manajemen
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="manajemenDropdown">
-            <li><a class="dropdown-item" href="#">Manajemen Obat</a></li>
-            <li><a class="dropdown-item" href="#">Manajemen Jenis Perawatan</a></li>
-            <li><a class="dropdown-item" href="#">Manajemen Pemberian Obat</a></li>
-            <li><a class="dropdown-item" href="{% url 'manajemen_vaksinasi:vaksinasi_hewan' %}">Manajemen Vaksinasi Hewan</a></li>
-          </ul>
-        </li>
-
-        <li class="nav-item">
-          <a class="btn btn-logout ms-3" href="#">Logout</a>
-        </li>
-
-      </ul>
-    </div>
-  </div>
-</nav>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">🐾 PetCare</a>
+          <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNew">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+      
+          <div class="collapse navbar-collapse" id="navbarNew">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+              
+              <li class="nav-item">
+                <a class="nav-link" href="#">Dashboard</a>
+              </li>
+              
+              <li class="nav-item">
+                <a class="nav-link" href="#">Manajemen Obat</a>
+              </li>
+      
+              <li class="nav-item">
+                <a class="nav-link" href="#">Manajemen Jenis Perawatan</a>
+              </li>
+      
+              <!-- ini data dan stok vaksin -->
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'manajemen_vaksinasi:data_stok_vaksin' %}">Manajemen Vaksin</a>
+              </li>
+              
+              <li class="nav-item">
+                <a class="btn btn-logout ms-3" href="#">Logout</a>
+              </li>
+      
+            </ul>
+          </div>
+        </div>
+      </nav>
 
 <div class="container mt-4">
   <!-- Page Header -->
