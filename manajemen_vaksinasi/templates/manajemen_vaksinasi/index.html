@@ -1,0 +1,32 @@
+{% extends 'base_dokter_hewan.html' %}
+{% load static %}
+
+{% block title %}Manajemen Vaksinasi - Pet Clinic{% endblock %}
+
+{% block content %}
+    <!-- Navigation Menu -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Data Stok Vaksin</h5>
+                    <p class="card-text">Kelola data stok vaksin, tambah vaksin baru, dan mengatur stok</p>
+                    <a href="{% url 'manajemen_vaksinasi:data_stok_vaksin' %}" class="btn btn-primary">
+                        <i class="fas fa-syringe"></i> Kelola Stok Vaksin
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Vaksinasi Hewan</h5>
+                    <p class="card-text">Kelola vaksinasi hewan, tambah data vaksinasi, dan mengatur kunjungan</p>
+                    <a href="{% url 'manajemen_vaksinasi:vaksinasi_hewan' %}" class="btn btn-primary">
+                        <i class="fas fa-paw"></i> Kelola Vaksinasi Hewan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

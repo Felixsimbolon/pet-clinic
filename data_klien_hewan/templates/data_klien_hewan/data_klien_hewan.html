@@ -1,4 +1,4 @@
-{% extends 'merah/base.html' %}
+{% extends 'data_klien_hewan/base.html' %}
 {% block title %}Data Klien Hewan - Klinik Hewan{% endblock %}
 {% block header %}List Client{% endblock %}
 {% block content %}
@@ -41,7 +41,7 @@
                                 <td>{{ klien.nama_pemilik }}</td>
                                 <td>{{ klien.jenis_pemilik }}</td>
                                 <td>
-                                    <a href="{% url 'merah:detail_client' no_identitas=klien.no_identitas %}" class="btn btn-sm btn-info btn-action">Detail</a>
+                                    <a href="{% url 'data_klien_hewan:detail_client' no_identitas=klien.no_identitas %}" class="btn btn-sm btn-info btn-action">Detail</a>
                                 </td>
                             </tr>
                             {% empty %}
