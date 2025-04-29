@@ -5,10 +5,7 @@ from django.http import Http404, HttpResponse
 from django.contrib import messages
 
 def index(request):
-    """View untuk halaman utama aplikasi data klien hewan"""
-    context = {
-    }
-    return render(request, 'data_klien_hewan/index.html', context)
+    return redirect('data_klien_hewan') 
 
 def data_klien_hewan(request):
     """View untuk halaman data klien hewan"""

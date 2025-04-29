@@ -5,29 +5,8 @@ from django.http import Http404
 from django.contrib import messages
 
 def index(request):
-    """View untuk halaman utama aplikasi manajemen vaksinasi"""
-    # Ambil data untuk dashboard
-    with connection.cursor() as cursor:
-        cursor.execute("SET search_path TO pet_clinic;")
-        
-        # Hitung total jenis vaksin
-        cursor.execute("SELECT COUNT(*) FROM vaksin")
-        total_vaksin = cursor.fetchone()[0]
-        
-        # Hitung total stok vaksin
-        cursor.execute("SELECT SUM(stok) FROM vaksin")
-        total_stok = cursor.fetchone()[0] or 0
-        
-        # Hitung total vaksinasi
-        cursor.execute("SELECT COUNT(*) FROM kunjungan WHERE kode_vaksin IS NOT NULL")
-        total_vaksinasi = cursor.fetchone()[0]
-    
-    context = {
-        'total_vaksin': total_vaksin,
-        'total_stok': total_stok,
-        'total_vaksinasi': total_vaksinasi,
-    }
-    return render(request, 'manajemen_vaksinasi/index.html', context)
+    """Redirect langsung ke halaman vaksinasi hewan"""
+    return redirect('manajemen_vaksinasi:vaksinasi_hewan')
 
 def data_stok_vaksin(request):
     """View untuk halaman data stok vaksin"""
