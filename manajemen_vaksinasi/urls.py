@@ -6,6 +6,7 @@ app_name = 'manajemen_vaksinasi'
 urlpatterns = [
     # Halaman utama
     path('', views.index, name='index'),
+    path('klien/', views.index2, name='index2'),
     
     # Data stok vaksin
     path('stok-vaksin/', views.data_stok_vaksin, name='data_stok_vaksin'),
@@ -19,4 +20,5 @@ urlpatterns = [
     path('vaksinasi/create/', views.create_vaksinasi, name='create_vaksinasi'),
     path('vaksinasi/update/<str:id_kunjungan>/', views.update_vaksinasi, name='update_vaksinasi'),
     path('vaksinasi/delete/<str:id_kunjungan>/', views.delete_vaksinasi, name='delete_vaksinasi'),
+    path('vaksinasi-klien/', views.vaksinasi_hewan_klien, name='vaksinasi_hewan_klien'),
 ]
