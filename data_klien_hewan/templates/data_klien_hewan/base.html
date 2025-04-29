@@ -78,7 +78,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-custom">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'merah:index' %}">🐾 PetCare</a>
+    <a class="navbar-brand" href="{% url 'data_klien_hewan:index' %}">🐾 PetCare</a>
     <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -92,14 +92,14 @@
 
         <!-- Kelola Jenis Hewan -->
         <li class="nav-item">
-            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="{% url 'merah:vaksinasi_hewan' %}">
+            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="#">
               <i class="fas fa-list-alt me-1"></i> Kelola Jenis Hewan
             </a>
         </li>
 
         <!-- Kelola Jenis Peliharaan -->
         <li class="nav-item">
-          <a class="nav-link {% if 'kelola-hewan' in request.path %}active{% endif %}" href="{% url 'merah:stok_vaksin' %}">
+          <a class="nav-link {% if 'kelola-hewan' in request.path %}active{% endif %}" href="#">
             <i class="fas fa-paw me-1"></i> Kelola Hewan Peliharaan
           </a>
         </li>
@@ -124,7 +124,7 @@
 
         <!-- Data Klien Hewan -->
         <li class="nav-item">
-          <a class="nav-link {% if 'klien-hewan' in request.path %}active{% endif %}" href="{% url 'merah:data_klien_hewan' %}">
+          <a class="nav-link {% if 'klien-hewan' in request.path %}active{% endif %}" href="{% url 'data_klien_hewan:data_klien_hewan' %}">
             <i class="fas fa-users me-1"></i> Daftar Klien
           </a>
         </li>

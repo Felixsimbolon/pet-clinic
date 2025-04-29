@@ -78,7 +78,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-custom">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'merah:index' %}">🐾 PetCare</a>
+    <a class="navbar-brand" href="{% url 'data_klien_hewan:index' %}">🐾 PetCare</a>
     <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -92,14 +92,14 @@
 
         <!-- Kelola Jenis Hewan -->
         <li class="nav-item">
-            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="{% url 'merah:vaksinasi_hewan' %}">
+            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="#">
               <i class="fas fa-list-alt me-1"></i> Kelola Jenis Hewan
             </a>
         </li>
 
         <!-- Kelola Jenis Peliharaan -->
         <li class="nav-item">
-          <a class="nav-link {% if 'kelola-hewan' in request.path %}active{% endif %}" href="{% url 'merah:stok_vaksin' %}">
+          <a class="nav-link {% if 'kelola-hewan' in request.path %}active{% endif %}" href="#">
             <i class="fas fa-paw me-1"></i> Kelola Hewan Peliharaan
           </a>
         </li>
@@ -111,22 +111,53 @@
           </a>
         </li>
 
-        <!-- Jenis Perawatan dan Detail Perawatan -->
-        <!-- <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle {% if 'treatment' in request.path %}active{% endif %}" href="#" id="treatmentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-stethoscope me-1"></i> Perawatan
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="treatmentDropdown">
-            <li><a class="dropdown-item" href="{% url 'treatment_list' %}">Jenis Perawatan</a></li>
-            <li><a class="dropdown-item" href="{% url 'daftar_perawatan' %}">Detail Perawatan</a></li>
-          </ul>
-        </li> -->
+        <!-- Daftar Jenis Hewan -->
+        <li class="nav-item">
+            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="#">
+              <i class="fas fa-list-alt me-1"></i> Daftar Jenis Hewan
+            </a>
+        </li>
+
+        <!-- Perawatan Hewan -->
+        <li class="nav-item">
+            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="#">
+              <i class="fas fa-list-alt me-1"></i> Perawatan Hewan
+            </a>
+        </li>
 
         <!-- Data Klien Hewan -->
         <li class="nav-item">
-          <a class="nav-link {% if 'klien-hewan' in request.path %}active{% endif %}" href="{% url 'merah:data_klien_hewan' %}">
+          <a class="nav-link {% if 'klien-hewan' in request.path %}active{% endif %}" href="{% url 'data_klien_hewan:data_klien_hewan' %}">
             <i class="fas fa-users me-1"></i> Daftar Klien
           </a>
+        </li>
+
+        <!-- Manajemen Obat -->
+        <li class="nav-item">
+            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="#">
+              <i class="fas fa-list-alt me-1"></i> Manajemen Obat
+            </a>
+        </li>
+
+        <!-- Manajemen Jenis Perawatan -->
+        <li class="nav-item">
+            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="#">
+              <i class="fas fa-list-alt me-1"></i> Manajemen Jneis Perawatan
+            </a>
+        </li>
+
+        <!-- Manajemen Pemberian Obat -->
+        <li class="nav-item">
+            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="#">
+              <i class="fas fa-list-alt me-1"></i> Manajemen Pemberian Obat
+            </a>
+        </li>
+
+        <!-- Manajemen Vaksinasi Hewan -->
+        <li class="nav-item">
+            <a class="nav-link {% if 'kelola-jenis-hewan' in request.path %}active{% endif %}" href="{% url 'vaksinasi_hewan:vaksinasi_hewan' %}">
+              <i class="fas fa-list-alt me-1"></i> Manajemen Vaksinasi Hewan
+            </a>
         </li>
         
         <!-- Logout -->
