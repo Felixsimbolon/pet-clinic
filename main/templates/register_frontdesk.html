@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Form Register - Front-Desk Officer</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2a6f97;
+      --secondary-color: #61a5c2;
+      --accent-color: #a9d6e5;
+      --dark-color: #012a4a;
+      --light-color: #f8f9fa;
+    }
+    body {
+      background-color: var(--light-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    align-items: center;
+    padding: 30px 15px;
+    padding-top: 100px; /* Space untuk navbar */
+    }
+    .navbar-custom {
+        background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+        padding: 15px 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 999;
+    }
+    .navbar-nav .nav-link {
+      color: white;
+      font-weight: 500;
+      margin-right: 20px;
+      font-size: 1rem;
+    }
+    .navbar-nav .nav-link:hover {
+      color: var(--accent-color);
+    }
+    .page-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .form-container {
+      max-width: 550px;
+      width: 100%;
+    }
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 40px;
+      background-color: white;
+    }
+    .card-header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      text-align: center;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 1px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .icon-box {
+      width: 60px;
+      height: 60px;
+      background-color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 15px;
+      color: var(--primary-color);
+      font-size: 24px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .section-title {
+      color: var(--primary-color);
+      font-weight: 600;
+      font-size: 1.2rem;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent-color);
+    }
+    .form-control {
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      transition: all 0.3s;
+    }
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(42,111,151,0.25);
+    }
+    .btn-primary {
+      background-color: var(--primary-color);
+      border: none;
+      padding: 12px 20px;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .btn-primary:hover {
+      background-color: var(--dark-color);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .footer-text {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-top: 20px;
+    }
+    @media (max-width: 768px) {
+      .card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+  <div class="container-fluid">
+    <a class="navbar-brand text-white" href="#">🐾 PetCare</a>
+    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Registrasi</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Content -->
+<div class="page-content">
+  <div class="form-container">
+    <div class="card">
+      <div class="card-header">
+        <div class="icon-box">
+          <i class="fas fa-user-tie"></i>
+        </div>
+        <h3 class="fw-bold mb-2">REGISTRASI FRONT-DESK OFFICER</h3>
+        <p class="mb-0">Silakan lengkapi data diri Anda untuk mendaftar</p>
+      </div>
+
+      <form class="needs-validation" novalidate>
+        <div class="section-title">
+          <i class="fas fa-info-circle me-2"></i>Informasi Umum
+        </div>
+
+        <div class="mb-3">
+          <label for="nama" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+          <input type="text" id="nama" class="form-control" placeholder="Nama Lengkap" required>
+          <div class="invalid-feedback">Nama wajib diisi</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+          <input type="email" id="email" class="form-control" placeholder="Email" required>
+          <div class="invalid-feedback">Email wajib diisi dengan format yang benar</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="nomor_telepon" class="form-label">Nomor Telepon<span class="text-danger">*</span></label>
+          <input type="tel" id="nomor_telepon" class="form-control" placeholder="Contoh: 081234567890" required>
+          <div class="invalid-feedback">Nomor telepon wajib diisi</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+          <input type="password" id="password" class="form-control" placeholder="Password" required>
+          <div class="invalid-feedback">Password wajib diisi</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-paper-plane me-2"></i>DAFTAR SEKARANG
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+  (function() {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms)
+      .forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+  })();
+</script>
+
+</body>
+</html>

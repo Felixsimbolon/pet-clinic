@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Form Registrasi - Dokter Hewan</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2a6f97;
+      --secondary-color: #61a5c2;
+      --accent-color: #a9d6e5;
+      --dark-color: #012a4a;
+      --light-color: #f8f9fa;
+    }
+    body {
+        background-color: #f0f5f9;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px 15px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding-top: 100px; /* Space untuk navbar */
+    }
+    /* Navbar */
+    .navbar-custom {
+        background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+        padding: 15px 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 999;
+    }
+    .navbar-nav .nav-link {
+      color: white;
+      font-weight: 500;
+      margin-right: 20px;
+      font-size: 1rem;
+    }
+    .navbar-nav .nav-link:hover {
+      color: var(--accent-color);
+    }
+    /* Content */
+    .page-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .form-container {
+      max-width: 650px;
+      width: 100%;
+    }
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 40px;
+      background-color: white;
+    }
+    .card-header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      text-align: center;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 1px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .icon-box {
+      width: 60px;
+      height: 60px;
+      background-color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 15px;
+      color: var(--primary-color);
+      font-size: 24px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .section-title {
+      color: var(--primary-color);
+      font-weight: 600;
+      font-size: 1.2rem;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .form-control, .form-select {
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      transition: all 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(42,111,151,0.25);
+    }
+    .btn-primary {
+      background-color: var(--primary-color);
+      border: none;
+      padding: 12px 20px;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .btn-primary:hover {
+      background-color: var(--dark-color);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .btn-secondary {
+      background-color: var(--secondary-color);
+      border: none;
+      padding: 8px 15px;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+    .btn-secondary:hover {
+      background-color: var(--primary-color);
+      transform: translateY(-2px);
+    }
+    .certificate-section {
+      background-color: #f8fcff;
+      border-radius: 10px;
+      padding: 15px;
+      border-left: 4px solid var(--accent-color);
+      margin-bottom: 15px;
+    }
+    /* Responsive */
+    @media (max-width: 768px) {
+      .card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+  <div class="container-fluid">
+    <a class="navbar-brand text-white" href="#">🐾 PetCare</a>
+    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Registrasi</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Content -->
+<div class="page-content">
+  <div class="form-container">
+    <div class="card">
+      <div class="card-header">
+        <div class="icon-box">
+          <i class="fas fa-user-nurse"></i>
+        </div>
+        <h3 class="fw-bold mb-2">REGISTRASI DOKTER HEWAN</h3>
+        <p class="mb-0">Silakan lengkapi data diri Anda untuk mendaftar</p>
+      </div>
+
+      <form class="needs-validation" novalidate>
+        <div class="section-title">
+          <span><i class="fas fa-info-circle me-2"></i>Informasi Umum</span>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nomor Izin Praktik <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" required placeholder="Nomor Izin Praktik">
+            <div class="invalid-feedback">Nomor izin praktik wajib diisi</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="nama" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
+            <input type="tel" class="form-control" required placeholder="Contoh: 081234567890">
+            <div class="invalid-feedback">Nomor telepon wajib diisi</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" required placeholder="Email">
+            <div class="invalid-feedback">Email wajib diisi dengan format yang benar</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Password <span class="text-danger">*</span></label>
+            <input type="password" class="form-control" required placeholder="Password">
+            <div class="invalid-feedback">Password wajib diisi</div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Tanggal Diterima <span class="text-danger">*</span></label>
+            <input type="date" class="form-control">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Alamat <span class="text-danger">*</span></label>
+          <textarea class="form-control" rows="3" placeholder="Alamat"></textarea>
+        </div>
+
+        <div class="section-title">
+            <span><i class="fas fa-certificate me-2"></i>Kompetensi</span>
+            <button type="button" class="btn btn-secondary" id="add-certificate">
+                <i class="fas fa-plus me-1"></i> Tambah Sertifikat
+            </button>
+        </div>
+
+        <div id="certificates-container">
+            <div class="certificate-section">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_nomor_sertifikat" class="form-label">Nomor Sertifikat <span class="text-danger">*</span></label>
+                            <input type="text" name="nomor_sertifikat" id="id_nomor_sertifikat" class="form-control" placeholder="Nomor sertifikat kompetensi">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_nama_sertifikat" class="form-label">Nama Sertifikat <span class="text-danger">*</span></label>
+                            <input type="text" name="nama_sertifikat" id="id_nama_sertifikat" class="form-control" placeholder="Nama sertifikat kompetensi">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <span><i class="fas fa-calendar-alt me-2"></i>Jadwal Praktik</span>
+            <button type="button" class="btn btn-secondary" id="add-schedule">
+                <i class="fas fa-plus me-1"></i> Tambah Jadwal
+            </button>
+        </div>
+
+        <div id="certificates-container">
+            <div class="certificate-section">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_hari_praktik" class="form-label">Hari Praktik <span class="text-danger">*</span></label>
+                            <select name="hari_praktik" id="id_hari_praktik" class="form-select form-control">
+                                <option value="">Pilih Hari</option>
+                                <option value="Senin">Senin</option>
+                                <option value="Selasa">Selasa</option>
+                                <option value="Rabu">Rabu</option>
+                                <option value="Kamis">Kamis</option>
+                                <option value="Jumat">Jumat</option>
+                                <option value="Sabtu">Sabtu</option>
+                                <option value="Minggu">Minggu</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_jam_praktik" class="form-label">Jam Praktik <span class="text-danger">*</span></label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="time" name="jam_mulai" class="form-control" placeholder="Mulai">
+                                </div>
+                                <div class="col-6">
+                                    <input type="time" name="jam_selesai" class="form-control" placeholder="Selesai">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane me-2"></i>DAFTAR SEKARANG
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+  (function() {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms)
+      .forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>List Hewan Peliharaan</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2a6f97;
+      --secondary-color: #61a5c2;
+      --accent-color: #a9d6e5;
+      --dark-color: #012a4a;
+      --danger-color: #dc3545;
+      --light-color: #f0f5f9;
+    }
+
+    body {
+      background-color: var(--light-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    .navbar-custom {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      padding: 15px 20px;
+      border-radius: 0 0 15px 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .navbar-brand {
+      color: white;
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+
+    .nav-link {
+      color: white;
+      font-weight: 500;
+      margin-right: 20px;
+      font-size: 1rem;
+    }
+
+    .nav-link:hover {
+      color: var(--accent-color);
+    }
+
+    .btn-logout {
+      background-color: white;
+      color: var(--primary-color);
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 8px 16px;
+      transition: all 0.3s;
+    }
+
+    .btn-logout:hover {
+      background-color: var(--accent-color);
+      color: var(--dark-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Content */
+    .page-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      padding: 40px 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      text-align: center;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      border: none;
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      border: none;
+    }
+
+    .btn-primary:hover, .btn-danger:hover {
+      opacity: 0.9;
+    }
+
+    .table {
+      background-color: white;
+    }
+
+    .table thead {
+      background-color: var(--accent-color);
+      color: var(--dark-color);
+    }
+
+    .table th, .table td {
+      vertical-align: middle;
+    }
+
+    .img-thumbnail {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid var(--accent-color);
+    }
+
+    .btn {
+      font-weight: 500;
+    }
+
+    .btn-create {
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 8px;
+      padding: 10px 20px;
+    }
+
+    .btn-create:hover {
+      background-color: var(--dark-color);
+      color: white;
+    }
+
+    .d-flex.justify-content-end {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">🐾 PetCare</a>
+    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Kelola Jenis Hewan</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Kelola Kunjungan</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Daftar Klien</a>
+        </li>
+        <li class="nav-item">
+          <a class="btn btn-logout ms-3" href="#">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Content -->
+<div class="page-content">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="fw-bold mb-0">List Hewan Peliharaan</h2>
+    </div>
+
+    <div class="d-flex justify-content-end">
+      <a href="#" class="btn btn-create">
+        <i class="fas fa-plus"></i> Create New Pet
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle text-center">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Pemilik</th>
+            <th>Jenis Hewan</th>
+            <th>Nama Hewan</th>
+            <th>Tanggal Lahir</th>
+            <th>Foto</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>John Doe</td>
+            <td>Kucing</td>
+            <td>Snowy</td>
+            <td>9 Februari 2020</td>
+            <td><img src="https://cdn.pixabay.com/photo/2017/11/09/21/41/cat-2934720_1280.jpg" class="img-thumbnail" alt="Foto Kucing"></td>
+            <td>
+              <a href="#" class="btn btn-primary btn-sm me-2">Update</a>
+              <a href="#" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>PT Aku Sayang Hewan</td>
+            <td>Anjing</td>
+            <td>Blacky</td>
+            <td>15 November 2019</td>
+            <td><img src="https://media.istockphoto.com/id/450709593/id/foto/pug-duduk-dan-terengah-engah-1-tahun-terisolasi-di-atas-putih.jpg?s=612x612&w=0&k=20&c=q2Sg68jy8eyQI2SM6slDV9JV0g_c2v8vDjlpO6cYG1Y=" class="img-thumbnail" alt="Foto Anjing"></td>
+            <td>
+              <a href="#" class="btn btn-primary btn-sm me-2">Update</a>
+              <a href="#" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>PT Pecinta Kucing</td>
+            <td>Hamster</td>
+            <td>Hamseung</td>
+            <td>15 Oktober 2024</td>
+            <td><img src="https://images.tokopedia.net/blog-tokopedia-com/uploads/2018/06/1.-Hamster-Winter-White.jpg" class="img-thumbnail" alt="Foto Hamster"></td>
+            <td>
+              <a href="#" class="btn btn-primary btn-sm me-2">Update</a>
+              <a href="#" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

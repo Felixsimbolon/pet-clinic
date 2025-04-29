@@ -27,4 +27,7 @@ urlpatterns = [
     path('rekam/',include('kunjungan_rekam_medis.urls')),
     path('data_klien_hewan/', include('data_klien_hewan.urls')),
     path('manajemen_vaksinasi/', include('manajemen_vaksinasi.urls')),
+    path('merah/', include('merah.urls')),
+    path('', include('main.urls')),
+    path('jenis-hewan/', include('jenis_hewan.urls')),
 ]
