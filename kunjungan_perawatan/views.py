@@ -417,6 +417,137 @@ def edit_treatment(request, id_kunjungan):
         'jenis_list': jenis_list,
     })
 
+def edit_treatment_fdo(request, id_kunjungan):
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        # 1) ambil data existing
+        cursor.execute("""
+            SELECT id_kunjungan, kode_perawatan, catatan
+            FROM kunjungan_keperawatan
+            WHERE id_kunjungan = %s
+        """, [id_kunjungan])
+        row = cursor.fetchone()
+        if not row:
+            raise Http404("Treatment not found")
+
+        _, current_kode, current_catatan = row
+
+        # 2) ambil list jenis perawatan untuk dropdown
+        cursor.execute("""
+            SELECT kode_perawatan, nama_perawatan
+            FROM perawatan
+            ORDER BY kode_perawatan
+        """)
+        jenis_list = cursor.fetchall()
+
+    if request.method == "POST":
+        new_kode = request.POST['jenis_perawatan']
+        new_catatan = request.POST.get('catatan', '')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+            cursor.execute("""
+                UPDATE kunjungan_keperawatan
+                SET kode_perawatan = %s, catatan = %s
+                WHERE id_kunjungan = %s
+            """, [new_kode, new_catatan, id_kunjungan])
+
+        return redirect('daftar_perawatan')
+
+    return render(request, 'edit_treatment_fdo.html', {
+        'id_kunjungan': id_kunjungan,
+        'current_kode': current_kode,
+        'current_catatan': current_catatan or '',
+        'jenis_list': jenis_list,
+    })
+
+def edit_treatment_perawat(request, id_kunjungan):
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        # 1) ambil data existing
+        cursor.execute("""
+            SELECT id_kunjungan, kode_perawatan, catatan
+            FROM kunjungan_keperawatan
+            WHERE id_kunjungan = %s
+        """, [id_kunjungan])
+        row = cursor.fetchone()
+        if not row:
+            raise Http404("Treatment not found")
+
+        _, current_kode, current_catatan = row
+
+        # 2) ambil list jenis perawatan untuk dropdown
+        cursor.execute("""
+            SELECT kode_perawatan, nama_perawatan
+            FROM perawatan
+            ORDER BY kode_perawatan
+        """)
+        jenis_list = cursor.fetchall()
+
+    if request.method == "POST":
+        new_kode = request.POST['jenis_perawatan']
+        new_catatan = request.POST.get('catatan', '')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+            cursor.execute("""
+                UPDATE kunjungan_keperawatan
+                SET kode_perawatan = %s, catatan = %s
+                WHERE id_kunjungan = %s
+            """, [new_kode, new_catatan, id_kunjungan])
+
+        return redirect('daftar_perawatan')
+
+    return render(request, 'edit_treatment_perawat.html', {
+        'id_kunjungan': id_kunjungan,
+        'current_kode': current_kode,
+        'current_catatan': current_catatan or '',
+        'jenis_list': jenis_list,
+    })
+    
+def edit_treatment_klien(request, id_kunjungan):
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        # 1) ambil data existing
+        cursor.execute("""
+            SELECT id_kunjungan, kode_perawatan, catatan
+            FROM kunjungan_keperawatan
+            WHERE id_kunjungan = %s
+        """, [id_kunjungan])
+        row = cursor.fetchone()
+        if not row:
+            raise Http404("Treatment not found")
+
+        _, current_kode, current_catatan = row
+
+        # 2) ambil list jenis perawatan untuk dropdown
+        cursor.execute("""
+            SELECT kode_perawatan, nama_perawatan
+            FROM perawatan
+            ORDER BY kode_perawatan
+        """)
+        jenis_list = cursor.fetchall()
+
+    if request.method == "POST":
+        new_kode = request.POST['jenis_perawatan']
+        new_catatan = request.POST.get('catatan', '')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+            cursor.execute("""
+                UPDATE kunjungan_keperawatan
+                SET kode_perawatan = %s, catatan = %s
+                WHERE id_kunjungan = %s
+            """, [new_kode, new_catatan, id_kunjungan])
+
+        return redirect('daftar_perawatan')
+
+    return render(request, 'edit_treatment_klien.html', {
+        'id_kunjungan': id_kunjungan,
+        'current_kode': current_kode,
+        'current_catatan': current_catatan or '',
+        'jenis_list': jenis_list,
+    })
 def delete_treatment(request, id_kunjungan, kode_perawatan):
     if request.method == 'POST':
         with connection.cursor() as cursor:
