@@ -1,0 +1,134 @@
+{% extends "base_perawat_hewan.html" %}
+
+{% block title %}Daftar Perawatan{% endblock %}
+
+{% block extra_head %}
+  <!-- CDN Tailwind (jika belum ada di base) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ───── Fix konflik Tailwind vs Bootstrap ───── */
+    .navbar-collapse{ visibility:visible!important; }
+  </style>
+
+{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-7xl px-6">
+
+  <!-- Header & tombol -->
+  <div class="flex flex-wrap items-center justify-between mb-8">
+    <div>
+      <h2 class="text-3xl font-semibold text-gray-800">List Treatments</h2>
+      <p class="text-gray-500">Manage your pet care treatments</p>
+    </div>
+
+    <a href="{% url 'create_treatment' %}"
+       class="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-white font-medium shadow
+              hover:bg-blue-700 active:bg-blue-800 transition">
+      + Create New Treatment
+    </a>
+  </div>
+
+  <!-- Card -->
+  <div class="rounded-lg bg-white shadow">
+    <div class="p-0">
+
+      <!-- Scroll box untuk tabel -->
+      <div class="overflow-x-auto overflow-y-auto max-h-[560px]">
+
+        <table class="min-w-full border-collapse">
+            <thead class="bg-gradient-to-r from-indigo-600 to-sky-600 text-white sticky top-0 z-20">
+                <tr class="divide-x divide-white/40">
+                  <th class="px-4 py-3 font-medium">No</th>
+                  <th class="px-4 py-3 font-medium">ID Kunjungan</th>
+                  <th class="px-4 py-3 font-medium">ID Klien</th>
+                  <th class="px-4 py-3 font-medium">Nama Hewan</th>
+                  <th class="px-4 py-3 font-medium">Perawat</th>
+                  <th class="px-4 py-3 font-medium">Dokter</th>
+                  <th class="px-4 py-3 font-medium">FDO</th>
+                  <th class="px-4 py-3 font-medium">Perawatan</th>
+                  <th class="px-4 py-3 font-medium">Catatan Medis</th>
+                  <th class="px-4 py-3 font-medium">Action</th>
+                </tr>
+            </thead>
+
+          <tbody class="text-sm divide-y divide-gray-200">
+            {% for t in treatments %}
+            <tr class="hover:bg-gray-50 divide-x divide-black/40">
+              <td class="px-4 py-3 text-center">{{ forloop.counter }}</td>
+              <td class="px-4 py-3">{{ t.id_kunjungan }}</td>
+              <td class="px-4 py-3">{{ t.no_identitas_klien }}</td>
+              <td class="px-4 py-3 font-semibold text-blue-600">{{ t.nama_hewan }}</td>
+              <td class="px-4 py-3">{{ t.perawat_email }}</td>
+              <td class="px-4 py-3">{{ t.dokter_email }}</td>
+              <td class="px-4 py-3">{{ t.fdo_email }}</td>
+              <td class="px-4 py-3">
+                <span class="inline-block rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-600">
+                  {{ t.kode_perawatan }}
+                </span>
+                {{ t.nama_perawatan }}
+              </td>
+              <td class="px-4 py-3">{{ t.catatan }}</td>
+              <td class="px-4 py-3 space-x-1">
+                <!-- Edit -->
+                <a href="{% url 'edit_treatment' t.id_kunjungan %}"
+                   class="inline-flex items-center rounded-full border border-blue-600 px-3 py-1 text-blue-600 text-xs
+                          hover:bg-blue-50">
+                  Edit
+                </a>
+
+                <!-- Delete trigger -->
+                <button type="button"
+                        class="inline-flex items-center rounded-full border border-red-600 px-3 py-1 text-red-600 text-xs
+                               hover:bg-red-50"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteModal-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}">
+                  Delete
+                </button>
+              </td>
+            </tr>
+
+            <!-- Modal Delete (Bootstrap tetap dipakai untuk JS) -->
+            <div class="modal fade" id="deleteModal-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}" tabindex="-1"
+                 aria-labelledby="deleteModalLabel-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border border-gray-300 rounded-lg">
+                  <div class="modal-header">
+                    <h5 class="modal-title text-red-500 font-semibold" id="deleteModalLabel-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}">
+                      Delete Treatment
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+
+                  <div class="modal-body text-center">
+                    Apakah kamu yakin menghapus Perawatan
+                    <span class="font-bold text-red-500">{{ t.kode_perawatan }}</span>
+                    untuk Kunjungan
+                    <span class="font-bold text-red-500">{{ t.id_kunjungan }}</span>?
+                  </div>
+
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" action="{% url 'delete_treatment' t.id_kunjungan t.kode_perawatan %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGINATION (dummy) -->
+ 
+</div>
+
+<!-- Bootstrap JS untuk modal (jika belum di-load di base) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
