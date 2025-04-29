@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link  href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+
+  {#  —— CSS khusus navbar  —— #}
+  <style>
+    :root {
+      --primary-color:#2a6f97; --secondary-color:#61a5c2;
+      --accent-color:#a9d6e5; --dark-color:#012a4a; --light-color:#f0f5f9;
+    }
+    .navbar-custom{background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));padding:15px 20px;border-radius:0 0 15px 15px;}
+    .nav-link{color:#fff;font-weight:500;margin-right:20px;}
+    .nav-link:hover{color:var(--accent-color);}
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-light min-h-screen">
+
+  {% include "navbar_dokter_hewan.html" %}
+
+  <main class="container py-5">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  {% block extra_script %}{% endblock %}
+</body>
+</html>
