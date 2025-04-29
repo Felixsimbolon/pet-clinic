@@ -8,6 +8,84 @@ def index(request):
     """Redirect langsung ke halaman vaksinasi hewan"""
     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
 
+def index2(request):
+    """Redirect langsung ke halaman vaksinasi hewan klien side"""
+    return redirect('manajemen_vaksinasi:vaksinasi_hewan_klien')
+
+def vaksinasi_hewan_klien(request):
+    """View untuk halaman vaksinasi hewan klien side"""
+    # Ambil data kunjungan vaksinasi hewan dari database
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""
+            SELECT k.id_kunjungan, k.nama_hewan, k.no_identitas_klien, k.kode_vaksin, 
+                   k.tipe_kunjungan, k.timestamp_awal, k.timestamp_akhir, v.nama as nama_vaksin
+            FROM kunjungan k
+            LEFT JOIN vaksin v ON k.kode_vaksin = v.kode
+            ORDER BY k.id_kunjungan;
+        """)
+        rows = cursor.fetchall()
+        
+    vaksinasi_list = [
+        {
+            'id_kunjungan': row[0],
+            'nama_hewan': row[1],
+            'no_identitas_klien': row[2],
+            'kode_vaksin': row[3],
+            'nama_vaksin': row[7] if row[7] else '-',
+            'tipe_kunjungan': row[4],
+            'timestamp_awal': row[5],
+            'timestamp_akhir': row[6],
+        }
+        for row in rows
+    ]
+    
+    # Ambil data stok vaksin untuk dropdown
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""
+            SELECT kode, nama, harga, stok
+            FROM vaksin
+            WHERE stok > 0
+            ORDER BY kode;
+        """)
+        vaksin_rows = cursor.fetchall()
+        
+    stok_vaksin = [
+        {
+            'kode': row[0],
+            'nama': row[1],
+            'harga': row[2],
+            'stok': row[3],
+        }
+        for row in vaksin_rows
+    ]
+    
+    # Ambil data kunjungan untuk dropdown
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""
+            SELECT DISTINCT id_kunjungan
+            FROM kunjungan
+            WHERE kode_vaksin IS NULL
+            ORDER BY id_kunjungan;
+        """)
+        kunjungan_rows = cursor.fetchall()
+        
+    kunjungan_list = [
+        {
+            'id_kunjungan': row[0],
+        }
+        for row in kunjungan_rows
+    ]
+    
+    context = {
+        'vaksinasi_list': vaksinasi_list,
+        'stok_vaksin': stok_vaksin,
+        'kunjungan_list': kunjungan_list
+    }
+    return render(request, 'manajemen_vaksinasi/vaksinasi_hewan_klien.html', context)
+
 def data_stok_vaksin(request):
     """View untuk halaman data stok vaksin"""
     # Ambil data stok vaksin dari database
