@@ -1,4 +1,4 @@
-{% extends 'base_dokter_hewan.html' %}
+{% extends 'base_perawat_hewan.html' %}
 
 {% block title %}Daftar Kunjungan{% endblock %}
 
@@ -20,6 +20,7 @@
       <p class="text-gray-500">Manage your pet care visits</p>
     </div>
 
+    
   </div>
 
   <!-- Card -->
@@ -53,9 +54,8 @@
                 <td class="px-4 py-3 text-center">{{ k.tipe_kunjungan }}</td>
                 <td class="px-4 py-3 text-center">{{ k.waktu_mulai }}</td>
                 <td class="px-4 py-3 text-center">{{ k.waktu_selesai }}</td>
-
                 <td class="px-4 py-3 text-center">
-                    {% if  k.suhu_null  %}
+                  {% if not k.rekam_medis_exists %}
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#rekamMedisModal">
                       Lihat Rekam Medis
                     </button>

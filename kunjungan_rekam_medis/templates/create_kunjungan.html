@@ -1,13 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Create New Kunjungan</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 py-10">
-  <div class="max-w-3xl mx-auto p-8 bg-white rounded-lg shadow">
+{% extends 'base_fdo.html' %}
+
+{% block title %}Buat Kunjungan{% endblock %}
+
+{% block extra_head %}
+  <style>
+    /* ───── Fix konflik Tailwind vs Bootstrap ───── */
+    .navbar-collapse{ visibility:visible!important; }
+    .dropdown-menu { visibility: visible !important; }
+  </style>
+{% endblock %}
+{% block content%}
+<div class="max-w-3xl mx-auto p-8 bg-white rounded-lg shadow">
     <h1 class="text-2xl font-semibold mb-6">Create New Kunjungan</h1>
 
     <form method="POST" class="space-y-6">
@@ -25,6 +28,7 @@
         </select>
       </div>
 
+
       <!-- Dropdown Nama Hewan -->
       <div>
         <label for="nama_hewan" class="block mb-1 font-medium text-gray-700">Nama Hewan</label>
@@ -37,15 +41,44 @@
         </select>
       </div>
 
+    
+      <!-- Dropdown Dokter Hewan -->
+      {% comment %} <div>
+        <label for="id_klien" class="block mb-1 font-medium text-gray-700">Dokter Hewan</label>
+        <select id="id_klien" name="id_klien"
+                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          <option value="" disabled selected>-- Pilih Dokter Hewan --</option>
+          {% for dokter in dokter_list %}
+          <option value="{{ dokter }}">{{ dokter.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Dropdown Perawat Hewan -->
+      <div>
+        <label for="id_klien" class="block mb-1 font-medium text-gray-700">Perawat Hewan</label>
+        <select id="id_klien" name="id_klien"
+                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          <option value="" disabled selected>-- Pilih Perawat Hewan --</option>
+          {% for perawat in perawat_list %}
+          <option value="{{ perawat }}">{{ perawat.name }}</option>
+          {% endfor %}
+        </select>
+      </div> {% endcomment %}
+
+
+
       <!-- Dropdown Metode Kunjungan -->
       <div>
         <label for="metode_kunjungan" class="block mb-1 font-medium text-gray-700">Metode Kunjungan</label>
         <select id="metode_kunjungan" name="metode_kunjungan"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih Metode Kunjungan --</option>
-          {% for metode in tipe_kunjungan_list %}
-          <option value="{{ metode.0 }}">{{ metode.0 }}</option>
-          {% endfor %}
+          <option value="Janji Temu">Janji Temu</option>
+          <option value="Walk-In">Walk-In</option>
+          <option value="Darurat">Darurat</option>
+
+          
         </select>
       </div>
 
@@ -72,4 +105,5 @@
     </form>
   </div>
 </body>
-</html>
+
+{% endblock content %}

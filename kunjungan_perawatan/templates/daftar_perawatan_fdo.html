@@ -22,11 +22,6 @@
       <p class="text-gray-500">Manage your pet care treatments</p>
     </div>
 
-    <a href="{% url 'create_treatment' %}"
-       class="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-white font-medium shadow
-              hover:bg-blue-700 active:bg-blue-800 transition">
-      + Create New Treatment
-    </a>
   </div>
 
   <!-- Card -->
@@ -48,7 +43,6 @@
                   <th class="px-4 py-3 font-medium">FDO</th>
                   <th class="px-4 py-3 font-medium">Perawatan</th>
                   <th class="px-4 py-3 font-medium">Catatan Medis</th>
-                  <th class="px-4 py-3 font-medium">Action</th>
                 </tr>
             </thead>
 
@@ -71,52 +65,10 @@
               <td class="px-4 py-3">{{ t.catatan }}</td>
               <td class="px-4 py-3 space-x-1">
                 <!-- Edit -->
-                <a href="{% url 'edit_treatment' t.id_kunjungan %}"
-                   class="inline-flex items-center rounded-full border border-blue-600 px-3 py-1 text-blue-600 text-xs
-                          hover:bg-blue-50">
-                  Edit
-                </a>
-
-                <!-- Delete trigger -->
-                <button type="button"
-                        class="inline-flex items-center rounded-full border border-red-600 px-3 py-1 text-red-600 text-xs
-                               hover:bg-red-50"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteModal-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}">
-                  Delete
-                </button>
-              </td>
+               
             </tr>
 
             <!-- Modal Delete (Bootstrap tetap dipakai untuk JS) -->
-            <div class="modal fade" id="deleteModal-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}" tabindex="-1"
-                 aria-labelledby="deleteModalLabel-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border border-gray-300 rounded-lg">
-                  <div class="modal-header">
-                    <h5 class="modal-title text-red-500 font-semibold" id="deleteModalLabel-{{ t.id_kunjungan }}-{{ t.kode_perawatan }}">
-                      Delete Treatment
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-
-                  <div class="modal-body text-center">
-                    Apakah kamu yakin menghapus Perawatan
-                    <span class="font-bold text-red-500">{{ t.kode_perawatan }}</span>
-                    untuk Kunjungan
-                    <span class="font-bold text-red-500">{{ t.id_kunjungan }}</span>?
-                  </div>
-
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form method="POST" action="{% url 'delete_treatment' t.id_kunjungan t.kode_perawatan %}">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-danger">Confirm Deletion</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
             {% endfor %}
           </tbody>
         </table>

@@ -14,76 +14,88 @@ def index2(request):
 
 def vaksinasi_hewan_klien(request):
     """View untuk halaman vaksinasi hewan klien side"""
+    # Get filter parameters
+    pet_filter = request.GET.get('pet', None)
+    vaksin_filter = request.GET.get('vaksin', None)
+    
+    # Base query for vaccination list
+    base_query = """
+        SELECT k.id_kunjungan, k.nama_hewan, k.no_identitas_klien, k.kode_vaksin,
+        v.nama as nama_vaksin, v.harga, k.tipe_kunjungan, k.timestamp_awal, k.timestamp_akhir
+        FROM kunjungan k
+        LEFT JOIN vaksin v ON k.kode_vaksin = v.kode
+        WHERE k.kode_vaksin IS NOT NULL
+    """
+    
+    # Apply filters if present
+    params = []
+    if pet_filter:
+        base_query += " AND k.nama_hewan = %s"
+        params.append(pet_filter)
+    
+    if vaksin_filter:
+        base_query += " AND k.kode_vaksin = %s"
+        params.append(vaksin_filter)
+    
+    base_query += " ORDER BY k.timestamp_awal DESC;"
+    
     # Ambil data kunjungan vaksinasi hewan dari database
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
-        cursor.execute("""
-            SELECT k.id_kunjungan, k.nama_hewan, k.no_identitas_klien, k.kode_vaksin, 
-                   k.tipe_kunjungan, k.timestamp_awal, k.timestamp_akhir, v.nama as nama_vaksin
-            FROM kunjungan k
-            LEFT JOIN vaksin v ON k.kode_vaksin = v.kode
-            ORDER BY k.id_kunjungan;
-        """)
+        cursor.execute(base_query, params)
         rows = cursor.fetchall()
         
-    vaksinasi_list = [
-        {
-            'id_kunjungan': row[0],
-            'nama_hewan': row[1],
-            'no_identitas_klien': row[2],
-            'kode_vaksin': row[3],
-            'nama_vaksin': row[7] if row[7] else '-',
-            'tipe_kunjungan': row[4],
-            'timestamp_awal': row[5],
-            'timestamp_akhir': row[6],
-        }
-        for row in rows
-    ]
+        vaksinasi_list = [
+            {
+                'id_kunjungan': row[0],
+                'nama_hewan': row[1],
+                'no_identitas_klien': row[2],
+                'kode_vaksin': row[3],
+                'nama_vaksin': row[4] if row[4] else '-',
+                'harga': row[5] if row[5] else 0,
+                'tipe_kunjungan': row[6],
+                'timestamp_awal': row[7],
+                'timestamp_akhir': row[8],
+            }
+            for row in rows
+        ]
     
-    # Ambil data stok vaksin untuk dropdown
+    # Get unique pets for filter dropdown
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
         cursor.execute("""
-            SELECT kode, nama, harga, stok
-            FROM vaksin
-            WHERE stok > 0
-            ORDER BY kode;
+            SELECT DISTINCT nama_hewan
+            FROM kunjungan
+            WHERE kode_vaksin IS NOT NULL
+            ORDER BY nama_hewan;
+        """)
+        pet_rows = cursor.fetchall()
+        pet_list = [{'nama_hewan': row[0]} for row in pet_rows]
+    
+    # Get unique vaccines for filter dropdown
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""
+            SELECT DISTINCT v.kode, v.nama
+            FROM vaksin v
+            JOIN kunjungan k ON v.kode = k.kode_vaksin
+            ORDER BY v.nama;
         """)
         vaksin_rows = cursor.fetchall()
-        
-    stok_vaksin = [
-        {
-            'kode': row[0],
-            'nama': row[1],
-            'harga': row[2],
-            'stok': row[3],
-        }
-        for row in vaksin_rows
-    ]
-    
-    # Ambil data kunjungan untuk dropdown
-    with connection.cursor() as cursor:
-        cursor.execute("SET search_path TO pet_clinic;")
-        cursor.execute("""
-            SELECT DISTINCT id_kunjungan
-            FROM kunjungan
-            WHERE kode_vaksin IS NULL
-            ORDER BY id_kunjungan;
-        """)
-        kunjungan_rows = cursor.fetchall()
-        
-    kunjungan_list = [
-        {
-            'id_kunjungan': row[0],
-        }
-        for row in kunjungan_rows
-    ]
+        vaksin_list = [
+            {
+                'kode': row[0],
+                'nama': row[1],
+            }
+            for row in vaksin_rows
+        ]
     
     context = {
         'vaksinasi_list': vaksinasi_list,
-        'stok_vaksin': stok_vaksin,
-        'kunjungan_list': kunjungan_list
+        'pet_list': pet_list,
+        'vaksin_list': vaksin_list
     }
+    
     return render(request, 'manajemen_vaksinasi/vaksinasi_hewan_klien.html', context)
 
 def data_stok_vaksin(request):

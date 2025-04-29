@@ -1,4 +1,4 @@
-{% extends 'base_dokter_hewan.html' %}
+{% extends 'base_fdo.html' %}
 
 {% block title %}Daftar Kunjungan{% endblock %}
 
@@ -20,6 +20,11 @@
       <p class="text-gray-500">Manage your pet care visits</p>
     </div>
 
+    <a href="{% url 'create_kunjungan' %}"
+       class="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-white font-medium shadow
+              hover:bg-blue-700 active:bg-blue-800 transition">
+      + Create New Kunjungan
+    </a>
   </div>
 
   <!-- Card -->
@@ -40,6 +45,7 @@
               <th class="px-4 py-3 font-medium text-center">Waktu Mulai</th>
               <th class="px-4 py-3 font-medium text-center">Waktu Akhir</th>
               <th class="px-4 py-3 font-medium text-center">Rekam Medis</th>
+              <th class="px-4 py-3 font-medium text-center">Action</th>
             </tr>
           </thead>
 
@@ -53,9 +59,8 @@
                 <td class="px-4 py-3 text-center">{{ k.tipe_kunjungan }}</td>
                 <td class="px-4 py-3 text-center">{{ k.waktu_mulai }}</td>
                 <td class="px-4 py-3 text-center">{{ k.waktu_selesai }}</td>
-
                 <td class="px-4 py-3 text-center">
-                    {% if  k.suhu_null  %}
+                    {% if not k.suhu and not k.berat_badan and not k.catatan %}
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#rekamMedisModal">
                       Lihat Rekam Medis
                     </button>
@@ -78,11 +83,42 @@
                           </div>
                         </div>
                       </div>
-                  {% else %}
-                    <a href="{% url 'rekam_medis' k.id_kunjungan %}" class="btn btn-sm btn-outline-secondary">Lihat Rekam Medis</a>
+                 
                   {% endif %}
                 </td>
-                
+                <td class="px-4 py-3 text-center space-x-1">
+                  <a href="{% url 'update_kunjungan' k.id_kunjungan %}" class="inline-flex items-center rounded-full border border-blue-600 px-3 py-1 text-blue-600 text-xs hover:bg-blue-50">
+                    Edit
+                  </a>
+                  <button type="button" class="inline-flex items-center rounded-full border border-red-600 px-3 py-1 text-red-600 text-xs hover:bg-red-50" data-bs-toggle="modal" data-bs-target="#deleteModal-{{ k.id_kunjungan }}">
+                    Delete
+                  </button>
+
+                  <!-- Modal Delete -->
+                  <div class="modal fade" id="deleteModal-{{ k.id_kunjungan }}" tabindex="-1" aria-labelledby="deleteModalLabel-{{ k.id_kunjungan }}" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content border border-gray-300 rounded-lg">
+                              <div class="modal-header">
+                                  <h5 class="modal-title text-red-500 font-semibold" id="deleteModalLabel-{{ k.id_kunjungan }}">
+                                    Delete Kunjungan
+                                  </h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body text-center">
+                                  Apakah kamu yakin untuk menghapus Kunjungan dengan ID
+                                  <span class="fw-bold text-danger">{{ k.id_kunjungan }}</span>?
+                              </div>
+                              <div class="modal-footer justify-content-center">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                  <form method="POST" id="deleteForm-{{ k.id_kunjungan }}" action="{% url 'delete_kunjungan' k.id_kunjungan %}">
+                                      {% csrf_token %}
+                                      <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+                                  </form>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                </td>
               </tr>
             {% empty %}
               <tr>

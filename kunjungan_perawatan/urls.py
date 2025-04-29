@@ -13,6 +13,10 @@ urlpatterns = [
     path('create-fdo/',create_treatment_fdo, name='create_treatment_fdo'),
 
     path('treatments/<str:id_kunjungan>/edit/', edit_treatment, name='edit_treatment'),
+    path('treatments/<str:id_kunjungan>/edit-fdo/', edit_treatment_fdo, name='edit_treatment_fdo'),
+    path('treatments/<str:id_kunjungan>/edit-perawat/', edit_treatment_perawat, name='edit_treatment_perawat'),
+    path('treatments/<str:id_kunjungan>/edit-klien/', edit_treatment_klien, name='edit_treatment_klien'),
+
     path(
         'treatments/<str:id_kunjungan>/<str:kode_perawatan>/delete/',
         delete_treatment,
