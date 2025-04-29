@@ -1,0 +1,237 @@
+{% extends 'manajemen_vaksinasi/base_dokter.html' %}
+
+{% block title %}Vaksinasi Hewan - Klinik Hewan{% endblock %}
+
+{% block header %}List Vaccination{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createVaccinationModal">
+                    Create New Vaccination
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Kunjungan</th>
+                                <th>Tanggal Kunjungan</th>
+                                <th>Vaksin</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vaksin in vaksinasi_list %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <th>{{ vaksin.id_kunjungan }}</th>
+                                <td>{{ vaksin.timestamp_awal }}</td>
+                                <td>{{ vaksin.kode_vaksin }}</td>
+                                <td>
+                                    <!-- Update Button -->
+                                    <button type="button" 
+                                        class="btn btn-sm btn-info btn-action"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#updateModal-{{ vaksin.id_kunjungan }}"
+                                        data-kunjungan="{{ vaksin.id_kunjungan }}"
+                                        data-kode-vaksin="{{ vaksin.kode_vaksin }}">
+                                        <i class="fas fa-edit me-1"></i>Update
+                                    </button>
+                                    
+                                    <!-- Delete Button -->
+                                    <button type="button"
+                                        class="btn btn-sm action-btn btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal-{{ vaksin.id_kunjungan }}">
+                                        <i class="fas fa-trash-alt me-1"></i>Delete
+                                    </button>
+                                    
+                                    <!-- Modal Update -->
+                                    <div class="modal fade" id="updateModal-{{ vaksin.id_kunjungan }}" tabindex="-1" aria-labelledby="updateModalLabel-{{ vaksin.id_kunjungan }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="updateModalLabel-{{ vaksin.id_kunjungan }}">Update Vaccination</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="{% url 'manajemen_vaksinasi:update_vaksinasi' vaksin.id_kunjungan %}" method="post" id="updateForm-{{ vaksin.id_kunjungan }}">
+                                                        {% csrf_token %}
+                                                        
+                                                        <div class="mb-3">
+                                                            <label for="kunjungan-update-{{ vaksin.id_kunjungan }}" class="form-label">Kunjungan</label>
+                                                            <input type="text" class="form-control" id="kunjungan-update-{{ vaksin.id_kunjungan }}" 
+                                                                   value="{{ vaksin.id_kunjungan }}" readonly>
+                                                            <input type="hidden" name="kunjungan_id" value="{{ vaksin.id_kunjungan }}">
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label for="vaksin-update-{{ vaksin.id_kunjungan }}" class="form-label">Vaksin</label>
+                                                            <div class="dropdown">
+                                                                <input type="text" class="form-control dropdown-toggle" id="vaksin-update-{{ vaksin.id_kunjungan }}" 
+                                                                       name="vaksin" data-bs-toggle="dropdown" aria-expanded="false" 
+                                                                       value="{{ vaksin.kode_vaksin }}" required>
+                                                                <ul class="dropdown-menu w-100" aria-labelledby="vaksin-update-{{ vaksin.id_kunjungan }}">
+                                                                    {% for vaksin_item in stok_vaksin %}
+                                                                    <li><a class="dropdown-item" href="#" data-value="{{ vaksin_item.kode }}">{{ vaksin_item.kode }} - {{ vaksin_item.nama }} [{{ vaksin_item.stok }}]</a></li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            </div>
+                                                            <input type="hidden" name="vaksin_id" id="vaksin-id-update-{{ vaksin.id_kunjungan }}" value="{{ vaksin.kode_vaksin }}">
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" form="updateForm-{{ vaksin.id_kunjungan }}" class="btn btn-primary">Update</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                                    <!-- Modal Delete -->
+                                    <div class="modal fade" id="deleteModal-{{ vaksin.id_kunjungan }}" tabindex="-1" aria-labelledby="deleteModalLabel-{{ vaksin.id_kunjungan }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content border border-dark">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title text-danger fw-bold" id="deleteModalLabel-{{ vaksin.id_kunjungan }}">
+                                                        Delete Vaccination
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body text-center">
+                                                    Apakah kamu yakin untuk menghapus Vaksinasi untuk kunjungan 
+                                                    <span class="fw-bold text-danger" id="modalVaccineId-{{ vaksin.id_kunjungan }}">{{ vaksin.id_kunjungan }}</span> dengan Vaksin
+                                                    <span class="fw-bold text-danger" id="modalVaccineName-{{ vaksin.id_kunjungan }}">{{ vaksin.kode_vaksin }}</span>?
+                                                </div>
+                                                <div class="modal-footer justify-content-center">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form method="post" action="{% url 'manajemen_vaksinasi:delete_vaksinasi' vaksin.id_kunjungan %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+                                                    </form>                                                                                     
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>                                
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Belum ada data vaksinasi.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Create New Vaccination -->
+<div class="modal fade" id="createVaccinationModal" tabindex="-1" aria-labelledby="createVaccinationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createVaccinationModalLabel">Create New Vaccination</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'manajemen_vaksinasi:create_vaksinasi' %}" method="post" id="vaccinationForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="kunjungan" class="form-label">Kunjungan</label>
+                        <div class="dropdown">
+                            <input type="text" class="form-control dropdown-toggle" id="kunjungan" name="kunjungan" 
+                                   data-bs-toggle="dropdown" aria-expanded="false" placeholder="Kunjungan" required>
+                            <ul class="dropdown-menu w-100" aria-labelledby="kunjungan">
+                                {% for kunjungan in kunjungan_list %}
+                                <li><a class="dropdown-item" href="#" data-value="{{ kunjungan.id_kunjungan }}">{{ kunjungan.id_kunjungan }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <input type="hidden" name="kunjungan_id" id="kunjungan_id">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="vaksin" class="form-label">Vaksin</label>
+                        <div class="dropdown">
+                            <input type="text" class="form-control dropdown-toggle" id="vaksin" name="vaksin" 
+                                   data-bs-toggle="dropdown" aria-expanded="false" placeholder="Vaksin" required>
+                            <ul class="dropdown-menu w-100" aria-labelledby="vaksin">
+                                {% for vaksin in stok_vaksin %}
+                                <li><a class="dropdown-item" href="#" data-value="{{ vaksin.kode }}">{{ vaksin.kode }} - {{ vaksin.nama }} [{{ vaksin.stok }}]</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <input type="hidden" name="vaksin_id" id="vaksin_id">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="vaccinationForm" class="btn btn-primary">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle dropdown selection for Kunjungan in Create modal
+    document.querySelectorAll('#createVaccinationModal .dropdown-menu[aria-labelledby="kunjungan"] .dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('kunjungan').value = this.textContent;
+            document.getElementById('kunjungan_id').value = this.getAttribute('data-value');
+        });
+    });
+    
+    // Handle dropdown selection for Vaksin in Create modal with stock validation
+    document.querySelectorAll('#createVaccinationModal .dropdown-menu[aria-labelledby="vaksin"] .dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Extract stock quantity from the format "CODE - NAME [STOCK]"
+            const stockText = this.textContent.match(/\[(\d+)\]$/);
+            if (stockText && parseInt(stockText[1]) === 0) {
+                alert('Stok Vaksin yang dipilih sudah habis');
+                return false;
+            }
+            
+            document.getElementById('vaksin').value = this.textContent;
+            document.getElementById('vaksin_id').value = this.getAttribute('data-value');
+        });
+    });
+    
+    // Handle dropdown selection for Vaksin in Update modals with stock validation
+    document.querySelectorAll('[id^="updateModal-"] .dropdown-menu .dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Extract stock quantity from the format "CODE - NAME [STOCK]"
+            const stockText = this.textContent.match(/\[(\d+)\]$/);
+            if (stockText && parseInt(stockText[1]) === 0) {
+                alert('Stok Vaksin yang dipilih sudah habis');
+                return false;
+            }
+            
+            const modalId = this.closest('.modal').id;
+            const kunjunganId = modalId.replace('updateModal-', '');
+            
+            document.getElementById(`vaksin-update-${kunjunganId}`).value = this.textContent;
+            document.getElementById(`vaksin-id-update-${kunjunganId}`).value = this.getAttribute('data-value');
+        });
+    });
+});
+</script>
+{% endblock %}

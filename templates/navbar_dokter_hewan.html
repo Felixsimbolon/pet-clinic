@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Front Desk Officer Navbar</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2a6f97;
+      --secondary-color: #61a5c2;
+      --accent-color: #a9d6e5;
+      --dark-color: #012a4a;
+      --light-color: #f0f5f9;
+      --danger-color: #dc3545;
+    }
+
+    body {
+      background-color: var(--light-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+    }
+
+    .navbar-custom {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      padding: 15px 20px;
+      border-radius: 0 0 15px 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .navbar-brand {
+      color: white;
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+
+    .nav-link {
+      color: white;
+      font-weight: 500;
+      margin-right: 20px;
+      font-size: 1rem;
+    }
+
+    .nav-link:hover {
+      color: var(--accent-color);
+    }
+
+    .btn-logout {
+      background-color: white;
+      color: var(--primary-color);
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 8px 16px;
+      transition: all 0.3s;
+    }
+
+    .btn-logout:hover {
+      background-color: var(--accent-color);
+      color: var(--dark-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Ensure dropdown links inherit nav-link styles */
+    .dropdown-item {
+      font-weight: 500;
+      font-size: 1rem;
+    }
+    .dropdown-item:hover {
+      background-color: var(--accent-color);
+      color: var(--dark-color);
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">🐾 PetCare</a>
+    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+        <li class="nav-item">
+          <a class="nav-link" href="#">Dashboard</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#">Daftar Jenis Hewan</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#">Perawatan Hewan</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#">Daftar Kunjungan</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="#">Manajemen Obat</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="#">Manajemen Jenis Perawatan</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="#">Manajemen Pemberian Obat</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="#">Manajemen Vaksinasi Hewan</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="btn btn-logout ms-3" href="#">Logout</a>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

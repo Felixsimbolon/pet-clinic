@@ -1,0 +1,79 @@
+{% extends 'data_klien_hewan/base.html' %}
+{% load static %}
+
+{% block title %}Detail Client{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Detail Client</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td width="150"><strong>Nomor Identitas</strong></td>
+                            <td>{{ no_identitas }}</td>
+                        </tr>
+                        {% if jenis_klien == 'Perusahaan' %}
+                        <tr>
+                            <td><strong>Nama Perusahaan</strong></td>
+                            <td>{{ nama }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td><strong>Nama</strong></td>
+                            <td>{{ nama }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td><strong>Alamat</strong></td>
+                            <td>{{ alamat }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Nomor Telepon</strong></td>
+                            <td>{{ nomor_telepon }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email</strong></td>
+                            <td>{{ email }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <h5 class="border-bottom pb-2">Daftar Hewan Peliharaan</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>Jenis</th>
+                                <th>Tanggal Lahir</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hewan in hewan_list %}
+                            <tr>
+                                <td>{{ hewan.no }}</td>
+                                <td>{{ hewan.nama }}</td>
+                                <td>{{ hewan.jenis }}</td>
+                                <td>{{ hewan.tanggal_lahir|date:"Y-m-d" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">Tidak ada hewan peliharaan terdaftar</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

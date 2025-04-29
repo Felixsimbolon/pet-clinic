@@ -1,0 +1,85 @@
+{% extends "base_klien.html" %}
+
+{% block title %}Daftar Perawatan{% endblock %}
+
+{% block extra_head %}
+  <!-- CDN Tailwind (jika belum ada di base) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ───── Fix konflik Tailwind vs Bootstrap ───── */
+    .navbar-collapse{ visibility:visible!important; }
+  </style>
+
+{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-7xl px-6">
+
+  <!-- Header & tombol -->
+  <div class="flex flex-wrap items-center justify-between mb-8">
+    <div>
+      <h2 class="text-3xl font-semibold text-gray-800">List Treatments</h2>
+      <p class="text-gray-500">Manage your pet care treatments</p>
+    </div>
+
+    
+  </div>
+
+  <!-- Card -->
+  <div class="rounded-lg bg-white shadow">
+    <div class="p-0">
+
+      <!-- Scroll box untuk tabel -->
+      <div class="overflow-x-auto overflow-y-auto max-h-[560px]">
+
+        <table class="min-w-full border-collapse">
+            <thead class="bg-gradient-to-r from-indigo-600 to-sky-600 text-white sticky top-0 z-20">
+                <tr class="divide-x divide-white/40">
+                  <th class="px-4 py-3 font-medium">No</th>
+                  <th class="px-4 py-3 font-medium">ID Kunjungan</th>
+                  <th class="px-4 py-3 font-medium">ID Klien</th>
+                  <th class="px-4 py-3 font-medium">Nama Hewan</th>
+                  <th class="px-4 py-3 font-medium">Perawat</th>
+                  <th class="px-4 py-3 font-medium">Dokter</th>
+                  <th class="px-4 py-3 font-medium">FDO</th>
+                  <th class="px-4 py-3 font-medium">Perawatan</th>
+                  <th class="px-4 py-3 font-medium">Catatan Medis</th>
+                </tr>
+            </thead>
+
+          <tbody class="text-sm divide-y divide-gray-200">
+            {% for t in treatments %}
+            <tr class="hover:bg-gray-50 divide-x divide-black/40">
+              <td class="px-4 py-3 text-center">{{ forloop.counter }}</td>
+              <td class="px-4 py-3">{{ t.id_kunjungan }}</td>
+              <td class="px-4 py-3">{{ t.no_identitas_klien }}</td>
+              <td class="px-4 py-3 font-semibold text-blue-600">{{ t.nama_hewan }}</td>
+              <td class="px-4 py-3">{{ t.perawat_email }}</td>
+              <td class="px-4 py-3">{{ t.dokter_email }}</td>
+              <td class="px-4 py-3">{{ t.fdo_email }}</td>
+              <td class="px-4 py-3">
+                <span class="inline-block rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-600">
+                  {{ t.kode_perawatan }}
+                </span>
+                {{ t.nama_perawatan }}
+              </td>
+              <td class="px-4 py-3">{{ t.catatan }}</td>
+            </tr>
+
+            <!-- Modal Delete (Bootstrap tetap dipakai untuk JS) -->
+           
+            {% endfor %}
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGINATION (dummy) -->
+ 
+</div>
+
+<!-- Bootstrap JS untuk modal (jika belum di-load di base) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

@@ -1,0 +1,78 @@
+
+{% extends 'base_klien.html' %}
+{% block title %}Update Treatment{% endblock %}
+{% block extra_head %}
+  <style>
+    /* ───── Fix konflik Tailwind vs Bootstrap ───── */
+    .navbar-collapse{ visibility:visible!important; }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <!-- form Anda di sini -->
+  <div class="max-w-3xl mx-auto p-8 bg-white rounded-lg shadow">
+    <h1 class="text-2xl font-semibold mb-6">Update Treatment</h1>
+
+    <form method="POST" class="space-y-6">
+      {% csrf_token %}
+
+      <!-- Kunjungan (fixed) -->
+      <div class=" border-gray-300 rounded-md p-1">
+        <label class="block mb-1 font-medium text-gray-700">Kunjungan</label>
+        <input
+          type="text"
+          name="kunjungan"
+          value="{{ id_kunjungan }}"
+          disabled
+          class="w-full bg-gray-200 border-2 border-gray-300 rounded-md p-1"
+        >
+      </div>
+
+      <!-- Jenis Perawatan -->
+      <div class=" border-gray-300 rounded-md p-1">
+        <label for="jenis_perawatan" class="block mb-1 font-medium text-gray-700">
+          Jenis Perawatan
+        </label>
+        <select
+          id="jenis_perawatan"
+          name="jenis_perawatan"
+          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
+        >
+          {% for kode, nama in jenis_list %}
+          <option value="{{ kode }}" {% if kode == current_kode %}selected{% endif %}>
+            {{ kode }} – {{ nama }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Catatan Medis -->
+      <div class="border-gray-300 rounded-md p-1">
+        <label for="catatan" class="block mb-1 font-medium text-gray-700">
+          Catatan Medis (Optional)
+        </label>
+        <textarea
+          id="catatan"
+          name="catatan"
+          rows="3"
+          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
+        >{{ current_catatan }}</textarea>
+      </div>
+
+      <div class="flex justify-end space-x-4">
+        <a
+          href="{% url 'daftar_perawatan' %}"
+          class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+        >
+          Cancel
+        </a>
+        <button
+          type="submit"
+          class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Update
+        </button>
+      </div>
+    </form>
+  </div>
+{% endblock %}
