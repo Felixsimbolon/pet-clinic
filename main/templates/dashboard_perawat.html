@@ -270,31 +270,31 @@
         <div class="profile-info">
             <div class="info-item">
                 <div class="info-label">Nomor Identitas</div>
-                <div class="info-value">DOK12345678</div>
+                <div class="info-value">{{ perawat.no_perawat_hewan }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Nomor Izin Praktik</div>
-                <div class="info-value">IP-987654321</div>
+                <div class="info-value">{{ perawat.no_izin_praktik }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Email</div>
-                <div class="info-value">dokter@example.com</div>
+                <div class="info-value">{{ perawat.email }}m</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Tanggal Diterima</div>
-                <div class="info-value">2022-01-15</div>
+                <div class="info-value">{{ perawat.tanggal_mulai_kerja }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Tanggal Akhir Kerja</div>
-                <div class="info-value">2026-12-31</div>
+                <div class="info-value">{{ perawat.tanggal_akhir_kerja }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Alamat</div>
-                <div class="info-value">Jl. Sehat No.123, Jakarta</div>
+                <div class="info-value">{{ perawat.alamat }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Nomor Telepon</div>
-                <div class="info-value">+62 812-3456-7890</div>
+                <div class="info-value">{{ perawat.nomor_telepon }}</div>
             </div>
         </div>
 
@@ -309,21 +309,15 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for s in sertifikat %}
                     <tr>
-                        <td>1</td>
-                        <td>SRT-001</td>
-                        <td>Veterinary Medicine Certification</td>
+                        <td>{{ s.no }}</td>
+                        <td>{{ s.nomor_sertifikat }}</td>
+                        <td>{{ s.nama_sertifikat }}</td>
                     </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>SRT-002</td>
-                        <td>Advanced Surgery Course</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>SRT-003</td>
-                        <td>Animal Behavior Specialist</td>
-                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">Belum ada sertifikat.</td></tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
