@@ -260,7 +260,10 @@
 <div class="container mt-5">
     <div class="profile-card">
         <div class="profile-header">
-            <h1 class="profile-title">Profile Front-Desk Officer</h1>
+            <h1 class="profile-title">
+                Profile<br>
+                Front-Desk Officer
+            </h1>
             <div class="action-buttons">
                 <a href="#" class="btn btn-password">
                     <i class="fas fa-key"></i>Update Password
@@ -274,27 +277,27 @@
         <div class="profile-info">
             <div class="info-item">
                 <div class="info-label">Nomor Identitas</div>
-                <div class="info-value">DOK12345678</div>
+                <div class="info-value">{{ officer.nomor_identitas }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Email</div>
-                <div class="info-value">dokter@example.com</div>
+                <div class="info-value">{{ officer.email }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Tanggal Diterima</div>
-                <div class="info-value">2022-01-15</div>
+                <div class="info-value">{{ officer.tanggal_diterima }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Tanggal Akhir Kerja</div>
-                <div class="info-value">2026-12-31</div>
+                <div class="info-value">{{ officer.tanggal_akhir_kerja }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Alamat</div>
-                <div class="info-value">Jl. Sehat No.123, Jakarta</div>
+                <div class="info-value">{{ officer.alamat }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Nomor Telepon</div>
-                <div class="info-value">+62 812-3456-7890</div>
+                <div class="info-value">{{ officer.nomor_telepon }}</div>
             </div>
         </div>
 
