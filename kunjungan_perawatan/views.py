@@ -8,10 +8,14 @@ from django.shortcuts import render, redirect
 from django.db import connection
 from django.http import Http404
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
 
 
 def daftar_perawatan(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
     with connection.cursor() as cursor:
         # Set search_path ke schema yang tepat
         cursor.execute("SET search_path TO pet_clinic;")

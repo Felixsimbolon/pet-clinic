@@ -181,119 +181,168 @@
         <p class="mb-0">Silakan lengkapi data diri Anda untuk mendaftar</p>
       </div>
 
-      <form class="needs-validation" novalidate>
+      <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
         <div class="section-title">
           <span><i class="fas fa-info-circle me-2"></i>Informasi Umum</span>
         </div>
 
         <div class="row">
+          <!-- Nomor Izin Praktik -->
           <div class="col-md-6 mb-3">
-            <label class="form-label">Nomor Izin Praktik <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" required placeholder="Nomor Izin Praktik">
-            <div class="invalid-feedback">Nomor izin praktik wajib diisi</div>
+            <label for="izin_praktik" class="form-label">Nomor Izin Praktik <span class="text-danger">*</span></label>
+            <input type="text" id="izin_praktik" name="izin_praktik"
+                   class="form-control" required
+                   placeholder="Nomor Izin Praktik"
+                   value="{{ data.izin_praktik|default:'' }}">
+            {% if errors.izin_praktik %}
+              <div class="invalid-feedback d-block">{{ errors.izin_praktik }}</div>
+            {% else %}
+              <div class="invalid-feedback">Nomor izin praktik wajib diisi</div>
+            {% endif %}
           </div>
+
+          <!-- Nomor Telepon -->
           <div class="col-md-6 mb-3">
-            <label for="nama" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
-            <input type="tel" class="form-control" required placeholder="Contoh: 081234567890">
-            <div class="invalid-feedback">Nomor telepon wajib diisi</div>
+            <label for="nomor_telepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
+            <input type="tel" id="nomor_telepon" name="nomor_telepon"
+                   class="form-control" required
+                   placeholder="Contoh: 081234567890"
+                   value="{{ data.nomor_telepon|default:'' }}">
+            {% if errors.nomor_telepon %}
+              <div class="invalid-feedback d-block">{{ errors.nomor_telepon }}</div>
+            {% else %}
+              <div class="invalid-feedback">Nomor telepon wajib diisi</div>
+            {% endif %}
           </div>
         </div>
 
         <div class="row">
+          <!-- Email -->
           <div class="col-md-6 mb-3">
-            <label class="form-label">Email <span class="text-danger">*</span></label>
-            <input type="email" class="form-control" required placeholder="Email">
-            <div class="invalid-feedback">Email wajib diisi dengan format yang benar</div>
+            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" id="email" name="email"
+                   class="form-control" required
+                   placeholder="Email"
+                   value="{{ data.email|default:'' }}">
+            {% if errors.email %}
+              <div class="invalid-feedback d-block">{{ errors.email }}</div>
+            {% else %}
+              <div class="invalid-feedback">Email wajib diisi dengan format yang benar</div>
+            {% endif %}
           </div>
+
+          <!-- Password -->
           <div class="col-md-6 mb-3">
-            <label class="form-label">Password <span class="text-danger">*</span></label>
-            <input type="password" class="form-control" required placeholder="Password">
-            <div class="invalid-feedback">Password wajib diisi</div>
+            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+            <input type="password" id="password" name="password"
+                   class="form-control" required
+                   placeholder="Password">
+            {% if errors.password %}
+              <div class="invalid-feedback d-block">{{ errors.password }}</div>
+            {% else %}
+              <div class="invalid-feedback">Password wajib diisi</div>
+            {% endif %}
           </div>
         </div>
 
+        <!-- Tanggal Diterima -->
         <div class="row mb-3">
           <div class="col-md-6">
-            <label class="form-label">Tanggal Diterima <span class="text-danger">*</span></label>
-            <input type="date" class="form-control">
+            <label for="tanggal_diterima" class="form-label">Tanggal Diterima <span class="text-danger">*</span></label>
+            <input type="date" id="tanggal_diterima" name="tanggal_diterima"
+                   class="form-control"
+                   value="{{ data.tanggal_diterima|default:'' }}" required>
+            {% if errors.tanggal_diterima %}
+              <div class="invalid-feedback d-block">{{ errors.tanggal_diterima }}</div>
+            {% else %}
+              <div class="invalid-feedback">Tanggal diterima wajib diisi</div>
+            {% endif %}
           </div>
         </div>
 
+        <!-- Alamat -->
         <div class="mb-3">
-          <label class="form-label">Alamat <span class="text-danger">*</span></label>
-          <textarea class="form-control" rows="3" placeholder="Alamat"></textarea>
+          <label for="alamat" class="form-label">Alamat <span class="text-danger">*</span></label>
+          <textarea id="alamat" name="alamat" class="form-control" rows="3"
+                    placeholder="Alamat" required>{{ data.alamat|default:'' }}</textarea>
+          {% if errors.alamat %}
+            <div class="invalid-feedback d-block">{{ errors.alamat }}</div>
+          {% else %}
+            <div class="invalid-feedback">Alamat wajib diisi</div>
+          {% endif %}
         </div>
 
+        <!-- Kompetensi (Sertifikat) -->
         <div class="section-title">
             <span><i class="fas fa-certificate me-2"></i>Kompetensi</span>
             <button type="button" class="btn btn-secondary" id="add-certificate">
-                <i class="fas fa-plus me-1"></i> Tambah Sertifikat
+              <i class="fas fa-plus me-1"></i> Tambah Sertifikat
             </button>
-        </div>
-
-        <div id="certificates-container">
-            <div class="certificate-section">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="id_nomor_sertifikat" class="form-label">Nomor Sertifikat <span class="text-danger">*</span></label>
-                            <input type="text" name="nomor_sertifikat" id="id_nomor_sertifikat" class="form-control" placeholder="Nomor sertifikat kompetensi">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="id_nama_sertifikat" class="form-label">Nama Sertifikat <span class="text-danger">*</span></label>
-                            <input type="text" name="nama_sertifikat" id="id_nama_sertifikat" class="form-control" placeholder="Nama sertifikat kompetensi">
-                        </div>
-                    </div>
+          </div>
+          <div id="certificates-container">
+            <!-- Section template awal -->
+            <div class="certificate-section mb-3">
+              <div class="row">
+                <div class="col-md-6">
+                  <label class="form-label">Nomor Sertifikat <span class="text-danger">*</span></label>
+                  <input type="text" name="nomor_sertifikat"
+                         class="form-control" placeholder="Nomor sertifikat kompetensi" required>
+                  <div class="invalid-feedback">Nomor sertifikat wajib diisi</div>
                 </div>
+                <div class="col-md-6">
+                  <label class="form-label">Nama Sertifikat <span class="text-danger">*</span></label>
+                  <input type="text" name="nama_sertifikat"
+                         class="form-control" placeholder="Nama sertifikat kompetensi" required>
+                  <div class="invalid-feedback">Nama sertifikat wajib diisi</div>
+                </div>
+              </div>
             </div>
         </div>
 
+        <!-- Jadwal Praktik -->
         <div class="section-title">
             <span><i class="fas fa-calendar-alt me-2"></i>Jadwal Praktik</span>
             <button type="button" class="btn btn-secondary" id="add-schedule">
-                <i class="fas fa-plus me-1"></i> Tambah Jadwal
+            <i class="fas fa-plus me-1"></i> Tambah Jadwal
             </button>
         </div>
-
-        <div id="certificates-container">
-            <div class="certificate-section">
+        {% if errors.jadwal %}
+            <div class="alert alert-danger">{{ errors.jadwal }}</div>
+        {% endif %}
+        <div id="schedules-container">
+            <!-- satu section default -->
+            <div class="schedule-section mb-3">
+            <div class="row">
+                <div class="col-md-6">
+                <label class="form-label">Hari Praktik <span class="text-danger">*</span></label>
+                <select name="hari_praktik" class="form-select" required>
+                    <option value="">Pilih Hari</option>
+                    {% for day in days %}
+                    <option value="{{ day }}">{{ day }}</option>
+                    {% endfor %}
+                </select>
+                <div class="invalid-feedback">Hari praktik wajib dipilih</div>
+                </div>
+                <div class="col-md-6">
+                <label class="form-label">Jam Praktik <span class="text-danger">*</span></label>
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="id_hari_praktik" class="form-label">Hari Praktik <span class="text-danger">*</span></label>
-                            <select name="hari_praktik" id="id_hari_praktik" class="form-select form-control">
-                                <option value="">Pilih Hari</option>
-                                <option value="Senin">Senin</option>
-                                <option value="Selasa">Selasa</option>
-                                <option value="Rabu">Rabu</option>
-                                <option value="Kamis">Kamis</option>
-                                <option value="Jumat">Jumat</option>
-                                <option value="Sabtu">Sabtu</option>
-                                <option value="Minggu">Minggu</option>
-                            </select>
-                        </div>
+                    <div class="col-6">
+                    <input type="time" name="jam_mulai" class="form-control" required>
+                    <div class="invalid-feedback">Jam mulai wajib diisi</div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="id_jam_praktik" class="form-label">Jam Praktik <span class="text-danger">*</span></label>
-                            <div class="row">
-                                <div class="col-6">
-                                    <input type="time" name="jam_mulai" class="form-control" placeholder="Mulai">
-                                </div>
-                                <div class="col-6">
-                                    <input type="time" name="jam_selesai" class="form-control" placeholder="Selesai">
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-6">
+                    <input type="time" name="jam_selesai" class="form-control" required>
+                    <div class="invalid-feedback">Jam selesai wajib diisi</div>
                     </div>
                 </div>
+                </div>
+            </div>
             </div>
         </div>
 
         <button type="submit" class="btn btn-primary">
-            <i class="fas fa-paper-plane me-2"></i>DAFTAR SEKARANG
+          <i class="fas fa-paper-plane me-2"></i>DAFTAR SEKARANG
         </button>
       </form>
 
@@ -317,6 +366,127 @@
         }, false);
       });
   })();
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('certificates-container');
+    const addBtn = document.getElementById('add-certificate');
+  
+    addBtn.addEventListener('click', () => {
+      // ambil section terakhir
+      const sections = container.querySelectorAll('.certificate-section');
+      const last = sections[sections.length - 1];
+      const nomorInput = last.querySelector('input[name="nomor_sertifikat"]');
+      const namaInput = last.querySelector('input[name="nama_sertifikat"]');
+  
+      // reset validasi
+      nomorInput.classList.remove('is-invalid');
+      namaInput.classList.remove('is-invalid');
+  
+      // validasi
+      let valid = true;
+      if (!nomorInput.value.trim()) {
+        nomorInput.classList.add('is-invalid');
+        valid = false;
+      }
+      if (!namaInput.value.trim()) {
+        namaInput.classList.add('is-invalid');
+        valid = false;
+      }
+      if (!valid) {
+        // fokus ke field pertama yang kosong
+        ( !nomorInput.value.trim() ? nomorInput : namaInput ).focus();
+        return;
+      }
+  
+      // buat dua input tadi jadi readonly agar tidak diubah lagi
+      nomorInput.readOnly = true;
+      namaInput.readOnly = true;
+  
+      // buat section baru
+      const newSection = last.cloneNode(true);
+      // kosongkan nilainya dan hapus readonly + is-invalid
+      newSection.querySelectorAll('input').forEach(input => {
+        input.value = '';
+        input.readOnly = false;
+        input.classList.remove('is-invalid');
+      });
+  
+      container.appendChild(newSection);
+      // fokus ke nomor di section baru
+      newSection.querySelector('input[name="nomor_sertifikat"]').focus();
+    });
+  });
+  document.addEventListener('DOMContentLoaded', function() {
+    const scheduleContainer = document.getElementById('schedules-container');
+    const addSchedBtn = document.getElementById('add-schedule');
+  
+    addSchedBtn.addEventListener('click', () => {
+      const sections = scheduleContainer.querySelectorAll('.schedule-section');
+      const last = sections[sections.length - 1];
+  
+      const selectDay  = last.querySelector('select[name="hari_praktik"]');
+      const inputMulai = last.querySelector('input[name="jam_mulai"]');
+      const inputSelesai = last.querySelector('input[name="jam_selesai"]');
+  
+      // clear previous validation state
+      [selectDay, inputMulai, inputSelesai].forEach(el => {
+        el.classList.remove('is-invalid');
+      });
+  
+      // validate
+      let valid = true;
+      if (!selectDay.value) {
+        selectDay.classList.add('is-invalid');
+        valid = false;
+      }
+      if (!inputMulai.value) {
+        inputMulai.classList.add('is-invalid');
+        valid = false;
+      }
+      if (!inputSelesai.value) {
+        inputSelesai.classList.add('is-invalid');
+        valid = false;
+      }
+      // optional: ensure selesai > mulai
+      if (inputMulai.value && inputSelesai.value && inputSelesai.value <= inputMulai.value) {
+        inputSelesai.classList.add('is-invalid');
+        inputSelesai.nextElementSibling.textContent = 'Jam selesai harus setelah jam mulai';
+        valid = false;
+      }
+      if (!valid) {
+        // focus first invalid
+        const firstInvalid = last.querySelector('.is-invalid');
+        firstInvalid && firstInvalid.focus();
+        return;
+      }
+  
+      // lock the last section
+      selectDay.disabled = true;
+      inputMulai.readOnly = true;
+      inputSelesai.readOnly = true;
+  
+      // clone, clear and append new section
+      const clone = last.cloneNode(true);
+      clone.querySelectorAll('select, input').forEach(el => {
+        if (el.tagName === 'SELECT') {
+          el.disabled = false;
+          el.value = '';
+        } else {
+          el.readOnly = false;
+          el.value = '';
+        }
+        el.classList.remove('is-invalid');
+        // restore default invalid-feedback text for jam_selesai
+        if (el.name === 'jam_selesai') {
+          el.nextElementSibling.textContent = 'Jam selesai wajib diisi';
+        }
+      });
+      scheduleContainer.appendChild(clone);
+      // focus on new select
+      scheduleContainer.lastElementChild.querySelector('select[name="hari_praktik"]').focus();
+    });
+  });
+  
 </script>
 
 </body>
