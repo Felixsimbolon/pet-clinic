@@ -3,27 +3,48 @@ from django.db import connection
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from .forms import RegisterIndividuForm, RegisterFrontDeskForm, RegisterDokterForm, RegisterPerawatForm, RegisterPerusahaanForm
+import datetime
+import re
+from datetime import *
+
+EMAIL_REGEX         = re.compile(r'^[\w\.-]+@[\w\.-]+\.[A-Za-z]{2,}$')
+PHONE_REGEX         = re.compile(r'^0\d{9,14}$')  
+DATE_REGEX          = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+PASSWORD_REGEX      = re.compile(
+    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+)
+# Alamat: huruf, angka, spasi, koma, titik, strip, slash
+ALAMAT_REGEX        = re.compile(r'^[\w0-9\s\.,\-\/]+$')
 
 def landing_page(request):
     return render(request, 'landing.html')
 
 def login_view(request):
+    
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
 
         with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
             # Cek apakah email ada dan password cocok
+            print(email)
             cursor.execute("""
                 SELECT email, password
                 FROM "USER"
                 WHERE email = %s
-            """, [email])
+            """, (email,))
             user = cursor.fetchone()
-
-            if user and user[1] == password:
+            # print(user['email'])
+            if user :
+                
+                
+                request.session['user_email'] = email  # simpan user identifier di session
+                request.session.set_expiry(60 * 60 * 24 * 365 * 10)  # session tahan lama (10 tahun)
                 # Email dan password cocok
                 # Sekarang cek role pengguna
+                cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute("""
                     SELECT no_dokter_hewan
                     FROM DOKTER_HEWAN
@@ -35,8 +56,10 @@ def login_view(request):
 
                 if dokter:
                     # Kalau dokter
-                    return redirect('dashboard_dokter', id_dokter=dokter[0])
-
+                    
+                    return redirect('dashboard_dokter')
+                
+                cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute("""
                     SELECT no_perawat_hewan
                     FROM PERAWAT_HEWAN
@@ -50,6 +73,7 @@ def login_view(request):
                     # Kalau perawat
                     return redirect('dashboard_perawat', id_perawat=perawat[0])
 
+                cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute("""
                     SELECT no_front_desk
                     FROM FRONT_DESK
@@ -64,6 +88,7 @@ def login_view(request):
                     return redirect('dashboard_frontdesk', id_frontdesk=frontdesk[0])
 
                 # Kalau bukan PEGAWAI, berarti KLIEN
+                cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute("""
                     SELECT no_identitas
                     FROM KLIEN
@@ -89,44 +114,466 @@ def register_view(request):
     return render(request, 'register.html')
 
 def register_individu(request):
+    errors = {}
+    data = {}
+
     if request.method == 'POST':
-        form = RegisterIndividuForm(request.POST)
-        if form.is_valid():
-            form.save()
+        # Ambil data
+        data['email']          = request.POST.get('email', '').strip()
+        data['nama_depan']     = request.POST.get('nama_depan', '').strip()
+        data['nama_tengah']    = request.POST.get('nama_tengah', '').strip()
+        data['nama_belakang']  = request.POST.get('nama_belakang', '').strip()
+        data['password']       = request.POST.get('password', '')
+        data['nomor_telepon']  = request.POST.get('nomor_telepon', '').strip()
+        data['alamat']         = request.POST.get('alamat', '').strip()
+
+        # Validasi email
+        if not data['email']:
+            errors['email'] = 'Email wajib diisi'
+        elif not EMAIL_REGEX.match(data['email']):
+            errors['email'] = 'Format email tidak valid'
+      
+
+        # Validasi nama
+        if not data['nama_depan']:
+            errors['nama_depan'] = 'Nama depan wajib diisi'
+        if not data['nama_belakang']:
+            errors['nama_belakang'] = 'Nama belakang wajib diisi'
+
+        # Validasi password
+        if not data['password']:
+            errors['password'] = 'Password wajib diisi'
+        elif not PASSWORD_REGEX.match(data['password']):
+            errors['password'] = (
+                'Password minimal 8 karakter, '
+                'mengandung huruf besar, huruf kecil, angka, dan simbol'
+            )
+
+        # Validasi nomor telepon
+        if not data['nomor_telepon']:
+            errors['nomor_telepon'] = 'Nomor telepon wajib diisi'
+        elif not PHONE_REGEX.match(data['nomor_telepon']):
+            errors['nomor_telepon'] = 'Nomor telepon harus diawali 0 dan 10–15 digit'
+        if 'nomor_telepon' not in errors:
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic;")
+                cursor.execute(
+                    'SELECT COUNT(*) FROM "USER" WHERE nomor_telepon = %s',
+                    [data['nomor_telepon']]
+                )
+                count = cursor.fetchone()[0]
+            if count:
+                errors['nomor_telepon'] = 'Nomor telepon sudah terdaftar'
+
+        # Validasi alamat
+        if not data['alamat']:
+            errors['alamat'] = 'Alamat wajib diisi'
+
+        # Jika tidak ada error, simpan
+        if not errors:
+            id_klien = uuid.uuid4()
+            today = date.today()
+
+            with connection.cursor() as cursor:
+                # Simpan ke tabel USER
+                cursor.execute("SET search_path TO pet_clinic;")
+                cursor.execute(
+                    '''
+                    INSERT INTO "USER"
+                    (email, password, nomor_telepon, alamat)
+                    VALUES (%s, %s, %s, %s)
+                    ''',
+                    [
+                        data['email'], data['password'], data['nomor_telepon'],
+                        data['alamat']
+                    ]
+                )
+
+                # Simpan ke tabel KLIEN_INDIVIDU
+                cursor.execute(
+                    '''
+                    INSERT INTO KLIEN
+                    (no_identitas, tanggal_registrasi, email)
+                    VALUES (%s, %s, %s)
+                    ''',
+                    [str(id_klien), today,data['email']]
+                )
+                cursor.execute(
+                    '''
+                    INSERT INTO INDIVIDU
+                    (no_identitas_klien, nama_depan, nama_tengah,nama_belakang)
+                    VALUES (%s, %s, %s, %s)
+                    ''',
+                    [str(id_klien), data['nama_depan'] , data['nama_tengah'],data['nama_belakang']  ]
+                )
+
             return redirect('login')
-    else:
-        form = RegisterIndividuForm()
-    return render(request, 'register_individu.html', {'form': form})
+
+    return render(request, 'register_individu.html', {
+        'errors': errors,
+        'data': data
+    })
 
 def register_perusahaan(request):
+    data = {}
+    errors = {}
+    days = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu']
+
     if request.method == 'POST':
-        form = RegisterPerusahaanForm(request.POST)
-        if form.is_valid():
-            form.save()
+        data['email'] = request.POST.get('email', '').strip()
+        data['nama_perusahaan'] = request.POST.get('nama_perusahaan', '').strip()
+        data['password'] = request.POST.get('password', '')
+        data['nomor_telepon'] = request.POST.get('nomor_telepon', '').strip()
+        data['alamat'] = request.POST.get('alamat', '').strip()
+
+
+        # Validasi Nama Perusahaan
+        if not data['nama_perusahaan']:
+            errors['nama_perusahaan'] = 'Nama perusahaan wajib diisi'
+
+        # Validasi Password
+        if not data['email']:
+            errors['email'] = 'Email wajib diisi'
+        elif not EMAIL_REGEX.match(data['email']):
+            errors['email'] = 'Format email tidak valid'
+
+        # Validasi nomor telepon
+        if not data['nomor_telepon']:
+            errors['nomor_telepon'] = 'Nomor telepon wajib diisi' 
+        elif not PHONE_REGEX.match(data['nomor_telepon']):
+            errors['nomor_telepon'] = 'Nomor telepon harus diawali 0 dan 10–15 digit'
+        if 'nomor_telepon' not in errors:
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic;")
+                cursor.execute(
+                    'SELECT COUNT(*) FROM "USER" WHERE nomor_telepon = %s',
+                    [data['nomor_telepon']]
+                )
+                count = cursor.fetchone()[0]
+            if count:
+                errors['nomor_telepon'] = 'Nomor telepon sudah terdaftar'
+                
+        # Validasi password
+        if not data['password']:
+            errors['password'] = 'Password wajib diisi'
+        elif not PASSWORD_REGEX.match(data['password']):
+            errors['password'] = (
+                'Password minimal 8 karakter, '
+                'mengandung huruf besar, huruf kecil, angka, dan simbol'
+            )
+
+        # Validasi alamat
+        if not data['alamat']:
+            errors['alamat'] = 'Alamat wajib diisi'
+            
+        elif not ALAMAT_REGEX.match(data['alamat']):
+            errors['alamat'] = 'Alamat mengandung karakter tidak diperbolehkan'
+        
+        if not errors:
+            today = date.today()
+            no_identitas_klien = uuid.uuid4()
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic;")
+                # Simpan USER
+                cursor.execute(
+                    '''INSERT INTO "USER" ( email, password, alamat,nomor_telepon)
+                       VALUES (%s, %s, %s, %s)''',
+                    [data['email'], data['password'],data['alamat'], data['nomor_telepon']]
+                )
+
+                # Simpan KLIEN (dengan tanggal_mulai_kerja = hari ini, dan tanggal_diterima)
+                cursor.execute(
+                    '''
+                    INSERT INTO KLIEN
+                    (no_identitas, tanggal_registrasi, email)
+                    VALUES (%s, %s, %s)
+                    ''',
+                    [str(no_identitas_klien), today,data['email']]
+                )
+
+                # Simpan FRONT_DESK
+                cursor.execute(
+                    '''INSERT INTO PERUSAHAAN (no_identitas_klien,nama_perusahaan)
+                       VALUES (%s,%s)''',
+                    [str(no_identitas_klien),data['nama_perusahaan']]
+                )
+
             return redirect('login')
-    else:
-        form = RegisterPerusahaanForm()
-    return render(request, 'register_perusahaan.html', {'form': form})
+    return render(request, 'register_perusahaan.html', {
+        'data': data,
+        'errors': errors,
+        'days' : days
+    })
+
+
+
 
 def register_frontdesk(request):
+    errors = {}
+    data = {}
     if request.method == 'POST':
-        form = RegisterFrontDeskForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('login')
-    else:
-        form = RegisterFrontDeskForm()
-    return render(request, 'register_frontdesk.html', {'form': form})
+        data['email']            = request.POST.get('email', '').strip()
+        data['nomor_telepon']    = request.POST.get('nomor_telepon', '').strip()
+        data['tanggal_diterima'] = request.POST.get('tanggal_diterima', '').strip()
+        data['password']         = request.POST.get('password', '')
+        data['alamat']           = request.POST.get('alamat', '').strip()
+
+        # Validasi email
+        if not data['email']:
+            errors['email'] = 'Email wajib diisi'
+        elif not EMAIL_REGEX.match(data['email']):
+            errors['email'] = 'Format email tidak valid'
+
+        # Validasi nomor telepon
+        if not data['nomor_telepon']:
+            errors['nomor_telepon'] = 'Nomor telepon wajib diisi'
+        elif not PHONE_REGEX.match(data['nomor_telepon']):
+            errors['nomor_telepon'] = 'Nomor telepon harus diawali 0 dan 10–15 digit'
+        if 'nomor_telepon' not in errors:
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic;")
+                cursor.execute(
+                    'SELECT COUNT(*) FROM "USER" WHERE nomor_telepon = %s',
+                    [data['nomor_telepon']]
+                )
+                count = cursor.fetchone()[0]
+            if count:
+                errors['nomor_telepon'] = 'Nomor telepon sudah terdaftar'
+
+
+        # Validasi tanggal diterima
+        if not data['tanggal_diterima']:
+            errors['tanggal_diterima'] = 'Tanggal diterima wajib diisi'
+        elif not DATE_REGEX.match(data['tanggal_diterima']):
+            errors['tanggal_diterima'] = 'Format tanggal harus YYYY-MM-DD'
+        else:
+            try:
+                datetime.strptime(data['tanggal_diterima'], '%Y-%m-%d')
+            except ValueError:
+                errors['tanggal_diterima'] = 'Tanggal tidak valid'
+
+        # Validasi password
+        if not data['password']:
+            errors['password'] = 'Password wajib diisi'
+        elif not PASSWORD_REGEX.match(data['password']):
+            errors['password'] = (
+                'Password minimal 8 karakter, '
+                'mengandung huruf besar, huruf kecil, angka, dan simbol'
+            )
+
+        # Validasi alamat
+        if not data['alamat']:
+            errors['alamat'] = 'Alamat wajib diisi'
+        elif not ALAMAT_REGEX.match(data['alamat']):
+            errors['alamat'] = 'Alamat mengandung karakter tidak diperbolehkan'
+
+        # Jika valid, simpan
+        if not errors:
+            id_pegawai = uuid.uuid4()
+            tgl_diterima = data['tanggal_diterima'] 
+
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic;")
+ 
+                # Simpan USER
+                cursor.execute(
+                    '''INSERT INTO "USER" ( email, password, alamat,nomor_telepon)
+                       VALUES (%s, %s, %s, %s)''',
+                    [data['email'], data['password'],data['alamat'], data['nomor_telepon']]
+                )
+
+                # Simpan PEGAWAI (dengan tanggal_mulai_kerja = hari ini, dan tanggal_diterima)
+                cursor.execute(
+                    '''INSERT INTO PEGAWAI
+                       (no_pegawai, tanggal_mulai_kerja, email_user)
+                       VALUES (%s, %s, %s)''',
+                    [str(id_pegawai),  tgl_diterima, data['email']]
+                )
+
+                # Simpan FRONT_DESK
+                cursor.execute(
+                    '''INSERT INTO FRONT_DESK (no_front_desk)
+                       VALUES (%s)''',
+                    [str(id_pegawai)]
+                )
+
+            return redirect('register_success')
+
+    return render(request, 'register_frontdesk.html', {
+        'errors': errors,
+        'data': data
+    })
+
+
+
+# views.py
+
+import uuid
+import re
+from datetime import datetime, date
+
+from django.shortcuts import render, redirect
+from django.db import connection
+from django.contrib.auth.hashers import make_password
+
+# Regex patterns untuk validasi
+EMAIL_REGEX = re.compile(r'^[\w\.-]+@[\w\.-]+\.[A-Za-z]{2,}$')
+PHONE_REGEX = re.compile(r'^0\d{9,14}$')
 
 def register_dokter(request):
+    # Daftar hari untuk dropdown
+    days = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu']
+
+    errors = {}
+    data = {}
+
     if request.method == 'POST':
-        form = RegisterDokterForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('login')
+        # --- Ambil field umum ---
+        data['izin_praktik']     = request.POST.get('izin_praktik', '').strip()
+        data['nomor_telepon']    = request.POST.get('nomor_telepon', '').strip()
+        data['email']            = request.POST.get('email', '').strip()
+        data['password']         = request.POST.get('password', '')
+        data['tanggal_diterima'] = request.POST.get('tanggal_diterima', '').strip()
+        data['alamat']           = request.POST.get('alamat', '').strip()
+
+        # --- Ambil dynamic lists ---
+        nos       = request.POST.getlist('nomor_sertifikat')
+        nms       = request.POST.getlist('nama_sertifikat')
+        hari_list = request.POST.getlist('hari_praktik')
+        jm_mulai  = request.POST.getlist('jam_mulai')
+        jm_selesai= request.POST.getlist('jam_selesai')
+
+        # --- Buat list-of-dicts untuk template ---
+        certificates = []
+        for no, nm in zip(nos, nms):
+            if no.strip() or nm.strip():
+                certificates.append({
+                    'nomor': no.strip(),
+                    'nama':  nm.strip()
+                })
+        if not certificates:
+            certificates = [{}]
+
+        schedules = []
+        for h, jm1, jm2 in zip(hari_list, jm_mulai, jm_selesai):
+            if h.strip() or jm1.strip() or jm2.strip():
+                schedules.append({
+                    'hari':        h.strip(),
+                    'jam_mulai':   jm1.strip(),
+                    'jam_selesai': jm2.strip()
+                })
+        if not schedules:
+            schedules = [{}]
+
+        data.update({
+            'certificates': certificates,
+            'schedules':    schedules
+        })
+
+        # --- Validasi field umum ---
+        if not data['izin_praktik']:
+            errors['izin_praktik'] = 'Nomor izin praktik wajib diisi'
+
+        if not data['nomor_telepon']:
+            errors['nomor_telepon'] = 'Nomor telepon wajib diisi'
+        elif not PHONE_REGEX.match(data['nomor_telepon']):
+            errors['nomor_telepon'] = 'Format nomor telepon tidak valid'
+
+        if not data['email']:
+            errors['email'] = 'Email wajib diisi'
+        elif not EMAIL_REGEX.match(data['email']):
+            errors['email'] = 'Format email tidak valid'
+
+        if not data['password']:
+            errors['password'] = 'Password wajib diisi'
+        elif len(data['password']) < 6:
+            errors['password'] = 'Password minimal 6 karakter'
+
+        if not data['tanggal_diterima']:
+            errors['tanggal_diterima'] = 'Tanggal diterima wajib diisi'
+        else:
+            try:
+                datetime.strptime(data['tanggal_diterima'], '%Y-%m-%d')
+            except ValueError:
+                errors['tanggal_diterima'] = 'Format tanggal tidak valid'
+
+        if not data['alamat']:
+            errors['alamat'] = 'Alamat wajib diisi'
+
+        # --- Validasi dynamic sertifikat ---
+        if not certificates or all(not c.get('nomor') and not c.get('nama') for c in certificates):
+            errors['sertifikat'] = 'Tambahkan minimal satu sertifikat'
+        else:
+            # cek tiap entry lengkap
+            for c in certificates:
+                if bool(c.get('nomor')) ^ bool(c.get('nama')):
+                    errors['sertifikat'] = 'Setiap sertifikat harus punya nomor & nama'
+                    break
+
+        # --- Validasi dynamic jadwal ---
+        if not schedules or all(not s.get('hari') and not s.get('jam_mulai') and not s.get('jam_selesai') for s in schedules):
+            errors['jadwal'] = 'Tambahkan minimal satu jadwal praktik'
+        else:
+            for s in schedules:
+                print(s.get('hari'),s.get('jam_mulai') ,s.get('jam_selesai'))
+                if not bool(s.get('hari')) ^ bool(s.get('jam_mulai')) ^ bool(s.get('jam_selesai')):
+                    errors['jadwal'] = 'Setiap jadwal harus lengkap (hari, jam mulai & selesai)'
+                    break 
+
+        # --- Simpan jika valid ---
+        if not errors:
+            no_doc = str(uuid.uuid4())
+            hashed_pw = make_password(data['password'])
+            tgl_diterima = datetime.strptime(data['tanggal_diterima'], '%Y-%m-%d').date()
+
+            with connection.cursor() as cursor:
+                # 1. Tabel USER
+                cursor.execute(
+                    '''INSERT INTO "USER" 
+                       (email, password, nomor_telepon, alamat)
+                       VALUES (%s, %s, %s, %s)''',
+                    [data['email'], hashed_pw, data['nomor_telepon'], data['alamat']]
+                )
+
+                # 2. Tabel DOKTER_HEWAN
+                cursor.execute(
+                    '''INSERT INTO DOKTER_HEWAN
+                       (no_dokter, nomor_izin, tanggal_diterima, email_user)
+                       VALUES (%s, %s, %s, %s)''',
+                    [no_doc, data['izin_praktik'], tgl_diterima, data['email']]
+                )
+
+                # 3. Tabel SERTIFIKAT_DOKTER
+                for cert in certificates:
+                    cursor.execute(
+                        '''INSERT INTO SERTIFIKAT_DOKTER
+                           (no_dokter, nomor_sertifikat, nama_sertifikat)
+                           VALUES (%s, %s, %s)''',
+                        [no_doc, cert['nomor'], cert['nama']]
+                    )
+
+                # 4. Tabel JADWAL_PRAKTIK
+                for sched in schedules:
+                    cursor.execute(
+                        '''INSERT INTO JADWAL_PRAKTIK
+                           (no_dokter, hari_praktik, jam_mulai, jam_selesai)
+                           VALUES (%s, %s, %s, %s)''',
+                        [no_doc, sched['hari'], sched['jam_mulai'], sched['jam_selesai']]
+                    )
+
+            return redirect('register_dokter_hewan_success')
+
     else:
-        form = RegisterDokterForm()
-    return render(request, 'register_dokter.html', {'form': form})
+        # Kalau GET: bikin satu slot kosong
+        data['certificates'] = [{}]
+        data['schedules']    = [{}]
+
+    return render(request, 'register_dokter.html', {
+        'errors': errors,
+        'data':   data,
+        'days':   days,
+    })
+
 
 def register_perawat(request):
     if request.method == 'POST':

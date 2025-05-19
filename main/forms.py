@@ -45,10 +45,44 @@ class RegisterIndividuForm(forms.Form):
 
 # Form Klien Perusahaan
 class RegisterPerusahaanForm(forms.Form):
-    email = forms.EmailField()
-    alamat = forms.CharField(widget=forms.Textarea)
-    nomor_telepon = forms.CharField(max_length=15)
-    nama_perusahaan = forms.CharField(max_length=100)
+    nama = forms.CharField(
+        label="Nama Lengkap",
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nama Lengkap',
+            'id': 'nama',
+            'required': True
+        })
+    )
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Email',
+            'id': 'email',
+            'required': True
+        })
+    )
+    nomor_telepon = forms.CharField(
+        label="Nomor Telepon",
+        max_length=15,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Contoh: 081234567890',
+            'id': 'nomor_telepon',
+            'required': True
+        })
+    )
+    password = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Password',
+            'id': 'password',
+            'required': True
+        })
+    )
 
     def save(self):
         email = self.cleaned_data['email']
