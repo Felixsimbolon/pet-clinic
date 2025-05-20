@@ -72,7 +72,7 @@ def login_view(request):
 
                 if perawat:
                     # Kalau perawat
-                    return redirect('dashboard_perawat', id_perawat=perawat[0])
+                    return redirect('dashboard_perawat')
 
                 cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute("""
@@ -86,7 +86,7 @@ def login_view(request):
 
                 if frontdesk:
                     # Kalau front-desk
-                    return redirect('dashboard_frontdesk', id_frontdesk=frontdesk[0])
+                    return redirect('dashboard_frontdesk')
 
                 # Kalau bukan PEGAWAI, berarti KLIEN
                 cursor.execute("SET search_path TO pet_clinic;")
@@ -98,7 +98,9 @@ def login_view(request):
                 klien = cursor.fetchone()
 
                 if klien:
-                    return redirect('dashboard_klien', id_klien=klien[0])
+                    # return redirect('dashboard_klien', id_klien=klien[0])
+                    return redirect('dashboard_klien')
+
 
                 else:
                     messages.error(request, "Akun tidak dikenali sebagai Dokter, Perawat, Frontdesk, atau Klien.")
@@ -110,6 +112,9 @@ def login_view(request):
                 return redirect('login')
 
     return render(request, 'login.html')
+
+def landing_page(request):
+    return render(request, 'landing.html')
 
 def register_view(request):
     return render(request, 'register.html')
@@ -305,8 +310,6 @@ def register_perusahaan(request):
         'errors': errors,
         'days' : days
     })
-
-
 
 
 def register_frontdesk(request):
@@ -591,11 +594,12 @@ def dashboard_dokter(request):
     daftar_sertifikat = []
     daftar_jadwal = []
 
-    # 🚨 GANTI dengan no_dokter_hewan yang valid dari database kamu
-    id_dokter = 'b7cd7031-3a74-4e21-aa96-f4f5db4ab423'
+    if 'user_email' not in request.session:
+        return redirect('login')
+    
+    user_email = request.session['user_email']
 
     with connection.cursor() as cursor:
-        # Pastikan schema digunakan
         cursor.execute("SET search_path TO pet_clinic;")
 
         # --- Ambil data profil dokter
@@ -612,13 +616,12 @@ def dashboard_dokter(request):
             JOIN tenaga_medis tm ON dh.no_dokter_hewan = tm.no_tenaga_medis
             JOIN pegawai p ON tm.no_tenaga_medis = p.no_pegawai
             JOIN "USER" u ON p.email_user = u.email
-            WHERE dh.no_dokter_hewan = %s
-        """, [str(id_dokter)])
+            WHERE u.email = %s
+        """, [user_email])
 
         row = cursor.fetchone()
-        print("ID dokter yang dicoba:", id_dokter)
-        print("Row hasil query dokter:", row)
-    
+        id_dokter = row[0] if row else None
+
         if row:
             dokter_info = {
                 'no_dokter_hewan': row[0],
@@ -680,94 +683,13 @@ def dashboard_dokter(request):
         'jadwal': daftar_jadwal
     })
 
-# def dashboard_dokter(request):
-#     dokter_info = {}
-#     daftar_sertifikat = []
-#     daftar_jadwal = []
-
-#     with connection.cursor() as cursor:
-#         cursor.execute("SET search_path TO pet_clinic;")
-#         cursor.execute("""
-#             SELECT dh.no_dokter_hewan
-#             FROM dokter_hewan dh
-#             JOIN tenaga_medis tm ON dh.no_dokter_hewan = tm.no_tenaga_medis
-#             JOIN pegawai p ON tm.no_tenaga_medis = p.no_pegawai
-#             JOIN "USER" u ON p.email_user = u.email
-#             WHERE u.id = %s
-#         """, [str(request.user.id)])  # sesuaikan kalau pakai user.id, atau user.email
-#         result = cursor.fetchone()
-#         id_dokter = result[0] if result else None
-    
-#     if id_dokter:
-#         cursor.execute("""
-#             SELECT 
-#                 dh.no_dokter_hewan,
-#                 tm.no_izin_praktik, 
-#                 u.email, 
-#                 u.alamat, 
-#                 u.nomor_telepon, 
-#                 p.tanggal_mulai_kerja, 
-#                 p.tanggal_akhir_kerja
-#             FROM dokter_hewan dh
-#             JOIN tenaga_medis tm ON dh.no_dokter_hewan = tm.no_tenaga_medis
-#             JOIN pegawai p ON tm.no_tenaga_medis = p.no_pegawai
-#             JOIN "USER" u ON p.email_user = u.email
-#             WHERE dh.no_dokter_hewan = %s
-#         """, [str(id_dokter)])
-#         row = cursor.fetchone()
-    
-#     if row:
-#         dokter_info = {
-#             'no_dokter_hewan': row[0],
-#             'no_izin_praktik': row[1],
-#             'email': row[2],
-#             'alamat': row[3],
-#             'nomor_telepon': row[4],
-#             'tanggal_mulai_kerja': row[5].strftime('%d %B %Y') if row[5] else '-',
-#             'tanggal_akhir_kerja': row[6].strftime('%d %B %Y') if row[6] else '-'
-#         }
-
-#         # --- Ambil daftar sertifikat dokter
-#         cursor.execute("""
-#             SELECT sk.no_sertifikat_kompetensi, sk.nama_sertifikat
-#             FROM sertifikat_kompetensi sk
-#             WHERE sk.no_tenaga_medis = %s
-#         """, [str(id_dokter)])
-#         rows = cursor.fetchall()
-#         daftar_sertifikat = [{'nomor_sertifikat': r[0], 'nama_sertifikat': r[1]} for r in rows]
-
-#         # --- Ambil daftar jadwal praktik dokter
-#         cursor.execute("""
-#             SELECT hari, jam
-#             FROM jadwal_praktik
-#             WHERE no_dokter_hewan = %s
-#             ORDER BY 
-#                 CASE
-#                     WHEN lower(hari) = 'senin' THEN 1
-#                     WHEN lower(hari) = 'selasa' THEN 2
-#                     WHEN lower(hari) = 'rabu' THEN 3
-#                     WHEN lower(hari) = 'kamis' THEN 4
-#                     WHEN lower(hari) = 'jumat' THEN 5
-#                     WHEN lower(hari) = 'sabtu' THEN 6
-#                     WHEN lower(hari) = 'minggu' THEN 7
-#                     ELSE 8
-#                 END, jam ASC
-#         """, [str(id_dokter)])
-#         rows = cursor.fetchall()
-#         daftar_jadwal = [{'hari': r[0], 'jam': r[1]} for r in rows]
-
-#     return render(request, 'dashboard_dokter.html', {
-#     'dokter': dokter_info,
-#     'sertifikat': daftar_sertifikat,
-#     'jadwal': daftar_jadwal
-# })
-
 def dashboard_perawat(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+    
     perawat_info = {}
     daftar_sertifikat = []
-
-    # Ganti dengan no_perawat_hewan yang valid
-    id_perawat = 'ae9181bc-c622-4e03-9191-fbd8ef0abbca'
+    user_email = request.session['user_email']
 
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
@@ -786,10 +708,12 @@ def dashboard_perawat(request):
             JOIN tenaga_medis tm ON ph.no_perawat_hewan = tm.no_tenaga_medis
             JOIN pegawai p ON tm.no_tenaga_medis = p.no_pegawai
             JOIN "USER" u ON p.email_user = u.email
-            WHERE ph.no_perawat_hewan = %s
-        """, [str(id_perawat)])
+            WHERE u.email = %s
+        """, [user_email])
 
         row = cursor.fetchone()
+        id_perawat = row[0] if row else None
+
         if row:
             perawat_info = {
                 'no_perawat_hewan': row[0],
@@ -820,9 +744,11 @@ def dashboard_perawat(request):
     })
 
 def dashboard_frontdesk(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+    
     officer_info = {}
-    # Ganti dengan no_front_desk valid dari database kamu
-    id_frontdesk = '6a47b49e-90de-403f-822f-6ae3d6f1ee30'
+    user_email = request.session['user_email']
 
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
@@ -839,8 +765,9 @@ def dashboard_frontdesk(request):
             FROM FRONT_DESK fd
             JOIN PEGAWAI p ON fd.no_front_desk = p.no_pegawai
             JOIN "USER" u ON p.email_user = u.email
-            WHERE fd.no_front_desk = %s
-        """, [str(id_frontdesk)])
+            WHERE u.email = %s
+        """, [user_email])
+        
         row = cursor.fetchone()
         
         if row:
@@ -860,9 +787,11 @@ def dashboard_frontdesk(request):
 def dashboard_klien(request):
     klien_info = {}
 
-    # Ganti dengan nilai no_identitas klien yang valid dari database
-    id_klien = '30619d42-1cf1-4116-9860-02bb427fe8cf'
-
+    if 'user_email' not in request.session:
+        return redirect('login')
+    
+    user_email = request.session['user_email']
+    
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
 
@@ -882,10 +811,11 @@ def dashboard_klien(request):
             JOIN "USER" u ON k.email = u.email
             LEFT JOIN individu i ON k.no_identitas = i.no_identitas_klien
             LEFT JOIN perusahaan p ON k.no_identitas = p.no_identitas_klien
-            WHERE k.no_identitas = %s
-        """, [str(id_klien)])
+            WHERE u.email = %s
+        """, [user_email])
         
         row = cursor.fetchone()
+        
         if row:
             # Tentukan nama berdasarkan tipe klien
             if row[5]:  # Individu
@@ -893,8 +823,10 @@ def dashboard_klien(request):
                 if row[6]: nama_parts.append(row[6])
                 if row[7]: nama_parts.append(row[7])
                 nama = " ".join(nama_parts)
+                update_profile_url_name = 'klien_update_profile_individu'
             elif row[8]:  # Perusahaan
                 nama = row[8]
+                update_profile_url_name = 'klien_update_profile_perusahaan'
             else:
                 nama = "-"
 
@@ -908,10 +840,272 @@ def dashboard_klien(request):
             }
 
     return render(request, 'dashboard_klien.html', {
-        'klien': klien_info
+        'klien': klien_info,
+        'update_profile_url_name': update_profile_url_name
     })
 
 def update_password(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        user_email = request.session['user_email']
+
+        if new_password != confirm_password:
+            messages.error(request, "Konfirmasi password tidak cocok.")
+            return redirect('update_password')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            # Ambil password lama dari database
+            cursor.execute("""
+                SELECT password FROM "USER" WHERE email = %s
+            """, [user_email])
+            result = cursor.fetchone()
+
+            if result:
+                current_password = result[0]
+
+                if old_password != current_password:
+                    messages.error(request, "Password lama salah.")
+                    return redirect('update_password')
+
+                # Jika semua valid → update password
+                cursor.execute("""
+                    UPDATE "USER"
+                    SET password = %s
+                    WHERE email = %s
+                """, [new_password, user_email])
+
+                # Cek apakah Dokter
+                cursor.execute("""
+                    SELECT no_dokter_hewan
+                    FROM dokter_hewan
+                    WHERE no_dokter_hewan = (
+                        SELECT no_pegawai FROM pegawai WHERE email_user = %s
+                    )
+                """, [user_email])
+                if cursor.fetchone():
+                    return redirect('dashboard_dokter')
+
+                # Cek apakah Perawat
+                cursor.execute("""
+                    SELECT no_perawat_hewan
+                    FROM perawat_hewan
+                    WHERE no_perawat_hewan = (
+                        SELECT no_pegawai FROM pegawai WHERE email_user = %s
+                    )
+                """, [user_email])
+                if cursor.fetchone():
+                    return redirect('dashboard_perawat')
+
+                # Cek apakah Frontdesk
+                cursor.execute("""
+                    SELECT no_front_desk
+                    FROM front_desk
+                    WHERE no_front_desk = (
+                        SELECT no_pegawai FROM pegawai WHERE email_user = %s
+                    )
+                """, [user_email])
+                if cursor.fetchone():
+                    return redirect('dashboard_frontdesk')
+
+                # Cek apakah Klien
+                cursor.execute("""
+                    SELECT no_identitas
+                    FROM klien
+                    WHERE email = %s
+                """, [user_email])
+                if cursor.fetchone():
+                    return redirect('dashboard_klien')
+
     return render(request, 'update_password.html')
+
 def update_profile(request):
     return render(request, 'update_profile.html')
+
+def update_profile_individu(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    if request.method == 'POST':
+        alamat = request.POST.get('alamat')
+        nomor_telepon = request.POST.get('nomor_telepon')
+        nama_depan = request.POST.get('nama_depan')
+        nama_tengah = request.POST.get('nama_tengah')
+        nama_belakang = request.POST.get('nama_belakang')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            # Update USER (alamat & nomor telepon)
+            cursor.execute("""
+                UPDATE "USER"
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, nomor_telepon, user_email])
+
+            # Update nama individu
+            cursor.execute("""
+                UPDATE individu
+                SET nama_depan = %s,
+                    nama_tengah = %s,
+                    nama_belakang = %s
+                WHERE no_identitas_klien = (
+                    SELECT no_identitas FROM klien WHERE email = %s
+                )
+            """, [nama_depan, nama_tengah, nama_belakang, user_email])
+
+        messages.success(request, "Profil berhasil diperbarui.")
+        return redirect('dashboard_klien')  # ganti sesuai url dashboard klien kamu
+
+    # Ambil data untuk prefill form
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+
+        cursor.execute("""
+            SELECT u.alamat, u.nomor_telepon,
+                   i.nama_depan, i.nama_tengah, i.nama_belakang
+            FROM "USER" u
+            JOIN klien k ON u.email = k.email
+            JOIN individu i ON k.no_identitas = i.no_identitas_klien
+            WHERE u.email = %s
+        """, [user_email])
+
+        row = cursor.fetchone()
+
+    data = {}
+    if row:
+        data = {
+            'alamat': row[0],
+            'nomor_telepon': row[1],
+            'nama_depan': row[2],
+            'nama_tengah': row[3],
+            'nama_belakang': row[4]
+        }
+
+    return render(request, 'update_profile_individu.html', data)
+
+def update_profile_perusahaan(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    if request.method == 'POST':
+        alamat = request.POST.get('alamat')
+        nomor_telepon = request.POST.get('nomor_telepon')
+        nama_perusahaan = request.POST.get('nama_perusahaan')
+
+        if not nama_perusahaan or nama_perusahaan.strip() == "":
+            messages.error(request, "Nama perusahaan tidak boleh kosong.")
+            return redirect('klien_update_profile_perusahaan')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            # Update tabel USER
+            cursor.execute("""
+                UPDATE "USER"
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, nomor_telepon, user_email])
+
+            # Update nama perusahaan
+            cursor.execute("""
+                UPDATE perusahaan
+                SET nama_perusahaan = %s
+                WHERE no_identitas_klien = (
+                    SELECT no_identitas FROM klien WHERE email = %s
+                )
+            """, [nama_perusahaan, user_email])
+
+        messages.success(request, "Profil perusahaan berhasil diperbarui.")
+        return redirect('dashboard_klien')
+
+    # Ambil data untuk prefill form
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+
+        cursor.execute("""
+            SELECT u.alamat, u.nomor_telepon, p.nama_perusahaan
+            FROM "USER" u
+            JOIN klien k ON u.email = k.email
+            JOIN perusahaan p ON k.no_identitas = p.no_identitas_klien
+            WHERE u.email = %s
+        """, [user_email])
+
+        row = cursor.fetchone()
+
+    data = {}
+    if row:
+        data = {
+            'alamat': row[0],
+            'nomor_telepon': row[1],
+            'nama_perusahaan': row[2]
+        }
+
+    return render(request, 'update_profile_perusahaan.html', data)
+
+def update_profile_frontdesk(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    if request.method == 'POST':
+        alamat = request.POST.get('alamat')
+        nomor_telepon = request.POST.get('nomor_telepon')
+        tanggal_akhir_kerja = request.POST.get('tanggal_akhir_kerja')
+
+        if not alamat or not nomor_telepon or not tanggal_akhir_kerja:
+            messages.error(request, "Semua field wajib diisi.")
+            return redirect('frontdesk_update_profile')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            # Update alamat & nomor telepon
+            cursor.execute("""
+                UPDATE "USER"
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, nomor_telepon, user_email])
+
+            # Update tanggal akhir kerja
+            cursor.execute("""
+                UPDATE PEGAWAI
+                SET tanggal_akhir_kerja = %s
+                WHERE email_user = %s
+            """, [tanggal_akhir_kerja, user_email])
+
+        messages.success(request, "Profil berhasil diperbarui.")
+        return redirect('dashboard_frontdesk')
+
+    # GET method → prefill form
+    data = {}
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""
+            SELECT u.alamat, u.nomor_telepon, p.tanggal_akhir_kerja
+            FROM "USER" u
+            JOIN PEGAWAI p ON u.email = p.email_user
+            JOIN FRONT_DESK f ON f.no_front_desk = p.no_pegawai
+            WHERE u.email = %s
+        """, [user_email])
+
+        row = cursor.fetchone()
+        if row:
+            data = {
+                'alamat': row[0],
+                'nomor_telepon': row[1],
+                'tanggal_akhir_kerja': row[2].strftime('%Y-%m-%d') if row[2] else ''
+            }
+
+    return render(request, 'update_profile_frontdesk.html', data)
