@@ -268,6 +268,9 @@
                 <label for="nama_tengah" class="form-label">Nama Tengah</label>
                 <input type="text" id="nama_tengah" name="nama_tengah" class="form-control"
                        placeholder="Nama Tengah" value="{{ data.nama_tengah|default:'' }}">
+                    {% if errors.nama_tengah %}
+                  <div class="invalid-feedback d-block">{{ errors.nama_tengah }}</div>
+                    {% endif %}
               </div>
       
               <!-- Nama Belakang -->

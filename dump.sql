@@ -215,7 +215,7 @@ CREATE TABLE KUNJUNGAN_KEPERAWATAN (
   CONSTRAINT fk_kkp_frontdesk
     FOREIGN KEY (no_front_desk) REFERENCES FRONT_DESK(no_front_desk),
   CONSTRAINT fk_kkp_perawat
-    FOREIGN KEY (no_perawat_hewan) REFERENCES PERAWAT_HEWAN(no_perawat_hewan),y
+    FOREIGN KEY (no_perawat_hewan) REFERENCES PERAWAT_HEWAN(no_perawat_hewan),
   CONSTRAINT fk_kkp_dokter
     FOREIGN KEY (no_dokter_hewan) REFERENCES DOKTER_HEWAN(no_dokter_hewan),
   CONSTRAINT fk_kkp_perawatan
@@ -579,3 +579,10 @@ VALUES
 ('bb73717c-9d08-4add-a55c-29c3d74edf64','Anjing 8','f72e51f3-1461-48b6-abbe-3bd035144e3f','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','PRW0000004'),
 ('491fc472-0605-48c5-afbb-180ecce1d50a','Anjing 9','f72e51f3-1461-48b6-abbe-3bd035144e3f','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','PRW0000005'),
 ('b9a954a7-01fd-4be9-8b45-e928b006ede3','Anjing 10','f72e51f3-1461-48b6-abbe-3bd035144e3f','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','PRW0000004');
+
+CREATE TABLE django_session (
+    session_key varchar(40) PRIMARY KEY,
+    session_data text NOT NULL,
+    expire_date timestamp NOT NULL
+);
+CREATE INDEX django_session_expire_date_idx ON django_session(expire_date);
