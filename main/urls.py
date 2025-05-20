@@ -16,6 +16,4 @@ urlpatterns = [
     path('dashboard/klien/', dashboard_klien, name='dashboard_klien'),
     path('dashboard/frontdesk/update-password/', update_password, name='update_password'),
     path('dashboard/klien/update-profile/', update_profile, name='update_profile'),
-
-
 ]
