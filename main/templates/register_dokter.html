@@ -286,20 +286,29 @@
               <div class="row">
                 <div class="col-md-6">
                   <label class="form-label">Nomor Sertifikat <span class="text-danger">*</span></label>
-                  <input type="text" name="nomor_sertifikat"
+                  <input type="text" name="nomor_sertifikat[]"
                          class="form-control" placeholder="Nomor sertifikat kompetensi" required>
-                  <div class="invalid-feedback">Nomor sertifikat wajib diisi</div>
+                  {% if errors.sertifikat %}
+                  <div class="invalid-feedback d-block">{{ errors.sertifikat }}</div>
+                    {% else %}
+                  <div class="invalid-feedback">Nomor Sertifikat wajib diisi</div>
+                    {% endif %}
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Nama Sertifikat <span class="text-danger">*</span></label>
-                  <input type="text" name="nama_sertifikat"
+                  <input type="text" name="nama_sertifikat[]"
                          class="form-control" placeholder="Nama sertifikat kompetensi" required>
-                  <div class="invalid-feedback">Nama sertifikat wajib diisi</div>
+                    {% if errors.sertifikat %}
+                  <div class="invalid-feedback d-block">{{ errors.sertifikat }}</div>
+                    {% else %}
+                  <div class="invalid-feedback">Nama Sertifikat wajib diisi</div>
+                    {% endif %}
                 </div>
               </div>
             </div>
         </div>
 
+        <!-- Jadwal Praktik -->
         <!-- Jadwal Praktik -->
         <div class="section-title">
             <span><i class="fas fa-calendar-alt me-2"></i>Jadwal Praktik</span>
@@ -307,39 +316,52 @@
             <i class="fas fa-plus me-1"></i> Tambah Jadwal
             </button>
         </div>
-        {% if errors.jadwal %}
-            <div class="alert alert-danger">{{ errors.jadwal }}</div>
-        {% endif %}
+        
         <div id="schedules-container">
-            <!-- satu section default -->
+            <!-- baris pertama -->
             <div class="schedule-section mb-3">
-            <div class="row">
-                <div class="col-md-6">
+            <div class="row g-3">
+                <div class="col-md-4">
                 <label class="form-label">Hari Praktik <span class="text-danger">*</span></label>
-                <select name="hari_praktik" class="form-select" required>
+                <select name="hari_praktik[]" class="form-select" required
+                        data-default="Hari praktik wajib dipilih">
                     <option value="">Pilih Hari</option>
                     {% for day in days %}
                     <option value="{{ day }}">{{ day }}</option>
                     {% endfor %}
                 </select>
+                {% if errors.jadwal %}
+                  <div class="invalid-feedback d-block">{{ errors.jadwal }}</div>
+                {% else %}
                 <div class="invalid-feedback">Hari praktik wajib dipilih</div>
+                {% endif %}
                 </div>
-                <div class="col-md-6">
-                <label class="form-label">Jam Praktik <span class="text-danger">*</span></label>
-                <div class="row">
-                    <div class="col-6">
-                    <input type="time" name="jam_mulai" class="form-control" required>
-                    <div class="invalid-feedback">Jam mulai wajib diisi</div>
-                    </div>
-                    <div class="col-6">
-                    <input type="time" name="jam_selesai" class="form-control" required>
-                    <div class="invalid-feedback">Jam selesai wajib diisi</div>
-                    </div>
+        
+                <div class="col-md-4">
+                <label class="form-label">Jam Mulai <span class="text-danger">*</span></label>
+                <input type="time" name="jam_mulai[]" class="form-control" required
+                        data-default="Jam mulai wajib diisi">
+                {% if errors.jadwal %}
+                  <div class="invalid-feedback d-block">{{ errors.jadwal }}</div>
+                {% else %}
+                <div class="invalid-feedback">Jam mulai wajib dipilih</div>
+                {% endif %}
                 </div>
+        
+                <div class="col-md-4">
+                <label class="form-label">Jam Selesai <span class="text-danger">*</span></label>
+                <input type="time" name="jam_selesai[]" class="form-control" required
+                        data-default="Jam selesai wajib diisi">
+                {% if errors.jadwal %}
+                  <div class="invalid-feedback d-block">{{ errors.jadwal }}</div>
+                {% else %}
+                <div class="invalid-feedback">Jam selesai wajib dipilih</div>
+                {% endif %}
                 </div>
             </div>
             </div>
         </div>
+  
 
         <button type="submit" class="btn btn-primary">
           <i class="fas fa-paper-plane me-2"></i>DAFTAR SEKARANG
@@ -366,128 +388,93 @@
         }, false);
       });
   })();
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const container = document.getElementById('certificates-container');
-    const addBtn = document.getElementById('add-certificate');
-  
-    addBtn.addEventListener('click', () => {
-      // ambil section terakhir
-      const sections = container.querySelectorAll('.certificate-section');
-      const last = sections[sections.length - 1];
-      const nomorInput = last.querySelector('input[name="nomor_sertifikat"]');
-      const namaInput = last.querySelector('input[name="nama_sertifikat"]');
-  
-      // reset validasi
-      nomorInput.classList.remove('is-invalid');
-      namaInput.classList.remove('is-invalid');
-  
-      // validasi
-      let valid = true;
-      if (!nomorInput.value.trim()) {
-        nomorInput.classList.add('is-invalid');
-        valid = false;
-      }
-      if (!namaInput.value.trim()) {
-        namaInput.classList.add('is-invalid');
-        valid = false;
-      }
-      if (!valid) {
-        // fokus ke field pertama yang kosong
-        ( !nomorInput.value.trim() ? nomorInput : namaInput ).focus();
-        return;
-      }
-  
-      // buat dua input tadi jadi readonly agar tidak diubah lagi
-      nomorInput.readOnly = true;
-      namaInput.readOnly = true;
-  
-      // buat section baru
-      const newSection = last.cloneNode(true);
-      // kosongkan nilainya dan hapus readonly + is-invalid
-      newSection.querySelectorAll('input').forEach(input => {
-        input.value = '';
-        input.readOnly = false;
-        input.classList.remove('is-invalid');
-      });
-  
-      container.appendChild(newSection);
-      // fokus ke nomor di section baru
-      newSection.querySelector('input[name="nomor_sertifikat"]').focus();
-    });
-  });
-  document.addEventListener('DOMContentLoaded', function() {
-    const scheduleContainer = document.getElementById('schedules-container');
-    const addSchedBtn = document.getElementById('add-schedule');
-  
-    addSchedBtn.addEventListener('click', () => {
-      const sections = scheduleContainer.querySelectorAll('.schedule-section');
-      const last = sections[sections.length - 1];
-  
-      const selectDay  = last.querySelector('select[name="hari_praktik"]');
-      const inputMulai = last.querySelector('input[name="jam_mulai"]');
-      const inputSelesai = last.querySelector('input[name="jam_selesai"]');
-  
-      // clear previous validation state
-      [selectDay, inputMulai, inputSelesai].forEach(el => {
-        el.classList.remove('is-invalid');
-      });
-  
-      // validate
-      let valid = true;
-      if (!selectDay.value) {
-        selectDay.classList.add('is-invalid');
-        valid = false;
-      }
-      if (!inputMulai.value) {
-        inputMulai.classList.add('is-invalid');
-        valid = false;
-      }
-      if (!inputSelesai.value) {
-        inputSelesai.classList.add('is-invalid');
-        valid = false;
-      }
-      // optional: ensure selesai > mulai
-      if (inputMulai.value && inputSelesai.value && inputSelesai.value <= inputMulai.value) {
-        inputSelesai.classList.add('is-invalid');
-        inputSelesai.nextElementSibling.textContent = 'Jam selesai harus setelah jam mulai';
-        valid = false;
-      }
-      if (!valid) {
-        // focus first invalid
-        const firstInvalid = last.querySelector('.is-invalid');
-        firstInvalid && firstInvalid.focus();
-        return;
-      }
-  
-      // lock the last section
-      selectDay.disabled = true;
-      inputMulai.readOnly = true;
-      inputSelesai.readOnly = true;
-  
-      // clone, clear and append new section
-      const clone = last.cloneNode(true);
-      clone.querySelectorAll('select, input').forEach(el => {
-        if (el.tagName === 'SELECT') {
-          el.disabled = false;
-          el.value = '';
-        } else {
-          el.readOnly = false;
-          el.value = '';
-        }
-        el.classList.remove('is-invalid');
-        // restore default invalid-feedback text for jam_selesai
-        if (el.name === 'jam_selesai') {
-          el.nextElementSibling.textContent = 'Jam selesai wajib diisi';
-        }
-      });
-      scheduleContainer.appendChild(clone);
-      // focus on new select
-      scheduleContainer.lastElementChild.querySelector('select[name="hari_praktik"]').focus();
-    });
-  });
-  
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('schedules-container');
+      const addBtn    = document.getElementById('add-schedule');
+    
+      addBtn.addEventListener('click', () => {
+        const last   = container.querySelector('.schedule-section:last-of-type');
+        const daySel = last.querySelector('select[name="hari_praktik[]"]');
+        const mulai  = last.querySelector('input[name="jam_mulai[]"]');
+        const selesai= last.querySelector('input[name="jam_selesai[]"]');
+    
+        // reset pesan & state invalid
+        [daySel, mulai, selesai].forEach(el => el.classList.remove('is-invalid'));
+    
+        // ---------- VALIDASI ----------
+        let ok = true;
+        if (!daySel.value)    { daySel.classList.add('is-invalid');    ok = false; }
+        if (!mulai.value)     { mulai.classList.add('is-invalid');     ok = false; }
+        if (!selesai.value)   { selesai.classList.add('is-invalid');   ok = false; }
+        if (mulai.value && selesai.value && selesai.value <= mulai.value) {
+          selesai.classList.add('is-invalid');
+          selesai.nextElementSibling.textContent = 'Jam selesai harus > jam mulai';
+          ok = false;
+        } else {
+          // reset pesan default
+          selesai.nextElementSibling.textContent = selesai.dataset.default || 'Jam selesai wajib diisi';
+        }
+        if (!ok) { last.querySelector('.is-invalid').focus(); return; }
+    
+        // ---------- KUNCI BLOK LAMA ----------
+        [daySel, mulai, selesai].forEach(el => {
+          el.readOnly = true;
+          el.style.pointerEvents = 'none';
+          el.classList.add('text-muted');
+        });
+    
+        // ---------- CLONE BLOK BARU ----------
+        const clone = last.cloneNode(true);
+        clone.querySelectorAll('select, input').forEach(el => {
+          el.readOnly = false;
+          el.style.pointerEvents = '';
+          el.classList.remove('text-muted','is-invalid');
+          el.value = '';                                   // kosongkan
+        });
+        container.appendChild(clone);
+        clone.querySelector('select').focus();
+      });
+    });   
+    </script> 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          /* pakai id & class yang benar persis seperti di HTML */
+          const certBox = document.getElementById('certificates-container');   // 
+          const addCert = document.getElementById('add-certificate');
+        
+          addCert.addEventListener('click', () => {
+            const last  = certBox.querySelector('.certificate-section:last-of-type'); // 
+            const nomor = last.querySelector('input[name="nomor_sertifikat[]"]');
+            const nama  = last.querySelector('input[name="nama_sertifikat[]"]');
+        
+            // ------ validasi sederhana ------
+            [nomor, nama].forEach(el => el.classList.remove('is-invalid'));
+            if (!nomor.value.trim()) { nomor.classList.add('is-invalid'); nomor.focus(); return; }
+            if (!nama.value.trim())  { nama.classList.add('is-invalid');  nama.focus();  return; }
+        
+            // ------ kunci blok lama ------
+            [nomor, nama].forEach(el => { el.readOnly = true; el.classList.add('text-muted'); });
+        
+            // ------ duplikasi blok baru ------
+            const clone = last.cloneNode(true);
+            clone.querySelectorAll('input').forEach(el => {
+              el.readOnly = false;
+              el.value    = '';
+              el.classList.remove('text-muted','is-invalid');
+            });
+            certBox.appendChild(clone);
+            clone.querySelector('input').focus();
+          });
+        });
+        </script>
+        
+        
+    
+    
+  
 
 </body>
 </html>

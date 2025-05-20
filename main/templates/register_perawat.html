@@ -181,67 +181,131 @@
         <p class="mb-0">Silakan lengkapi data diri Anda untuk mendaftar</p>
       </div>
 
-      <form class="needs-validation" novalidate>
+      <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
         <div class="section-title">
           <span><i class="fas fa-info-circle me-2"></i>Informasi Umum</span>
         </div>
 
         <div class="row">
+          <!-- Nomor Izin Praktik -->
           <div class="col-md-6 mb-3">
-            <label class="form-label">Nomor Izin Praktik <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" required placeholder="Nomor Izin Praktik">
-            <div class="invalid-feedback">Nomor izin praktik wajib diisi</div>
+            <label for="izin_praktik" class="form-label">Nomor Izin Praktik <span class="text-danger">*</span></label>
+            <input type="text" id="izin_praktik" name="izin_praktik"
+                   class="form-control" required
+                   placeholder="Nomor Izin Praktik"
+                   value="{{ data.izin_praktik|default:'' }}">
+            {% if errors.izin_praktik %}
+              <div class="invalid-feedback d-block">{{ errors.izin_praktik }}</div>
+            {% else %}
+              <div class="invalid-feedback">Nomor izin praktik wajib diisi</div>
+            {% endif %}
           </div>
+
+          <!-- Nomor Telepon -->
           <div class="col-md-6 mb-3">
-            <label class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
-            <input type="tel" class="form-control" required placeholder="Contoh: 081234567890">
-            <div class="invalid-feedback">Nomor telepon wajib diisi</div>
+            <label for="nomor_telepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
+            <input type="tel" id="nomor_telepon" name="nomor_telepon"
+                   class="form-control" required
+                   placeholder="Contoh: 081234567890"
+                   value="{{ data.nomor_telepon|default:'' }}">
+            {% if errors.nomor_telepon %}
+              <div class="invalid-feedback d-block">{{ errors.nomor_telepon }}</div>
+            {% else %}
+              <div class="invalid-feedback">Nomor telepon wajib diisi</div>
+            {% endif %}
           </div>
         </div>
 
         <div class="row">
+          <!-- Email -->
           <div class="col-md-6 mb-3">
-            <label class="form-label">Email <span class="text-danger">*</span></label>
-            <input type="email" class="form-control" required placeholder="Email">
-            <div class="invalid-feedback">Email wajib diisi dengan format yang benar</div>
+            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" id="email" name="email"
+                   class="form-control" required
+                   placeholder="Email"
+                   value="{{ data.email|default:'' }}">
+            {% if errors.email %}
+              <div class="invalid-feedback d-block">{{ errors.email }}</div>
+            {% else %}
+              <div class="invalid-feedback">Email wajib diisi dengan format yang benar</div>
+            {% endif %}
           </div>
+
+          <!-- Password -->
           <div class="col-md-6 mb-3">
-            <label class="form-label">Password <span class="text-danger">*</span></label>
-            <input type="password" class="form-control" required placeholder="Password">
-            <div class="invalid-feedback">Password wajib diisi</div>
+            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+            <input type="password" id="password" name="password"
+                   class="form-control" required
+                   placeholder="Password">
+            {% if errors.password %}
+              <div class="invalid-feedback d-block">{{ errors.password }}</div>
+            {% else %}
+              <div class="invalid-feedback">Password wajib diisi</div>
+            {% endif %}
           </div>
         </div>
 
+        <!-- Tanggal Diterima -->
         <div class="row mb-3">
           <div class="col-md-6">
-            <label class="form-label">Tanggal Diterima <span class="text-danger">*</span></label>
-            <input type="date" class="form-control">
+            <label for="tanggal_diterima" class="form-label">Tanggal Diterima <span class="text-danger">*</span></label>
+            <input type="date" id="tanggal_diterima" name="tanggal_diterima"
+                   class="form-control"
+                   value="{{ data.tanggal_diterima|default:'' }}" required>
+            {% if errors.tanggal_diterima %}
+              <div class="invalid-feedback d-block">{{ errors.tanggal_diterima }}</div>
+            {% else %}
+              <div class="invalid-feedback">Tanggal diterima wajib diisi</div>
+            {% endif %}
           </div>
         </div>
 
+        <!-- Alamat -->
         <div class="mb-3">
-          <label class="form-label">Alamat <span class="text-danger">*</span></label>
-          <textarea class="form-control" rows="3" placeholder="Alamat"></textarea>
+          <label for="alamat" class="form-label">Alamat <span class="text-danger">*</span></label>
+          <textarea id="alamat" name="alamat" class="form-control" rows="3"
+                    placeholder="Alamat" required>{{ data.alamat|default:'' }}</textarea>
+          {% if errors.alamat %}
+            <div class="invalid-feedback d-block">{{ errors.alamat }}</div>
+          {% else %}
+            <div class="invalid-feedback">Alamat wajib diisi</div>
+          {% endif %}
         </div>
 
+        <!-- Kompetensi (Sertifikat) -->
         <div class="section-title">
-          <span><i class="fas fa-certificate me-2"></i>Kompetensi</span>
-          <button type="button" class="btn btn-secondary" id="add-certificate">
-            <i class="fas fa-plus me-1"></i> Tambah Sertifikat
-          </button>
-        </div>
-
-        <div id="certificates-container" class="certificate-section">
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Nomor Sertifikat <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" placeholder="Nomor sertifikat kompetensi">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Nama Sertifikat <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" placeholder="Nama sertifikat kompetensi">
-            </div>
+            <span><i class="fas fa-certificate me-2"></i>Kompetensi</span>
+            <button type="button" class="btn btn-secondary" id="add-certificate">
+              <i class="fas fa-plus me-1"></i> Tambah Sertifikat
+            </button>
           </div>
+          <div id="certificates-container">
+            <!-- Section template awal -->
+            <div class="certificate-section mb-3">
+              <div class="row">
+                <div class="col-md-6">
+                  <label class="form-label">Nomor Sertifikat <span class="text-danger">*</span></label>
+                  <input type="text" name="nomor_sertifikat[]"
+                         class="form-control" placeholder="Nomor sertifikat kompetensi" required>
+                  {% if errors.sertifikat %}
+                  <div class="invalid-feedback d-block">{{ errors.sertifikat }}</div>
+                    {% else %}
+                  <div class="invalid-feedback">Nomor Sertifikat wajib diisi</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Nama Sertifikat <span class="text-danger">*</span></label>
+                  <input type="text" name="nama_sertifikat[]"
+                         class="form-control" placeholder="Nama sertifikat kompetensi" required>
+                    {% if errors.sertifikat %}
+                  <div class="invalid-feedback d-block">{{ errors.sertifikat }}</div>
+                    {% else %}
+                  <div class="invalid-feedback">Nama Sertifikat wajib diisi</div>
+                    {% endif %}
+                </div>
+              </div>
+            </div>
         </div>
 
         <button type="submit" class="btn btn-primary">
@@ -271,5 +335,36 @@
   })();
 </script>
 
-</body>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          /* pakai id & class yang benar persis seperti di HTML */
+          const certBox = document.getElementById('certificates-container');   // 
+          const addCert = document.getElementById('add-certificate');
+        
+          addCert.addEventListener('click', () => {
+            const last  = certBox.querySelector('.certificate-section:last-of-type'); // 
+            const nomor = last.querySelector('input[name="nomor_sertifikat[]"]');
+            const nama  = last.querySelector('input[name="nama_sertifikat[]"]');
+        
+            // ------ validasi sederhana ------
+            [nomor, nama].forEach(el => el.classList.remove('is-invalid'));
+            if (!nomor.value.trim()) { nomor.classList.add('is-invalid'); nomor.focus(); return; }
+            if (!nama.value.trim())  { nama.classList.add('is-invalid');  nama.focus();  return; }
+        
+            // ------ kunci blok lama ------
+            [nomor, nama].forEach(el => { el.readOnly = true; el.classList.add('text-muted'); });
+        
+            // ------ duplikasi blok baru ------
+            const clone = last.cloneNode(true);
+            clone.querySelectorAll('input').forEach(el => {
+              el.readOnly = false;
+              el.value    = '';
+              el.classList.remove('text-muted','is-invalid');
+            });
+            certBox.appendChild(clone);
+            clone.querySelector('input').focus();
+          });
+        });
+        </script>
+    </body>
 </html>
