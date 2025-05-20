@@ -113,6 +113,9 @@ def login_view(request):
 
     return render(request, 'login.html')
 
+def landing_page(request):
+    return render(request, 'landing.html')
+
 def register_view(request):
     return render(request, 'register.html')
 
@@ -820,8 +823,10 @@ def dashboard_klien(request):
                 if row[6]: nama_parts.append(row[6])
                 if row[7]: nama_parts.append(row[7])
                 nama = " ".join(nama_parts)
+                update_profile_url_name = 'klien_update_profile_individu'
             elif row[8]:  # Perusahaan
                 nama = row[8]
+                update_profile_url_name = 'klien_update_profile_perusahaan'
             else:
                 nama = "-"
 
@@ -835,11 +840,272 @@ def dashboard_klien(request):
             }
 
     return render(request, 'dashboard_klien.html', {
-        'klien': klien_info
+        'klien': klien_info,
+        'update_profile_url_name': update_profile_url_name
     })
 
 def update_password(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        user_email = request.session['user_email']
+
+        if new_password != confirm_password:
+            messages.error(request, "Konfirmasi password tidak cocok.")
+            return redirect('update_password')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            # Ambil password lama dari database
+            cursor.execute("""
+                SELECT password FROM "USER" WHERE email = %s
+            """, [user_email])
+            result = cursor.fetchone()
+
+            if result:
+                current_password = result[0]
+
+                if old_password != current_password:
+                    messages.error(request, "Password lama salah.")
+                    return redirect('update_password')
+
+                # Jika semua valid → update password
+                cursor.execute("""
+                    UPDATE "USER"
+                    SET password = %s
+                    WHERE email = %s
+                """, [new_password, user_email])
+
+                # Cek apakah Dokter
+                cursor.execute("""
+                    SELECT no_dokter_hewan
+                    FROM dokter_hewan
+                    WHERE no_dokter_hewan = (
+                        SELECT no_pegawai FROM pegawai WHERE email_user = %s
+                    )
+                """, [user_email])
+                if cursor.fetchone():
+                    return redirect('dashboard_dokter')
+
+                # Cek apakah Perawat
+                cursor.execute("""
+                    SELECT no_perawat_hewan
+                    FROM perawat_hewan
+                    WHERE no_perawat_hewan = (
+                        SELECT no_pegawai FROM pegawai WHERE email_user = %s
+                    )
+                """, [user_email])
+                if cursor.fetchone():
+                    return redirect('dashboard_perawat')
+
+                # Cek apakah Frontdesk
+                cursor.execute("""
+                    SELECT no_front_desk
+                    FROM front_desk
+                    WHERE no_front_desk = (
+                        SELECT no_pegawai FROM pegawai WHERE email_user = %s
+                    )
+                """, [user_email])
+                if cursor.fetchone():
+                    return redirect('dashboard_frontdesk')
+
+                # Cek apakah Klien
+                cursor.execute("""
+                    SELECT no_identitas
+                    FROM klien
+                    WHERE email = %s
+                """, [user_email])
+                if cursor.fetchone():
+                    return redirect('dashboard_klien')
+
     return render(request, 'update_password.html')
 
 def update_profile(request):
     return render(request, 'update_profile.html')
+
+def update_profile_individu(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    if request.method == 'POST':
+        alamat = request.POST.get('alamat')
+        nomor_telepon = request.POST.get('nomor_telepon')
+        nama_depan = request.POST.get('nama_depan')
+        nama_tengah = request.POST.get('nama_tengah')
+        nama_belakang = request.POST.get('nama_belakang')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            # Update USER (alamat & nomor telepon)
+            cursor.execute("""
+                UPDATE "USER"
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, nomor_telepon, user_email])
+
+            # Update nama individu
+            cursor.execute("""
+                UPDATE individu
+                SET nama_depan = %s,
+                    nama_tengah = %s,
+                    nama_belakang = %s
+                WHERE no_identitas_klien = (
+                    SELECT no_identitas FROM klien WHERE email = %s
+                )
+            """, [nama_depan, nama_tengah, nama_belakang, user_email])
+
+        messages.success(request, "Profil berhasil diperbarui.")
+        return redirect('dashboard_klien')  # ganti sesuai url dashboard klien kamu
+
+    # Ambil data untuk prefill form
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+
+        cursor.execute("""
+            SELECT u.alamat, u.nomor_telepon,
+                   i.nama_depan, i.nama_tengah, i.nama_belakang
+            FROM "USER" u
+            JOIN klien k ON u.email = k.email
+            JOIN individu i ON k.no_identitas = i.no_identitas_klien
+            WHERE u.email = %s
+        """, [user_email])
+
+        row = cursor.fetchone()
+
+    data = {}
+    if row:
+        data = {
+            'alamat': row[0],
+            'nomor_telepon': row[1],
+            'nama_depan': row[2],
+            'nama_tengah': row[3],
+            'nama_belakang': row[4]
+        }
+
+    return render(request, 'update_profile_individu.html', data)
+
+def update_profile_perusahaan(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    if request.method == 'POST':
+        alamat = request.POST.get('alamat')
+        nomor_telepon = request.POST.get('nomor_telepon')
+        nama_perusahaan = request.POST.get('nama_perusahaan')
+
+        if not nama_perusahaan or nama_perusahaan.strip() == "":
+            messages.error(request, "Nama perusahaan tidak boleh kosong.")
+            return redirect('klien_update_profile_perusahaan')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            # Update tabel USER
+            cursor.execute("""
+                UPDATE "USER"
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, nomor_telepon, user_email])
+
+            # Update nama perusahaan
+            cursor.execute("""
+                UPDATE perusahaan
+                SET nama_perusahaan = %s
+                WHERE no_identitas_klien = (
+                    SELECT no_identitas FROM klien WHERE email = %s
+                )
+            """, [nama_perusahaan, user_email])
+
+        messages.success(request, "Profil perusahaan berhasil diperbarui.")
+        return redirect('dashboard_klien')
+
+    # Ambil data untuk prefill form
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+
+        cursor.execute("""
+            SELECT u.alamat, u.nomor_telepon, p.nama_perusahaan
+            FROM "USER" u
+            JOIN klien k ON u.email = k.email
+            JOIN perusahaan p ON k.no_identitas = p.no_identitas_klien
+            WHERE u.email = %s
+        """, [user_email])
+
+        row = cursor.fetchone()
+
+    data = {}
+    if row:
+        data = {
+            'alamat': row[0],
+            'nomor_telepon': row[1],
+            'nama_perusahaan': row[2]
+        }
+
+    return render(request, 'update_profile_perusahaan.html', data)
+
+def update_profile_frontdesk(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    if request.method == 'POST':
+        alamat = request.POST.get('alamat')
+        nomor_telepon = request.POST.get('nomor_telepon')
+        tanggal_akhir_kerja = request.POST.get('tanggal_akhir_kerja')
+
+        if not alamat or not nomor_telepon or not tanggal_akhir_kerja:
+            messages.error(request, "Semua field wajib diisi.")
+            return redirect('frontdesk_update_profile')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            # Update alamat & nomor telepon
+            cursor.execute("""
+                UPDATE "USER"
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, nomor_telepon, user_email])
+
+            # Update tanggal akhir kerja
+            cursor.execute("""
+                UPDATE PEGAWAI
+                SET tanggal_akhir_kerja = %s
+                WHERE email_user = %s
+            """, [tanggal_akhir_kerja, user_email])
+
+        messages.success(request, "Profil berhasil diperbarui.")
+        return redirect('dashboard_frontdesk')
+
+    # GET method → prefill form
+    data = {}
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""
+            SELECT u.alamat, u.nomor_telepon, p.tanggal_akhir_kerja
+            FROM "USER" u
+            JOIN PEGAWAI p ON u.email = p.email_user
+            JOIN FRONT_DESK f ON f.no_front_desk = p.no_pegawai
+            WHERE u.email = %s
+        """, [user_email])
+
+        row = cursor.fetchone()
+        if row:
+            data = {
+                'alamat': row[0],
+                'nomor_telepon': row[1],
+                'tanggal_akhir_kerja': row[2].strftime('%Y-%m-%d') if row[2] else ''
+            }
+
+    return render(request, 'update_profile_frontdesk.html', data)
