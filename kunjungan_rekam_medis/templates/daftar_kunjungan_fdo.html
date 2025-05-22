@@ -87,7 +87,7 @@
                   {% endif %}
                 </td>
                 <td class="px-4 py-3 text-center space-x-1">
-                  <a href="{% url 'update_kunjungan' k.id_kunjungan %}" class="inline-flex items-center rounded-full border border-blue-600 px-3 py-1 text-blue-600 text-xs hover:bg-blue-50">
+                  <a href="{% url 'update_kunjungan' k.id_kunjungan k.no_dokter_hewan k.no_perawat_hewan k.no_front_desk k.nama_hewan k.no_identitas_klien %}" class="inline-flex items-center rounded-full border border-blue-600 px-3 py-1 text-blue-600 text-xs hover:bg-blue-50">
                     Edit
                   </a>
                   <button type="button" class="inline-flex items-center rounded-full border border-red-600 px-3 py-1 text-red-600 text-xs hover:bg-red-50" data-bs-toggle="modal" data-bs-target="#deleteModal-{{ k.id_kunjungan }}">
@@ -110,7 +110,7 @@
                               </div>
                               <div class="modal-footer justify-content-center">
                                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                  <form method="POST" id="deleteForm-{{ k.id_kunjungan }}" action="{% url 'delete_kunjungan' k.id_kunjungan %}">
+                                  <form method="POST" id="deleteForm-{{ k.id_kunjungan }}" action="{% url 'delete_kunjungan' k.id_kunjungan k.no_dokter_hewan k.no_perawat_hewan k.no_front_desk k.nama_hewan k.no_identitas_klien %}">
                                       {% csrf_token %}
                                       <button type="submit" class="btn btn-danger">Confirm Deletion</button>
                                   </form>

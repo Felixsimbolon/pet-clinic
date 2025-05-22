@@ -1,20 +1,16 @@
-import uuid
-from django.db import connection
-from django.shortcuts import redirect, render
 from django.contrib import messages
 from .forms import RegisterIndividuForm, RegisterFrontDeskForm, RegisterDokterForm, RegisterPerawatForm, RegisterPerusahaanForm
-import datetime
-import re
 from datetime import *
-# views.py
-
 import uuid, re
 from datetime import datetime, time
 from django.shortcuts import render, redirect
-from django.db import connection
+from django.db import connection, transaction, IntegrityError
+from psycopg2           import errors as pg_err          # akses kelas-kelas error PG
+
+
 
 EMAIL_REGEX         = re.compile(r'^[\w\.-]+@[\w\.-]+\.[A-Za-z]{2,}$')
-PHONE_REGEX         = re.compile(r'^0\d$')  
+PHONE_REGEX         = re.compile(r'^0\d{1,15}$')  
 DATE_REGEX          = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 PASSWORD_REGEX      = re.compile(
     r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
@@ -28,7 +24,7 @@ def landing_page(request):
 def login_view(request):
     
     if request.method == 'POST':
-        email = request.POST.get('email')
+        email = request.POST.get('email').strip().lower()
         password = request.POST.get('password')
 
         with connection.cursor() as cursor:
@@ -122,7 +118,7 @@ def register_individu(request):
 
     if request.method == 'POST':
         # Ambil data
-        data['email']          = request.POST.get('email', '').strip()
+        data['email']          = request.POST.get('email', '').strip().lower()
         data['nama_depan']     = request.POST.get('nama_depan', '').strip()
         data['nama_tengah']    = request.POST.get('nama_tengah', '').strip()
         data['nama_belakang']  = request.POST.get('nama_belakang', '').strip()
@@ -175,41 +171,49 @@ def register_individu(request):
         if not errors:
             id_klien = uuid.uuid4()
             today = date.today()
+            try:
+                with transaction.atomic():
+                    with connection.cursor() as cursor:
+                        # Simpan ke tabel USER
+                        cursor.execute("SET search_path TO pet_clinic;")
+                        cursor.execute(
+                            '''
+                            INSERT INTO "USER"
+                            (email, password, nomor_telepon, alamat)
+                            VALUES (%s, %s, %s, %s)
+                            ''',
+                            [
+                                data['email'], data['password'], data['nomor_telepon'],
+                                data['alamat']
+                            ]
+                        )
 
-            with connection.cursor() as cursor:
-                # Simpan ke tabel USER
-                cursor.execute("SET search_path TO pet_clinic;")
-                cursor.execute(
-                    '''
-                    INSERT INTO "USER"
-                    (email, password, nomor_telepon, alamat)
-                    VALUES (%s, %s, %s, %s)
-                    ''',
-                    [
-                        data['email'], data['password'], data['nomor_telepon'],
-                        data['alamat']
-                    ]
-                )
+                        # Simpan ke tabel KLIEN_INDIVIDU
+                        cursor.execute(
+                            '''
+                            INSERT INTO KLIEN
+                            (no_identitas, tanggal_registrasi, email)
+                            VALUES (%s, %s, %s)
+                            ''',
+                            [str(id_klien), today,data['email']]
+                        )
+                        cursor.execute(
+                            '''
+                            INSERT INTO INDIVIDU
+                            (no_identitas_klien, nama_depan, nama_tengah,nama_belakang)
+                            VALUES (%s, %s, %s, %s)
+                            ''',
+                            [str(id_klien), data['nama_depan'] , data['nama_tengah'],data['nama_belakang']  ]
+                        )
 
-                # Simpan ke tabel KLIEN_INDIVIDU
-                cursor.execute(
-                    '''
-                    INSERT INTO KLIEN
-                    (no_identitas, tanggal_registrasi, email)
-                    VALUES (%s, %s, %s)
-                    ''',
-                    [str(id_klien), today,data['email']]
-                )
-                cursor.execute(
-                    '''
-                    INSERT INTO INDIVIDU
-                    (no_identitas_klien, nama_depan, nama_tengah,nama_belakang)
-                    VALUES (%s, %s, %s, %s)
-                    ''',
-                    [str(id_klien), data['nama_depan'] , data['nama_tengah'],data['nama_belakang']  ]
-                )
-
-            return redirect('login')
+                    return redirect('login')
+            except IntegrityError as exc:
+                root = exc.__cause__
+                if isinstance(root, pg_err.UniqueViolation) and 'email' in str(root):
+                    # pesan dikirim dari trigger PL/pgSQL
+                    errors['email'] = str(root).split('CONTEXT:')[0].strip()
+                else:
+                    errors['db'] = 'Terjadi kesalahan database, coba lagi.'
 
     return render(request, 'register_individu.html', {
         'errors': errors,
@@ -222,7 +226,7 @@ def register_perusahaan(request):
     days = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu']
 
     if request.method == 'POST':
-        data['email'] = request.POST.get('email', '').strip()
+        data['email'] = request.POST.get('email', '').strip().lower()
         data['nama_perusahaan'] = request.POST.get('nama_perusahaan', '').strip()
         data['password'] = request.POST.get('password', '')
         data['nomor_telepon'] = request.POST.get('nomor_telepon', '').strip()
@@ -303,33 +307,42 @@ def register_perusahaan(request):
         if not errors:
             today = date.today()
             no_identitas_klien = uuid.uuid4()
-            with connection.cursor() as cursor:
-                cursor.execute("SET search_path TO pet_clinic;")
-                # Simpan USER
-                cursor.execute(
-                    '''INSERT INTO "USER" ( email, password, alamat,nomor_telepon)
-                       VALUES (%s, %s, %s, %s)''',
-                    [data['email'], data['password'],data['alamat'], data['nomor_telepon']]
-                )
+            try:
+                with transaction.atomic():
+                    with connection.cursor() as cursor:
+                        cursor.execute("SET search_path TO pet_clinic;")
+                        # Simpan USER
+                        cursor.execute(
+                            '''INSERT INTO "USER" ( email, password, alamat,nomor_telepon)
+                            VALUES (%s, %s, %s, %s)''',
+                            [data['email'], data['password'],data['alamat'], data['nomor_telepon']]
+                        )
 
-                # Simpan KLIEN (dengan tanggal_mulai_kerja = hari ini, dan tanggal_diterima)
-                cursor.execute(
-                    '''
-                    INSERT INTO KLIEN
-                    (no_identitas, tanggal_registrasi, email)
-                    VALUES (%s, %s, %s)
-                    ''',
-                    [str(no_identitas_klien), today,data['email']]
-                )
+                        # Simpan KLIEN (dengan tanggal_mulai_kerja = hari ini, dan tanggal_diterima)
+                        cursor.execute(
+                            '''
+                            INSERT INTO KLIEN
+                            (no_identitas, tanggal_registrasi, email)
+                            VALUES (%s, %s, %s)
+                            ''',
+                            [str(no_identitas_klien), today,data['email']]
+                        )
 
-                # Simpan FRONT_DESK
-                cursor.execute(
-                    '''INSERT INTO PERUSAHAAN (no_identitas_klien,nama_perusahaan)
-                       VALUES (%s,%s)''',
-                    [str(no_identitas_klien),data['nama_perusahaan']]
-                )
+                        # Simpan FRONT_DESK
+                        cursor.execute(
+                            '''INSERT INTO PERUSAHAAN (no_identitas_klien,nama_perusahaan)
+                            VALUES (%s,%s)''',
+                            [str(no_identitas_klien),data['nama_perusahaan']]
+                        )
+                return redirect('login')
+            except IntegrityError as exc:
+                root = exc.__cause__
+                if isinstance(root, pg_err.UniqueViolation) and 'email' in str(root):
+                    # pesan dikirim dari trigger PL/pgSQL
+                    errors['email'] = str(root).split('CONTEXT:')[0].strip()
+                else:
+                    errors['db'] = 'Terjadi kesalahan database, coba lagi.'
 
-            return redirect('login')
     return render(request, 'register_perusahaan.html', {
         'data': data,
         'errors': errors,
@@ -343,7 +356,7 @@ def register_frontdesk(request):
     errors = {}
     data = {}
     if request.method == 'POST':
-        data['email']            = request.POST.get('email', '').strip()
+        data['email']            = request.POST.get('email', '').strip().lower()
         data['nomor_telepon']    = request.POST.get('nomor_telepon', '').strip()
         data['tanggal_diterima'] = request.POST.get('tanggal_diterima', '').strip()
         data['password']         = request.POST.get('password', '')
@@ -391,33 +404,45 @@ def register_frontdesk(request):
         if not errors:
             id_pegawai = uuid.uuid4()
             tgl_diterima = data['tanggal_diterima'] 
+            
+            try:
+                with transaction.atomic():
 
-            with connection.cursor() as cursor:
-                cursor.execute("SET search_path TO pet_clinic;")
- 
-                # Simpan USER
-                cursor.execute(
-                    '''INSERT INTO "USER" ( email, password, alamat,nomor_telepon)
-                       VALUES (%s, %s, %s, %s)''',
-                    [data['email'], data['password'],data['alamat'], data['nomor_telepon']]
-                )
+                    with connection.cursor() as cursor:
+                        cursor.execute("SET search_path TO pet_clinic;")
+        
+                        # Simpan USER
+                        cursor.execute(
+                            '''INSERT INTO "USER" ( email, password, alamat,nomor_telepon)
+                            VALUES (%s, %s, %s, %s)''',
+                            [data['email'], data['password'],data['alamat'], data['nomor_telepon']]
+                        )
 
-                # Simpan PEGAWAI (dengan tanggal_mulai_kerja = hari ini, dan tanggal_diterima)
-                cursor.execute(
-                    '''INSERT INTO PEGAWAI
-                       (no_pegawai, tanggal_mulai_kerja, email_user)
-                       VALUES (%s, %s, %s)''',
-                    [str(id_pegawai),  tgl_diterima, data['email']]
-                )
+                        # Simpan PEGAWAI (dengan tanggal_mulai_kerja = hari ini, dan tanggal_diterima)
+                        cursor.execute(
+                            '''INSERT INTO PEGAWAI
+                            (no_pegawai, tanggal_mulai_kerja, email_user)
+                            VALUES (%s, %s, %s)''',
+                            [str(id_pegawai),  tgl_diterima, data['email']]
+                        )
 
-                # Simpan FRONT_DESK
-                cursor.execute(
-                    '''INSERT INTO FRONT_DESK (no_front_desk)
-                       VALUES (%s)''',
-                    [str(id_pegawai)]
-                )
+                        # Simpan FRONT_DESK
+                        cursor.execute(
+                            '''INSERT INTO FRONT_DESK (no_front_desk)
+                            VALUES (%s)''',
+                            [str(id_pegawai)]
+                        )
+                            
+                return redirect('login')
 
-            return redirect('register_success')
+            except IntegrityError as exc:
+                root = exc.__cause__
+                if isinstance(root, pg_err.UniqueViolation) and 'email' in str(root):
+                    # pesan dikirim dari trigger PL/pgSQL
+                    errors['email'] = str(root).split('CONTEXT:')[0].strip()
+                else:
+                    errors['db'] = 'Terjadi kesalahan database, coba lagi.'
+
 
     return render(request, 'register_frontdesk.html', {
         'errors': errors,
@@ -439,8 +464,10 @@ def register_dokter(request):
         # ---------- FIELD UMUM ----------
         for f in ['izin_praktik','nomor_telepon','email','password',
                   'tanggal_diterima','alamat']:
-            data[f] = request.POST.get(f,'').strip()
-
+            if f == 'email':
+                data[f] = request.POST.get(f,'').strip().lower()
+            else:
+                data[f] = request.POST.get(f,'').strip()
         # ---------- FIELD DINAMIS ----------
         nos   = request.POST.getlist('nomor_sertifikat[]')
         nms   = request.POST.getlist('nama_sertifikat[]')
@@ -558,49 +585,57 @@ def register_dokter(request):
         # ---------- SIMPAN ----------
         if not errors:
             no_doc   = str(uuid.uuid4())
+            try:
+                with transaction.atomic():
+                    with connection.cursor() as cur:
+                        cur.execute("SET search_path TO pet_clinic;")
 
-            with connection.cursor() as cur:
-                cur.execute("SET search_path TO pet_clinic;")
+                        # USER
+                        cur.execute("""
+                            INSERT INTO "USER"(email,password,nomor_telepon,alamat)
+                            VALUES (%s,%s,%s,%s)
+                        """, [data['email'], data['password'], data['nomor_telepon'], data['alamat']])
+                        
+                        cur.execute("""
+                            INSERT INTO PEGAWAI(no_pegawai,tanggal_mulai_kerja,email_user)
+                            VALUES (%s,%s,%s)
+                        """, [no_doc, tgl_diterima, data['email']])
+                        
+                        # TENAGA_MEDIS
+                        cur.execute("""
+                            INSERT INTO TENAGA_MEDIS(no_tenaga_medis,no_izin_praktik)
+                            VALUES (%s,%s)
+                        """, [no_doc, data['izin_praktik']])
+                        
+                        # DOKTER_HEWAN
+                        cur.execute("""
+                            INSERT INTO DOKTER_HEWAN(no_dokter_hewan)
+                            VALUES (%s)
+                        """, [no_doc])
 
-                # USER
-                cur.execute("""
-                    INSERT INTO "USER"(email,password,nomor_telepon,alamat)
-                    VALUES (%s,%s,%s,%s)
-                """, [data['email'], data['password'], data['nomor_telepon'], data['alamat']])
-                
-                cur.execute("""
-                    INSERT INTO PEGAWAI(no_pegawai,tanggal_mulai_kerja,email_user)
-                    VALUES (%s,%s,%s)
-                """, [no_doc, tgl_diterima, data['email']])
-                
-                # TENAGA_MEDIS
-                cur.execute("""
-                    INSERT INTO TENAGA_MEDIS(no_tenaga_medis,no_izin_praktik)
-                    VALUES (%s,%s)
-                """, [no_doc, data['izin_praktik']])
-                
-                # DOKTER_HEWAN
-                cur.execute("""
-                    INSERT INTO DOKTER_HEWAN(no_dokter_hewan)
-                    VALUES (%s)
-                """, [no_doc])
+                        # SERTIFIKAT
+                        for c in certificates:
+                            cur.execute("""
+                                INSERT INTO SERTIFIKAT_KOMPETENSI(no_tenaga_medis,no_sertifikat_kompetensi,nama_sertifikat)
+                                VALUES (%s,%s,%s)
+                            """, [no_doc, c['nomor'], c['nama']])
 
-                # SERTIFIKAT
-                for c in certificates:
-                    cur.execute("""
-                        INSERT INTO SERTIFIKAT_KOMPETENSI(no_tenaga_medis,no_sertifikat_kompetensi,nama_sertifikat)
-                        VALUES (%s,%s,%s)
-                    """, [no_doc, c['nomor'], c['nama']])
-
-                # JADWAL
-                for s in schedules:
-                    cur.execute("""
-                        INSERT INTO JADWAL_PRAKTIK(no_dokter_hewan,hari,jam)
-                        VALUES (%s,%s,%s)
-                    """, [no_doc, s['hari'], s['jam_mulai'] + "-" +s['jam_selesai']])
+                        # JADWAL
+                        for s in schedules:
+                            cur.execute("""
+                                INSERT INTO JADWAL_PRAKTIK(no_dokter_hewan,hari,jam)
+                                VALUES (%s,%s,%s)
+                            """, [no_doc, s['hari'], s['jam_mulai'] + "-" +s['jam_selesai']])
 
 
-            return redirect('login')   # sukses
+                    return redirect('login')   # sukses
+            except IntegrityError as exc:
+                root = exc.__cause__
+                if isinstance(root, pg_err.UniqueViolation) and 'email' in str(root):
+                    # pesan dikirim dari trigger PL/pgSQL
+                    errors['email'] = str(root).split('CONTEXT:')[0].strip()
+                else:
+                    errors['db'] = 'Terjadi kesalahan database, coba lagi.'
 
     else:
         data['certificates'] = [{}]
@@ -619,7 +654,10 @@ def register_perawat(request):
         # ---------- FIELD UMUM ----------
         for f in ['izin_praktik','nomor_telepon','email','password',
                   'tanggal_diterima','alamat']:
-            data[f] = request.POST.get(f,'').strip()
+            if f == 'email':
+                data[f] = request.POST.get(f,'').strip().lower()
+            else:
+                data[f] = request.POST.get(f,'').strip()
 
         # ---------- FIELD DINAMIS ----------
         nos   = request.POST.getlist('nomor_sertifikat[]')
@@ -706,43 +744,50 @@ def register_perawat(request):
         # ---------- SIMPAN ----------
         if not errors:
             no_perawat   = str(uuid.uuid4())
+            try:
+                with transaction.atomic():
+                    with connection.cursor() as cur:
+                        cur.execute("SET search_path TO pet_clinic;")
 
-            with connection.cursor() as cur:
-                cur.execute("SET search_path TO pet_clinic;")
+                        # USER
+                        cur.execute("""
+                            INSERT INTO "USER"(email,password,nomor_telepon,alamat)
+                            VALUES (%s,%s,%s,%s)
+                        """, [data['email'], data['password'], data['nomor_telepon'], data['alamat']])
+                        
+                        cur.execute("""
+                            INSERT INTO PEGAWAI(no_pegawai,tanggal_mulai_kerja,email_user)
+                            VALUES (%s,%s,%s)
+                        """, [no_perawat, tgl_diterima, data['email']])
+                        
+                        # TENAGA_MEDIS
+                        cur.execute("""
+                            INSERT INTO TENAGA_MEDIS(no_tenaga_medis,no_izin_praktik)
+                            VALUES (%s,%s)
+                        """, [no_perawat, data['izin_praktik']])
+                        
+                        # PERAWAT
+                        cur.execute("""
+                            INSERT INTO PERAWAT_HEWAN(no_perawat_hewan)
+                            VALUES (%s)
+                        """, [no_perawat])
 
-                # USER
-                cur.execute("""
-                    INSERT INTO "USER"(email,password,nomor_telepon,alamat)
-                    VALUES (%s,%s,%s,%s)
-                """, [data['email'], data['password'], data['nomor_telepon'], data['alamat']])
+                        # SERTIFIKAT
+                        for c in certificates:
+                            cur.execute("""
+                                INSERT INTO SERTIFIKAT_KOMPETENSI(no_tenaga_medis,no_sertifikat_kompetensi,nama_sertifikat)
+                                VALUES (%s,%s,%s)
+                            """, [no_perawat, c['nomor'], c['nama']])
+                    return redirect('login')   # sukses
                 
-                cur.execute("""
-                    INSERT INTO PEGAWAI(no_pegawai,tanggal_mulai_kerja,email_user)
-                    VALUES (%s,%s,%s)
-                """, [no_perawat, tgl_diterima, data['email']])
-                
-                # TENAGA_MEDIS
-                cur.execute("""
-                    INSERT INTO TENAGA_MEDIS(no_tenaga_medis,no_izin_praktik)
-                    VALUES (%s,%s)
-                """, [no_perawat, data['izin_praktik']])
-                
-                # PERAWAT
-                cur.execute("""
-                    INSERT INTO PERAWAT_HEWAN(no_perawat_hewan)
-                    VALUES (%s)
-                """, [no_perawat])
+            except IntegrityError as exc:
+                root = exc.__cause__
+                if isinstance(root, pg_err.UniqueViolation) and 'email' in str(root):
+                    # pesan dikirim dari trigger PL/pgSQL
+                    errors['email'] = str(root).split('CONTEXT:')[0].strip()
+                else:
+                    errors['db'] = 'Terjadi kesalahan database, coba lagi.'
 
-                # SERTIFIKAT
-                for c in certificates:
-                    cur.execute("""
-                        INSERT INTO SERTIFIKAT_KOMPETENSI(no_tenaga_medis,no_sertifikat_kompetensi,nama_sertifikat)
-                        VALUES (%s,%s,%s)
-                    """, [no_perawat, c['nomor'], c['nama']])
-
-
-
-            return redirect('login')   # sukses
 
     else:
         data['certificates'] = [{}]

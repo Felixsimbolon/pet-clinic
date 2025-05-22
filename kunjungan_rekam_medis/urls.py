@@ -15,8 +15,9 @@ urlpatterns = [
 
 
     path('create-kunjungan/', views.create_kunjungan, name='create_kunjungan'),
-    path('update/<uuid:id_kunjungan>/', views.update_kunjungan, name='update_kunjungan'),
-    path('delete-kunjungan/<uuid:id_kunjungan>/', views.delete_kunjungan, name='delete_kunjungan'),
+    path('update/<str:id_kunjungan>/<str:no_dokter_hewan>/<str:no_perawat_hewan>/<str:no_front_desk>/<str:nama_hewan>/<str:no_identitas_klien>/', views.update_kunjungan, name='update_kunjungan'),
+    path('delete-kunjungan/<str:id_kunjungan>/<str:no_dokter_hewan>/<str:no_perawat_hewan>/<str:no_front_desk>/<str:nama_hewan>/<str:no_identitas_klien>/', 
+        views.delete_kunjungan, name='delete_kunjungan'),
     path('create-rekam-medis/<uuid:id_kunjungan>/', views.create_rekam_medis, name='create_rekam_medis'),
     path('update-rekam-medis/<uuid:id_kunjungan>/', views.update_rekam_medis, name='update_rekam_medis'),
     path('rekam-medis/<uuid:id_kunjungan>/', views.rekam_medis_view, name='rekam_medis'),
