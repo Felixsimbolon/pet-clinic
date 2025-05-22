@@ -176,21 +176,22 @@
     </div>
 
     <form method="post" class="needs-validation" novalidate>
+      {% csrf_token %}
       <div class="mb-3">
         <label for="idJenis" class="form-label fw-semibold">ID Jenis Hewan</label>
-        <input type="text" class="form-control" id="idJenis" value="JH001" disabled>
+        <input type="text" class="form-control" id="idJenis" value="{{ jenis.id }}" disabled>
       </div>
 
       <div class="mb-3">
         <label for="namaJenis" class="form-label fw-semibold">Nama Jenis</label>
-        <input type="text" class="form-control" id="namaJenis" name="nama_jenis" value="Kucing" required>
+        <input type="text" class="form-control" id="namaJenis" name="nama_jenis" value="{{ jenis.nama }}" required>
         <div class="invalid-feedback">
           Nama jenis wajib diisi.
         </div>
       </div>
 
       <div class="d-flex justify-content-end mt-4">
-        <a href="#" class="btn btn-outline-secondary">Cancel</a>
+        <a href="{% url 'list_jenis_hewan' %}" class="btn btn-outline-secondary">Cancel</a>
         <button type="submit" class="btn btn-primary">Update</button>
       </div>
     </form>
