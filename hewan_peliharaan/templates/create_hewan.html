@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>List Hewan Peliharaan</title>
+  <title>Create New Pet</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -65,11 +65,12 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    /* Content */
+    /* Page Content */
     .page-content {
       flex: 1;
       display: flex;
       justify-content: center;
+      align-items: center;
       padding: 40px 15px;
     }
 
@@ -78,78 +79,64 @@
       padding: 30px;
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      max-width: 600px;
       width: 100%;
-      max-width: 1200px;
     }
 
     .card-header {
       background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       color: white;
       text-align: center;
-      padding: 20px;
+      padding: 25px;
       border-radius: 12px;
       margin-bottom: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 10px;
+      color: var(--primary-color);
+    }
+
+    .form-select, .form-control {
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid var(--accent-color);
+      transition: all 0.3s;
+    }
+
+    .form-select:focus, .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 8px var(--accent-color);
     }
 
     .btn-primary {
       background-color: var(--primary-color);
       border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
     }
 
-    .btn-danger {
-      background-color: var(--danger-color);
-      border: none;
+    .btn-primary:hover {
+      background-color: var(--dark-color);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
     }
 
-    .btn-primary:hover, .btn-danger:hover {
-      opacity: 0.9;
-    }
-
-    .table {
-      background-color: white;
-    }
-
-    .table thead {
-      background-color: var(--accent-color);
-      color: var(--dark-color);
-    }
-
-    .table th, .table td {
-      vertical-align: middle;
-    }
-
-    .img-thumbnail {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 10px;
-      border: 2px solid var(--accent-color);
-    }
-
-    .btn {
-      font-weight: 500;
-    }
-
-    .btn-create {
-      background-color: var(--primary-color);
-      color: white;
+    .btn-outline-secondary {
       border-radius: 8px;
       padding: 10px 20px;
     }
 
-    .btn-create:hover {
-      background-color: var(--dark-color);
-      color: white;
-    }
-
     .d-flex.justify-content-end {
-      margin-bottom: 20px;
+      gap: 10px;
     }
   </style>
 </head>
 <body>
 
-<!-- Navbar -->
+<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-custom">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">🐾 PetCare</a>
@@ -159,96 +146,87 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
         <li class="nav-item">
           <a class="nav-link" href="#">Dashboard</a>
         </li>
+
         <li class="nav-item">
           <a class="nav-link" href="#">Kelola Jenis Hewan</a>
         </li>
+
         <li class="nav-item">
           <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
         </li>
+
         <li class="nav-item">
           <a class="nav-link" href="#">Kelola Kunjungan</a>
         </li>
+
         <li class="nav-item">
           <a class="nav-link" href="#">Daftar Klien</a>
         </li>
+
         <li class="nav-item">
           <a class="btn btn-logout ms-3" href="#">Logout</a>
         </li>
+
       </ul>
     </div>
   </div>
 </nav>
 
-<!-- Content -->
+<!-- PAGE CONTENT -->
 <div class="page-content">
   <div class="card">
     <div class="card-header">
-      <h2 class="fw-bold mb-0">List Hewan Peliharaan</h2>
+      <h2 class="fw-bold mb-0">Create New Pet</h2>
+      <p class="mb-0">Lengkapi data hewan peliharaan baru</p>
     </div>
 
-    <div class="d-flex justify-content-end">
-      <a href="#" class="btn btn-create">
-        <i class="fas fa-plus"></i> Create New Pet
-      </a>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-bordered align-middle text-center">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Pemilik</th>
-            <th>Jenis Hewan</th>
-            <th>Nama Hewan</th>
-            <th>Tanggal Lahir</th>
-            <th>Foto</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>John Doe</td>
-            <td>Kucing</td>
-            <td>Snowy</td>
-            <td>9 Februari 2020</td>
-            <td><img src="https://cdn.pixabay.com/photo/2017/11/09/21/41/cat-2934720_1280.jpg" class="img-thumbnail" alt="Foto Kucing"></td>
-            <td>
-              <a href="#" class="btn btn-primary btn-sm me-2">Update</a>
-              <a href="#" class="btn btn-danger btn-sm">Delete</a>
-            </td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>PT Aku Sayang Hewan</td>
-            <td>Anjing</td>
-            <td>Blacky</td>
-            <td>15 November 2019</td>
-            <td><img src="https://media.istockphoto.com/id/450709593/id/foto/pug-duduk-dan-terengah-engah-1-tahun-terisolasi-di-atas-putih.jpg?s=612x612&w=0&k=20&c=q2Sg68jy8eyQI2SM6slDV9JV0g_c2v8vDjlpO6cYG1Y=" class="img-thumbnail" alt="Foto Anjing"></td>
-            <td>
-              <a href="#" class="btn btn-primary btn-sm me-2">Update</a>
-              <a href="#" class="btn btn-danger btn-sm">Delete</a>
-            </td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>PT Pecinta Kucing</td>
-            <td>Hamster</td>
-            <td>Hamseung</td>
-            <td>15 Oktober 2024</td>
-            <td><img src="https://images.tokopedia.net/blog-tokopedia-com/uploads/2018/06/1.-Hamster-Winter-White.jpg" class="img-thumbnail" alt="Foto Hamster"></td>
-            <td>
-              <a href="#" class="btn btn-primary btn-sm me-2">Update</a>
-              <a href="#" class="btn btn-danger btn-sm">Delete</a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
+    <form method="post" class="needs-validation" novalidate>
+      {% csrf_token %}
+      
+      <div class="mb-3">
+        <label for="pemilik" class="form-label">Pemilik</label>
+        <select class="form-select" id="pemilik" name="pemilik" required>
+          <option value="">Pilih pemilik</option>
+          {% for klien in klien_list %}
+            <option value="{{ klien.0 }}">{{ klien.1 }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    
+      <div class="mb-3">
+        <label for="jenisHewan" class="form-label">Jenis Hewan</label>
+        <select class="form-select" id="jenisHewan" name="jenis_hewan" required>
+          <option value="">Pilih jenis hewan</option>
+          {% for jenis in jenis_list %}
+            <option value="{{ jenis.0 }}">{{ jenis.1 }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    
+      <div class="mb-3">
+        <label for="namaHewan" class="form-label">Nama Hewan Peliharaan</label>
+        <input type="text" class="form-control" id="namaHewan" name="nama_hewan" placeholder="Nama Hewan" required>
+      </div>
+    
+      <div class="mb-3">
+        <label for="tanggalLahir" class="form-label">Tanggal Lahir Hewan</label>
+        <input type="date" class="form-control" id="tanggalLahir" name="tanggal_lahir" required>
+      </div>
+    
+      <div class="mb-4">
+        <label for="urlFoto" class="form-label">URL Foto Hewan</label>
+        <input type="url" class="form-control" id="urlFoto" name="foto_url" placeholder="https://example.com" required>
+      </div>
+    
+      <div class="d-flex justify-content-end">
+        <a href="{% url 'list_hewan' %}" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Create</button>
+      </div>
+    </form>
   </div>
 </div>
 

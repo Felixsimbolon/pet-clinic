@@ -171,12 +171,19 @@
       <p>Konfirmasi penghapusan hewan peliharaan</p>
     </div>
 
-    <p>Apakah kamu yakin ingin menghapus hewan <span class="highlight-danger">Snowy</span> milik <span class="highlight-danger">John Doe</span>?</p>
+    <form method="post">
+      {% csrf_token %}
+      <p>
+        Apakah kamu yakin ingin menghapus hewan 
+        <span class="highlight-danger">{{ nama_hewan }}</span> 
+        milik <span class="highlight-danger">{{ nama_pemilik }}</span>?
+      </p>
 
-    <div class="d-flex justify-content-center">
-      <a href="#" class="btn btn-outline-secondary">Cancel</a>
-      <button type="submit" class="btn btn-danger">Confirm Deletion</button>
-    </div>
+      <div class="d-flex justify-content-center">
+        <a href="{% url 'list_hewan' %}" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+      </div>
+    </form>
   </div>
 </div>
 
