@@ -20,7 +20,7 @@ CREATE TABLE PEGAWAI (
   tanggal_akhir_kerja DATE,
   email_user          VARCHAR(50) NOT NULL,
   CONSTRAINT fk_pegawai_user
-    FOREIGN KEY (email_user) REFERENCES "USER"(email)
+    FOREIGN KEY (email_user) REFERENCES "USER"(email) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 3. KLIEN
@@ -29,7 +29,7 @@ CREATE TABLE KLIEN (
   tanggal_registrasi  DATE      NOT NULL,
   email               VARCHAR(50) NOT NULL,
   CONSTRAINT fk_klien_user
-    FOREIGN KEY (email) REFERENCES "USER"(email)
+    FOREIGN KEY (email) REFERENCES "USER"(email) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 4. INDIVIDU
@@ -39,7 +39,7 @@ CREATE TABLE INDIVIDU (
   nama_tengah         VARCHAR(50),
   nama_belakang       VARCHAR(50) NOT NULL,
   CONSTRAINT fk_individu_klien
-    FOREIGN KEY (no_identitas_klien) REFERENCES KLIEN(no_identitas)
+    FOREIGN KEY (no_identitas_klien) REFERENCES KLIEN(no_identitas) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 5. PERUSAHAAN
@@ -47,14 +47,14 @@ CREATE TABLE PERUSAHAAN (
   no_identitas_klien  UUID      PRIMARY KEY,
   nama_perusahaan     VARCHAR(100) NOT NULL,
   CONSTRAINT fk_perusahaan_klien
-    FOREIGN KEY (no_identitas_klien) REFERENCES KLIEN(no_identitas)
+    FOREIGN KEY (no_identitas_klien) REFERENCES KLIEN(no_identitas) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 6. FRONT_DESK
 CREATE TABLE FRONT_DESK (
   no_front_desk       UUID      PRIMARY KEY,
   CONSTRAINT fk_frontdesk_pegawai
-    FOREIGN KEY (no_front_desk) REFERENCES PEGAWAI(no_pegawai)
+    FOREIGN KEY (no_front_desk) REFERENCES PEGAWAI(no_pegawai) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 7. TENAGA_MEDIS
@@ -62,21 +62,21 @@ CREATE TABLE TENAGA_MEDIS (
   no_tenaga_medis     UUID      PRIMARY KEY,
   no_izin_praktik     VARCHAR(20) UNIQUE NOT NULL,
   CONSTRAINT fk_tenagamedis_pegawai
-    FOREIGN KEY (no_tenaga_medis) REFERENCES PEGAWAI(no_pegawai)
+    FOREIGN KEY (no_tenaga_medis) REFERENCES PEGAWAI(no_pegawai) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 8. PERAWAT_HEWAN
 CREATE TABLE PERAWAT_HEWAN (
   no_perawat_hewan    UUID      PRIMARY KEY,
   CONSTRAINT fk_perawathewan_tenagamedis
-    FOREIGN KEY (no_perawat_hewan) REFERENCES TENAGA_MEDIS(no_tenaga_medis)
+    FOREIGN KEY (no_perawat_hewan) REFERENCES TENAGA_MEDIS(no_tenaga_medis) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 9. DOKTER_HEWAN
 CREATE TABLE DOKTER_HEWAN (
   no_dokter_hewan     UUID      PRIMARY KEY,
   CONSTRAINT fk_dokterhewan_tenagamedis
-    FOREIGN KEY (no_dokter_hewan) REFERENCES TENAGA_MEDIS(no_tenaga_medis)
+    FOREIGN KEY (no_dokter_hewan) REFERENCES TENAGA_MEDIS(no_tenaga_medis) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 --10. SERTIFIKAT_KOMPETENSI
@@ -86,7 +86,7 @@ CREATE TABLE SERTIFIKAT_KOMPETENSI (
   nama_sertifikat          VARCHAR(100) NOT NULL,
   PRIMARY KEY (no_sertifikat_kompetensi, no_tenaga_medis),
   CONSTRAINT fk_sertifikasi_pegawai
-    FOREIGN KEY (no_tenaga_medis) REFERENCES TENAGA_MEDIS(no_tenaga_medis)
+    FOREIGN KEY (no_tenaga_medis) REFERENCES TENAGA_MEDIS(no_tenaga_medis) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 11. JADWAL_PRAKTIK
@@ -96,7 +96,7 @@ CREATE TABLE JADWAL_PRAKTIK (
   jam                  VARCHAR(20) NOT NULL,
   PRIMARY KEY (no_dokter_hewan, hari, jam),
   CONSTRAINT fk_jadwal_dokter
-    FOREIGN KEY (no_dokter_hewan) REFERENCES DOKTER_HEWAN(no_dokter_hewan)
+    FOREIGN KEY (no_dokter_hewan) REFERENCES DOKTER_HEWAN(no_dokter_hewan) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 14. JENIS_HEWAN
@@ -136,9 +136,9 @@ CREATE TABLE PERAWATAN_OBAT (
   kuantitas_obat      INT         NOT NULL,
   PRIMARY KEY (kode_perawatan, kode_obat),
   CONSTRAINT fk_po_perawatan
-    FOREIGN KEY (kode_perawatan) REFERENCES PERAWATAN(kode_perawatan),
+    FOREIGN KEY (kode_perawatan) REFERENCES PERAWATAN(kode_perawatan) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_po_obat
-    FOREIGN KEY (kode_obat) REFERENCES OBAT(kode)
+    FOREIGN KEY (kode_obat) REFERENCES OBAT(kode) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 13. HEWAN
@@ -150,20 +150,20 @@ CREATE TABLE HEWAN (
   url_foto            VARCHAR(255)  NOT NULL,
   PRIMARY KEY (nama, no_identitas_klien),
   CONSTRAINT fk_hewan_klien
-    FOREIGN KEY (no_identitas_klien) REFERENCES KLIEN(no_identitas),
+    FOREIGN KEY (no_identitas_klien) REFERENCES KLIEN(no_identitas) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_hewan_jenis
-    FOREIGN KEY (id_jenis) REFERENCES JENIS_HEWAN(id)
+    FOREIGN KEY (id_jenis) REFERENCES JENIS_HEWAN(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 12. KUNJUNGAN
 CREATE TABLE KUNJUNGAN (
-  id_kunjungan        UUID          UNIQUE NOT NULL,
+  id_kunjungan        UUID          NOT NULL,
   nama_hewan          VARCHAR(50)   NOT NULL,
   no_identitas_klien  UUID          NOT NULL,
   no_front_desk       UUID          NOT NULL,
   no_perawat_hewan    UUID          NOT NULL,
   no_dokter_hewan     UUID          NOT NULL,
-  kode_vaksin         VARCHAR(6)    NOT NULL,
+  kode_vaksin         VARCHAR(6),
   tipe_kunjungan      VARCHAR(10)   NOT NULL,
   timestamp_awal      TIMESTAMP     NOT NULL,
   timestamp_akhir     TIMESTAMP,
@@ -178,15 +178,15 @@ CREATE TABLE KUNJUNGAN (
     no_dokter_hewan
   ),
   CONSTRAINT fk_kunj_hewan
-    FOREIGN KEY (nama_hewan, no_identitas_klien) REFERENCES HEWAN(nama, no_identitas_klien),
+    FOREIGN KEY (nama_hewan, no_identitas_klien) REFERENCES HEWAN(nama, no_identitas_klien) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_kunj_frontdesk
-    FOREIGN KEY (no_front_desk) REFERENCES FRONT_DESK(no_front_desk),
+    FOREIGN KEY (no_front_desk) REFERENCES FRONT_DESK(no_front_desk) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_kunj_perawat
-    FOREIGN KEY (no_perawat_hewan) REFERENCES PERAWAT_HEWAN(no_perawat_hewan),
+    FOREIGN KEY (no_perawat_hewan) REFERENCES PERAWAT_HEWAN(no_perawat_hewan) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_kunj_dokter
-    FOREIGN KEY (no_dokter_hewan) REFERENCES DOKTER_HEWAN(no_dokter_hewan),
+    FOREIGN KEY (no_dokter_hewan) REFERENCES DOKTER_HEWAN(no_dokter_hewan) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_kunj_vaksin
-    FOREIGN KEY (kode_vaksin) REFERENCES VAKSIN(kode)
+    FOREIGN KEY (kode_vaksin) REFERENCES VAKSIN(kode) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 15. KUNJUNGAN_KEPERAWATAN
@@ -209,17 +209,9 @@ CREATE TABLE KUNJUNGAN_KEPERAWATAN (
     kode_perawatan
   ),
   CONSTRAINT fk_kkp_kunj
-    FOREIGN KEY (id_kunjungan) REFERENCES KUNJUNGAN(id_kunjungan),
-  CONSTRAINT fk_kkp_hewan
-    FOREIGN KEY (nama_hewan, no_identitas_klien) REFERENCES HEWAN(nama, no_identitas_klien),
-  CONSTRAINT fk_kkp_frontdesk
-    FOREIGN KEY (no_front_desk) REFERENCES FRONT_DESK(no_front_desk),
-  CONSTRAINT fk_kkp_perawat
-    FOREIGN KEY (no_perawat_hewan) REFERENCES PERAWAT_HEWAN(no_perawat_hewan),y
-  CONSTRAINT fk_kkp_dokter
-    FOREIGN KEY (no_dokter_hewan) REFERENCES DOKTER_HEWAN(no_dokter_hewan),
+    FOREIGN KEY (id_kunjungan,nama_hewan,no_identitas_klien,no_front_desk,no_perawat_hewan,no_dokter_hewan) REFERENCES KUNJUNGAN(id_kunjungan,nama_hewan,no_identitas_klien,no_front_desk,no_perawat_hewan,no_dokter_hewan) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_kkp_perawatan
-    FOREIGN KEY (kode_perawatan) REFERENCES PERAWATAN(kode_perawatan)
+    FOREIGN KEY (kode_perawatan) REFERENCES PERAWATAN(kode_perawatan) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 INSERT INTO "USER" (email, password, alamat, nomor_telepon) VALUES
@@ -579,3 +571,30 @@ VALUES
 ('bb73717c-9d08-4add-a55c-29c3d74edf64','Anjing 8','f72e51f3-1461-48b6-abbe-3bd035144e3f','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','PRW0000004'),
 ('491fc472-0605-48c5-afbb-180ecce1d50a','Anjing 9','f72e51f3-1461-48b6-abbe-3bd035144e3f','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','PRW0000005'),
 ('b9a954a7-01fd-4be9-8b45-e928b006ede3','Anjing 10','f72e51f3-1461-48b6-abbe-3bd035144e3f','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','PRW0000004');
+
+CREATE TABLE django_session (
+    session_key varchar(40) PRIMARY KEY,
+    session_data text NOT NULL,
+    expire_date timestamp NOT NULL
+);
+CREATE INDEX django_session_expire_date_idx ON django_session(expire_date);
+
+CREATE OR REPLACE FUNCTION prevent_duplicate_email()
+RETURNS trigger AS $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM "USER" WHERE email = NEW.email) THEN
+        RAISE EXCEPTION 'Email % sudah terdaftar.', NEW.email
+              USING ERRCODE = '23505';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_prevent_duplicate_email ON "USER";
+
+CREATE TRIGGER trg_prevent_duplicate_email
+BEFORE INSERT ON "USER"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_duplicate_email();
+
+
