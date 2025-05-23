@@ -100,7 +100,7 @@ def login_view(request):
                 klien = cursor.fetchone()
 
                 if klien:
-                    # return redirect('dashboard_klien', id_klien=klien[0])
+
                     return redirect('dashboard_klien')
 
 

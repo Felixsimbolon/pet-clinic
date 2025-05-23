@@ -18,11 +18,39 @@ from django.db import connection
 from django.contrib import messages
 import uuid
 from datetime import datetime, time
+from django.db import connection, transaction, IntegrityError
+from psycopg2           import errors as pg_err    
+from psycopg2.errors import CheckViolation
+from psycopg2 import errors as pg_err   # import semua mapping error psycopg2
+
 
 
 
     
 def daftar_kunjungan_fdo(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel front_desk
+        cursor.execute("SELECT 1 FROM front_desk WHERE no_front_desk = %s", [no_pegawai])
+        is_fdo = cursor.fetchone()
+        if not is_fdo:
+            # Jika no_pegawai tidak ada di front_desk, redirect login
+            return redirect('login')
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
         cursor.execute("""
@@ -39,33 +67,107 @@ def daftar_kunjungan_fdo(request):
             FROM kunjungan
             ORDER BY timestamp_awal DESC
         """)
-        kunjungan_rows = cursor.fetchall()
+        kunjungan_rows = list(cursor.fetchall())
 
-        # Check if 'suhu' and 'berat_badan' are null in rekam_medis for each kunjungan
         for i, row in enumerate(kunjungan_rows):
-            id_kunjungan = row[0]
+            (
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                tipe_kunjungan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+                timestamp_awal,
+                timestamp_akhir
+            ) = row
+
+            # Cek apakah kunjungan keperawatan ada catatan (menggunakan PK gabungan)
             cursor.execute("""
-                SELECT suhu, berat_badan
-                FROM kunjungan
-                WHERE id_kunjungan = %s
-            """, [id_kunjungan])
-            rekam_medis_data = cursor.fetchone()
+                SELECT EXISTS (
+                    SELECT 1 FROM kunjungan_keperawatan
+                    WHERE id_kunjungan = %s
+                      AND no_identitas_klien = %s
+                      AND nama_hewan = %s
+                      AND no_front_desk = %s
+                      AND no_dokter_hewan = %s
+                      AND no_perawat_hewan = %s
+                      AND catatan IS NOT NULL
+                      AND catatan <> ''
+                )
+            """, [
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+            ])
+            punya_catatan = cursor.fetchone()[0]
 
-            # Check if both suhu and berat_badan are null
-            suhu_null = rekam_medis_data[0] is None
-            berat_badan_null = rekam_medis_data[1] is None
+            # Cek apakah suhu dan berat badan ada di rekam medis (menggunakan PK gabungan)
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT 1 FROM kunjungan
+                    WHERE id_kunjungan = %s
+                      AND no_identitas_klien = %s
+                      AND nama_hewan = %s
+                      AND no_front_desk = %s
+                      AND no_dokter_hewan = %s
+                      AND no_perawat_hewan = %s
+                      AND suhu IS NOT NULL
+                      AND berat_badan IS NOT NULL
+                )
+            """, [
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+            ])
+            punya_rekam_medis = cursor.fetchone()[0]
 
-            # Add flag for modal display if both are null
-            kunjungan_rows[i] = (*row, suhu_null, berat_badan_null)
+            # Tambahkan flag ke tuple
+            kunjungan_rows[i] = (*row, punya_catatan, punya_rekam_medis)
 
-    columns = ['id_kunjungan', 'no_identitas_klien', 'nama_hewan', 'tipe_kunjungan','no_front_desk','no_dokter_hewan','no_perawat_hewan', 'waktu_mulai', 'waktu_selesai', 'suhu_null', 'berat_badan_null']
+    columns = [
+        'id_kunjungan', 'no_identitas_klien', 'nama_hewan', 'tipe_kunjungan',
+        'no_front_desk', 'no_dokter_hewan', 'no_perawat_hewan', 
+        'timestamp_awal', 'timestamp_akhir', 'punya_catatan', 'punya_rekam_medis'
+    ]
     data = [dict(zip(columns, row)) for row in kunjungan_rows]
 
     return render(request, 'daftar_kunjungan_fdo.html', {
         'kunjungan_list': data
     })
+
     
 def daftar_kunjungan_perawat(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel perawat_hewan
+        cursor.execute("SELECT 1 FROM perawat_hewan WHERE no_perawat_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di perawat_hewan, redirect login
+            return redirect('login')
+        
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
         cursor.execute("""
@@ -74,31 +176,83 @@ def daftar_kunjungan_perawat(request):
                 no_identitas_klien,
                 nama_hewan,
                 tipe_kunjungan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
                 timestamp_awal,
                 timestamp_akhir
             FROM kunjungan
             ORDER BY timestamp_awal DESC
         """)
-        kunjungan_rows = cursor.fetchall()
+        kunjungan_rows = list(cursor.fetchall())
 
-        # Check if 'suhu' and 'berat_badan' are null in rekam_medis for each kunjungan
         for i, row in enumerate(kunjungan_rows):
-            id_kunjungan = row[0]
+            (
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                tipe_kunjungan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+                timestamp_awal,
+                timestamp_akhir
+            ) = row
+
+            # Cek apakah kunjungan keperawatan ada catatan (menggunakan PK gabungan)
             cursor.execute("""
-                SELECT suhu, berat_badan
-                FROM kunjungan
-                WHERE id_kunjungan = %s
-            """, [id_kunjungan])
-            rekam_medis_data = cursor.fetchone()
+                SELECT EXISTS (
+                    SELECT 1 FROM kunjungan_keperawatan
+                    WHERE id_kunjungan = %s
+                      AND no_identitas_klien = %s
+                      AND nama_hewan = %s
+                      AND no_front_desk = %s
+                      AND no_dokter_hewan = %s
+                      AND no_perawat_hewan = %s
+                      AND catatan IS NOT NULL
+                      AND catatan <> ''
+                )
+            """, [
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+            ])
+            punya_catatan = cursor.fetchone()[0]
 
-            # Check if both suhu and berat_badan are null
-            suhu_null = rekam_medis_data[0] is None
-            berat_badan_null = rekam_medis_data[1] is None
+            # Cek apakah suhu dan berat badan ada di rekam medis (menggunakan PK gabungan)
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT 1 FROM kunjungan
+                    WHERE id_kunjungan = %s
+                      AND no_identitas_klien = %s
+                      AND nama_hewan = %s
+                      AND no_front_desk = %s
+                      AND no_dokter_hewan = %s
+                      AND no_perawat_hewan = %s
+                      AND suhu IS NOT NULL
+                      AND berat_badan IS NOT NULL
+                )
+            """, [
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+            ])
+            punya_rekam_medis = cursor.fetchone()[0]
 
-            # Add flag for modal display if both are null
-            kunjungan_rows[i] = (*row, suhu_null, berat_badan_null)
+            # Tambahkan flag ke tuple
+            kunjungan_rows[i] = (*row, punya_catatan, punya_rekam_medis)
 
-    columns = ['id_kunjungan', 'no_identitas_klien', 'nama_hewan', 'tipe_kunjungan', 'waktu_mulai', 'waktu_selesai', 'suhu_null', 'berat_badan_null']
+    columns = [
+        'id_kunjungan', 'no_identitas_klien', 'nama_hewan', 'tipe_kunjungan',
+        'no_front_desk', 'no_dokter_hewan', 'no_perawat_hewan', 
+        'timestamp_awal', 'timestamp_akhir', 'punya_catatan', 'punya_rekam_medis'
+    ]
     data = [dict(zip(columns, row)) for row in kunjungan_rows]
 
     return render(request, 'daftar_kunjungan_perawat.html', {
@@ -109,6 +263,20 @@ def daftar_kunjungan_perawat(request):
     
     
 def daftar_kunjungan_klien(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+ 
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_identitas FROM klien WHERE email = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
         cursor.execute("""
@@ -117,32 +285,86 @@ def daftar_kunjungan_klien(request):
                 no_identitas_klien,
                 nama_hewan,
                 tipe_kunjungan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
                 timestamp_awal,
                 timestamp_akhir
             FROM kunjungan
             ORDER BY timestamp_awal DESC
         """)
-        kunjungan_rows = cursor.fetchall()
+        kunjungan_rows = list(cursor.fetchall())
 
-        # Check if 'suhu' and 'berat_badan' are null in rekam_medis for each kunjungan
         for i, row in enumerate(kunjungan_rows):
-            id_kunjungan = row[0]
+            (
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                tipe_kunjungan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+                timestamp_awal,
+                timestamp_akhir
+            ) = row
+
+            # Cek apakah kunjungan keperawatan ada catatan (menggunakan PK gabungan)
             cursor.execute("""
-                SELECT suhu, berat_badan
-                FROM kunjungan
-                WHERE id_kunjungan = %s
-            """, [id_kunjungan])
-            rekam_medis_data = cursor.fetchone()
+                SELECT EXISTS (
+                    SELECT 1 FROM kunjungan_keperawatan
+                    WHERE id_kunjungan = %s
+                      AND no_identitas_klien = %s
+                      AND nama_hewan = %s
+                      AND no_front_desk = %s
+                      AND no_dokter_hewan = %s
+                      AND no_perawat_hewan = %s
+                      AND catatan IS NOT NULL
+                      AND catatan <> ''
+                )
+            """, [
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+            ])
+            punya_catatan = cursor.fetchone()[0]
 
-            # Check if both suhu and berat_badan are null
-            suhu_null = rekam_medis_data[0] is None
-            berat_badan_null = rekam_medis_data[1] is None
+            # Cek apakah suhu dan berat badan ada di rekam medis (menggunakan PK gabungan)
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT 1 FROM kunjungan
+                    WHERE id_kunjungan = %s
+                      AND no_identitas_klien = %s
+                      AND nama_hewan = %s
+                      AND no_front_desk = %s
+                      AND no_dokter_hewan = %s
+                      AND no_perawat_hewan = %s
+                      AND suhu IS NOT NULL
+                      AND berat_badan IS NOT NULL
+                )
+            """, [
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+            ])
+            punya_rekam_medis = cursor.fetchone()[0]
 
-            # Add flag for modal display if both are null
-            kunjungan_rows[i] = (*row, suhu_null, berat_badan_null)
+            # Tambahkan flag ke tuple
+            kunjungan_rows[i] = (*row, punya_catatan, punya_rekam_medis)
 
-    columns = ['id_kunjungan', 'no_identitas_klien', 'nama_hewan', 'tipe_kunjungan', 'waktu_mulai', 'waktu_selesai', 'suhu_null', 'berat_badan_null']
+    columns = [
+        'id_kunjungan', 'no_identitas_klien', 'nama_hewan', 'tipe_kunjungan',
+        'no_front_desk', 'no_dokter_hewan', 'no_perawat_hewan', 
+        'timestamp_awal', 'timestamp_akhir', 'punya_catatan', 'punya_rekam_medis'
+    ]
     data = [dict(zip(columns, row)) for row in kunjungan_rows]
+
+    
 
     return render(request, 'daftar_kunjungan_klien.html', {
         'kunjungan_list': data
@@ -150,6 +372,30 @@ def daftar_kunjungan_klien(request):
     
     
 def daftar_kunjungan(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel front_desk
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_fdo = cursor.fetchone()
+        if not is_fdo:
+            # Jika no_pegawai tidak ada di front_desk, redirect login
+            return redirect('login')
+        
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
         cursor.execute("""
@@ -158,32 +404,83 @@ def daftar_kunjungan(request):
                 no_identitas_klien,
                 nama_hewan,
                 tipe_kunjungan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
                 timestamp_awal,
                 timestamp_akhir
             FROM kunjungan
             ORDER BY timestamp_awal DESC
         """)
-        kunjungan_rows = cursor.fetchall()
+        kunjungan_rows = list(cursor.fetchall())
 
-        # Check if 'suhu' and 'berat_badan' are null in rekam_medis for each kunjungan
         for i, row in enumerate(kunjungan_rows):
-            id_kunjungan = row[0]
+            (
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                tipe_kunjungan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+                timestamp_awal,
+                timestamp_akhir
+            ) = row
+
+            # Cek apakah kunjungan keperawatan ada catatan (menggunakan PK gabungan)
             cursor.execute("""
-                SELECT suhu, berat_badan
-                FROM kunjungan
-                WHERE id_kunjungan = %s
-            """, [id_kunjungan])
-            rekam_medis_data = cursor.fetchone()
+                SELECT EXISTS (
+                    SELECT 1 FROM kunjungan_keperawatan
+                    WHERE id_kunjungan = %s
+                      AND no_identitas_klien = %s
+                      AND nama_hewan = %s
+                      AND no_front_desk = %s
+                      AND no_dokter_hewan = %s
+                      AND no_perawat_hewan = %s
+                      AND catatan IS NOT NULL
+                      AND catatan <> ''
+                )
+            """, [
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+            ])
+            punya_catatan = cursor.fetchone()[0]
 
-            # Check if both suhu and berat_badan are null
-            suhu_null = rekam_medis_data[0] is None
-            berat_badan_null = rekam_medis_data[1] is None
+            # Cek apakah suhu dan berat badan ada di rekam medis (menggunakan PK gabungan)
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT 1 FROM kunjungan
+                    WHERE id_kunjungan = %s
+                      AND no_identitas_klien = %s
+                      AND nama_hewan = %s
+                      AND no_front_desk = %s
+                      AND no_dokter_hewan = %s
+                      AND no_perawat_hewan = %s
+                      AND suhu IS NOT NULL
+                      AND berat_badan IS NOT NULL
+                )
+            """, [
+                id_kunjungan,
+                no_identitas_klien,
+                nama_hewan,
+                no_front_desk,
+                no_dokter_hewan,
+                no_perawat_hewan,
+            ])
+            punya_rekam_medis = cursor.fetchone()[0]
 
+            # Tambahkan flag ke tuple
+            kunjungan_rows[i] = (*row, punya_catatan, punya_rekam_medis)
 
-            # Add flag for modal display if both are null
-            kunjungan_rows[i] = (*row, suhu_null, berat_badan_null)
-
-    columns = ['id_kunjungan', 'no_identitas_klien', 'nama_hewan', 'tipe_kunjungan', 'waktu_mulai', 'waktu_selesai', 'suhu_null', 'berat_badan_null']
+    columns = [
+        'id_kunjungan', 'no_identitas_klien', 'nama_hewan', 'tipe_kunjungan',
+        'no_front_desk', 'no_dokter_hewan', 'no_perawat_hewan', 
+        'timestamp_awal', 'timestamp_akhir', 'punya_catatan', 'punya_rekam_medis'
+    ]
     data = [dict(zip(columns, row)) for row in kunjungan_rows]
 
     return render(request, 'daftar_kunjungan.html', {
@@ -191,6 +488,29 @@ def daftar_kunjungan(request):
     }) 
 def create_kunjungan(request):
     # Retrieve all available ID Klien and Nama Hewan from the database
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel front_desk
+        cursor.execute("SELECT 1 FROM front_desk WHERE no_front_desk = %s", [no_pegawai])
+        is_fdo = cursor.fetchone()
+        if not is_fdo:
+            # Jika no_pegawai tidak ada di front_desk, redirect login
+            return redirect('login')
     errors = {}
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
@@ -284,7 +604,6 @@ def create_kunjungan(request):
         dokter_email    = request.POST.get('dokter_hewan', '').strip()
         perawat_email   = request.POST.get('perawat_hewan', '').strip()
         front_desk_email= request.POST.get('front_desk', '').strip()
-        print(waktu_selesai_penanganan == "")
         
         
         id_kunjungan = uuid.uuid4()
@@ -323,18 +642,6 @@ def create_kunjungan(request):
             except ValueError:
                 errors['timestamp_akhir'] = 'Format waktu selesai tidak valid'
                 
-        with connection.cursor() as cursor:
-            cursor.execute("SET search_path TO pet_clinic;")
-            cursor.execute("""
-                SELECT 1 FROM hewan
-                WHERE no_identitas_klien = %s AND nama = %s
-            """, [id_klien, nama_hewan])
-            cek_hewan = cursor.fetchone()
-
-        if not cek_hewan:
-            errors['nama_hewan'] = f'Hewan dengan nama "{nama_hewan}" untuk klien ini tidak ditemukan.'
-
-
 
         # ---------- jika ada error, render ulang form ----------
         if errors:
@@ -360,21 +667,70 @@ def create_kunjungan(request):
             no_perawat   = pegawai_id_by_email(perawat_email)
             no_dokter    = pegawai_id_by_email(dokter_email)
             no_front_desk= pegawai_id_by_email(front_desk_email)
-            if  waktu_selesai_penanganan == "":
-                cursor.execute("""
-                    INSERT INTO kunjungan
-                        (id_kunjungan, no_identitas_klien,nama_hewan, tipe_kunjungan, timestamp_awal, no_dokter_hewan, no_perawat_hewan,no_front_desk)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s,%s)
-                """, [id_kunjungan,id_klien, nama_hewan, metode_kunjungan, timestamp_awal, no_dokter, no_perawat,no_front_desk])
-            else:
-                     cursor.execute("""
-                    INSERT INTO kunjungan
-                        (id_kunjungan, no_identitas_klien,nama_hewan, tipe_kunjungan, timestamp_awal, timestamp_akhir, no_dokter_hewan, no_perawat_hewan,no_front_desk)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s,%s, %s)
-                """, [id_kunjungan,id_klien, nama_hewan, metode_kunjungan, timestamp_awal, timestamp_akhir, no_dokter, no_perawat,no_front_desk])
+            try:
+                if  waktu_selesai_penanganan == "":
+                    cursor.execute("""
+                        INSERT INTO kunjungan
+                            (id_kunjungan, no_identitas_klien,nama_hewan, tipe_kunjungan, timestamp_awal, no_dokter_hewan, no_perawat_hewan,no_front_desk)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s,%s)
+                    """, [id_kunjungan,id_klien, nama_hewan, metode_kunjungan, timestamp_awal, no_dokter, no_perawat,no_front_desk])
+                else:
+                        cursor.execute("""
+                        INSERT INTO kunjungan
+                            (id_kunjungan, no_identitas_klien,nama_hewan, tipe_kunjungan, timestamp_awal, timestamp_akhir, no_dokter_hewan, no_perawat_hewan,no_front_desk)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s,%s, %s)
+                    """, [id_kunjungan,id_klien, nama_hewan, metode_kunjungan, timestamp_awal, timestamp_akhir, no_dokter, no_perawat,no_front_desk])
+                return redirect('daftar_kunjungan_fdo')
+
+            except IntegrityError as exc:
+                root = exc.__cause__
+                msg    = str(root).split('CONTEXT:')[0].strip()
+                pgcode = getattr(root, 'pgcode', '')  # contoh '23514'
+                if isinstance(root, pg_err.UniqueViolation) :
+                    # pesan dikirim dari trigger PL/pgSQL
+                    errors['timestamp_akhir'] = str(root).split('CONTEXT:')[0].strip()
+                    return render(request, 'create_kunjungan.html', {
+                        'klien_list': klien_list,
+                        'hewan_list': hewan_list,
+                        'tipe_kunjungan_list': tipe_kunjungan_list,
+                        'dokter_list': dokter_list,  # Pass dokter list for dropdown
+                        'perawat_list': perawat_list,  # Pass perawat list for dropdown
+                        'front_desk_list': front_desk_list,
+                        'errors': errors,
+                    })
+                elif pgcode == '23514' or isinstance(root,(pg_err.CheckViolation, pg_err.RaiseException)):
+
+                        if 'Timestamp akhir' in msg:          # trigger waktu
+                            errors['timestamp_akhir']= msg
+
+                        elif msg.startswith('ERROR: Hewan'):  # trigger hewan-klien
+                            errors['nama_hewan'] = msg
+
+                        else:                                 # pesan lain dari trigger yg sama
+                            errors.setdefault('db', msg)
+                        return render(request, 'create_kunjungan.html', {
+                            'klien_list': klien_list,
+                            'hewan_list': hewan_list,
+                            'tipe_kunjungan_list': tipe_kunjungan_list,
+                            'dokter_list': dokter_list,  # Pass dokter list for dropdown
+                            'perawat_list': perawat_list,  # Pass perawat list for dropdown
+                            'front_desk_list': front_desk_list,
+                            'errors': errors,
+                        })
+
+                else:
+                    errors['db'] = 'Terjadi kesalahan database, coba lagi.'
+                    return render(request, 'create_kunjungan.html', {
+                        'klien_list': klien_list,
+                        'hewan_list': hewan_list,
+                        'tipe_kunjungan_list': tipe_kunjungan_list,
+                        'dokter_list': dokter_list,  # Pass dokter list for dropdown
+                        'perawat_list': perawat_list,  # Pass perawat list for dropdown
+                        'front_desk_list': front_desk_list,
+                        'errors': errors,
+                    })
 
         # Redirect after saving the kunjungan data
-        return redirect('daftar_kunjungan_fdo')
 
     return render(request, 'create_kunjungan.html', {
         'klien_list': klien_list,
@@ -383,11 +739,36 @@ def create_kunjungan(request):
         'dokter_list': dokter_list,  # Pass dokter list for dropdown
         'perawat_list': perawat_list,  # Pass perawat list for dropdown
         'front_desk_list': front_desk_list,
+        'errors': errors,
     })
 
 
 def update_kunjungan(request, id_kunjungan,no_dokter_hewan,no_perawat_hewan,no_front_desk,nama_hewan,no_identitas_klien):
     # Fetch the current Kunjungan data based on the ID
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel front_desk
+        cursor.execute("SELECT 1 FROM front_desk WHERE no_front_desk = %s", [no_pegawai])
+        is_fdo = cursor.fetchone()
+        if not is_fdo:
+            # Jika no_pegawai tidak ada di front_desk, redirect login
+            return redirect('login')
+        
     errors = {}
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
@@ -584,16 +965,7 @@ def update_kunjungan(request, id_kunjungan,no_dokter_hewan,no_perawat_hewan,no_f
                 timestamp_akhir = datetime.strptime(input_waktu_selesai_penanganan, "%Y-%m-%dT%H:%M:%S")
             except ValueError:
                 errors['timestamp_akhir'] = 'Format waktu selesai tidak valid'
-        with connection.cursor() as cursor:
-            cursor.execute("SET search_path TO pet_clinic;")
-            cursor.execute("""
-                SELECT 1 FROM hewan
-                WHERE no_identitas_klien = %s AND nama = %s
-            """, [input_id_klien, input_nama_hewan])
-            cek_hewan = cursor.fetchone()
-
-        if not cek_hewan:
-            errors['nama_hewan'] = f'Hewan dengan nama "{input_nama_hewan}" untuk klien ini tidak ditemukan.'
+        
 
 
         # ---------- jika ada error, render ulang form ----------
@@ -640,69 +1012,146 @@ def update_kunjungan(request, id_kunjungan,no_dokter_hewan,no_perawat_hewan,no_f
     """, [input_front_desk_email])
             
             input_no_front_desk = cursor.fetchone()[0]
-            
-            if input_waktu_selesai_penanganan !="":
-            
-                cursor.execute("""
-                    UPDATE kunjungan
-                    SET no_identitas_klien = %s,
-                    nama_hewan = %s,
-                    tipe_kunjungan = %s,
-                    timestamp_awal = %s,
-                    timestamp_akhir = %s,
-                    no_dokter_hewan = %s,
-                    no_perawat_hewan = %s,
-                    no_front_desk = %s
-                    WHERE id_kunjungan = %s
-                    AND no_identitas_klien = %s
-                    AND nama_hewan = %s
-                    AND no_dokter_hewan = %s
-                    AND no_perawat_hewan = %s
-                    AND no_front_desk = %s
-                """, [
-                    input_id_klien,
-                    input_nama_hewan,
-                    input_metode_kunjungan,
-                    timestamp_awal,
-                    timestamp_akhir,
-                    input_no_dokter_hewan,
-                    input_no_perawat_hewan,
-                    input_no_front_desk,
-                    id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk
-                    
-                ])
-            else:
-                cursor.execute("""
-                    UPDATE kunjungan
-                    SET no_identitas_klien = %s,
-                    nama_hewan = %s,
-                    tipe_kunjungan = %s,
-                    timestamp_awal = %s,
-                    timestamp_akhir = null,
-                    no_dokter_hewan = %s,
-                    no_perawat_hewan = %s,
-                    no_front_desk = %s
-                    WHERE id_kunjungan = %s
-                    AND no_identitas_klien = %s
-                    AND nama_hewan = %s
-                    AND no_dokter_hewan = %s
-                    AND no_perawat_hewan = %s
-                    AND no_front_desk = %s
-                """, [
-                    input_id_klien,
-                    input_nama_hewan,
-                    input_metode_kunjungan,
-                    timestamp_awal,
-                    input_no_dokter_hewan,
-                    input_no_perawat_hewan,
-                    input_no_front_desk,
-                    id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk
-                    
-                ])
+            try:
+                if input_waktu_selesai_penanganan !="":
                 
+                    cursor.execute("""
+                        UPDATE kunjungan
+                        SET no_identitas_klien = %s,
+                        nama_hewan = %s,
+                        tipe_kunjungan = %s,
+                        timestamp_awal = %s,
+                        timestamp_akhir = %s,
+                        no_dokter_hewan = %s,
+                        no_perawat_hewan = %s,
+                        no_front_desk = %s
+                        WHERE id_kunjungan = %s
+                        AND no_identitas_klien = %s
+                        AND nama_hewan = %s
+                        AND no_dokter_hewan = %s
+                        AND no_perawat_hewan = %s
+                        AND no_front_desk = %s
+                    """, [
+                        input_id_klien,
+                        input_nama_hewan,
+                        input_metode_kunjungan,
+                        timestamp_awal,
+                        timestamp_akhir,
+                        input_no_dokter_hewan,
+                        input_no_perawat_hewan,
+                        input_no_front_desk,
+                        id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk
+                        
+                    ])
+                else:
+                    cursor.execute("""
+                        UPDATE kunjungan
+                        SET no_identitas_klien = %s,
+                        nama_hewan = %s,
+                        tipe_kunjungan = %s,
+                        timestamp_awal = %s,
+                        timestamp_akhir = null,
+                        no_dokter_hewan = %s,
+                        no_perawat_hewan = %s,
+                        no_front_desk = %s
+                        WHERE id_kunjungan = %s
+                        AND no_identitas_klien = %s
+                        AND nama_hewan = %s
+                        AND no_dokter_hewan = %s
+                        AND no_perawat_hewan = %s
+                        AND no_front_desk = %s
+                    """, [
+                        input_id_klien,
+                        input_nama_hewan,
+                        input_metode_kunjungan,
+                        timestamp_awal,
+                        input_no_dokter_hewan,
+                        input_no_perawat_hewan,
+                        input_no_front_desk,
+                        id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk
+                        
+                    ])
+                    # Redirect after saving the kunjungan data
+                return redirect('daftar_kunjungan_fdo')
+            
+            except IntegrityError as exc:
+                    root   = exc.__cause__                # psycopg2 error instance
+                    msg    = str(root).split('CONTEXT:')[0].strip()
+                    pgcode = getattr(root, 'pgcode', '')  # contoh '23514'
 
-        # Redirect after saving the kunjungan data
-        return redirect('daftar_kunjungan_fdo')
+                    if isinstance(root, pg_err.UniqueViolation) :
+                        errors['timestamp_akhir'] = msg
+                        
+                        return render(request, 'update_kunjungan.html', {
+                            'id_kunjungan': id_kunjungan,
+                            'klien_list': klien_list,
+                            'hewan_list': hewan_list,
+                            'dokter_list': dokter_list,
+                            'perawat_list': perawat_list,
+                            'front_desk_list': front_desk_list,
+                            'tipe_kunjungan_list': tipe_kunjungan_list,
+                            'current_klien': current_klien,
+                            'current_nama_hewan': current_nama_hewan,
+                            'current_tipe_kunjungan': current_tipe_kunjungan,
+                            'current_waktu_mulai':   current_waktu_mulai_iso,
+                            'current_waktu_selesai': current_waktu_selesai_iso,
+                            'email_dokter_hewan' : email_dokter_hewan,
+                            'email_perawat_hewan' : email_perawat_hewan,
+                            'email_front_desk' : email_front_desk,
+                            'errors' : errors,
+                        })
+                    elif pgcode == '23514' or isinstance(root,
+                        (pg_err.CheckViolation, pg_err.RaiseException)):
+
+                        if 'Timestamp akhir' in msg:          # trigger waktu
+                            errors['timestamp_akhir']= msg
+
+                        elif msg.startswith('ERROR: Hewan'):  # trigger hewan-klien
+                            errors['nama_hewan'] = msg
+
+                        else:                                 # pesan lain dari trigger yg sama
+                            errors.setdefault('db', msg)
+                        return render(request, 'update_kunjungan.html', {
+                            'id_kunjungan': id_kunjungan,
+                            'klien_list': klien_list,
+                            'hewan_list': hewan_list,
+                            'dokter_list': dokter_list,
+                            'perawat_list': perawat_list,
+                            'front_desk_list': front_desk_list,
+                            'tipe_kunjungan_list': tipe_kunjungan_list,
+                            'current_klien': current_klien,
+                            'current_nama_hewan': current_nama_hewan,
+                            'current_tipe_kunjungan': current_tipe_kunjungan,
+                            'current_waktu_mulai':   current_waktu_mulai_iso,
+                            'current_waktu_selesai': current_waktu_selesai_iso,
+                            'email_dokter_hewan' : email_dokter_hewan,
+                            'email_perawat_hewan' : email_perawat_hewan,
+                            'email_front_desk' : email_front_desk,
+                            'errors' : errors,
+                        })
+
+                    else:
+                        errors['db'] = 'Terjadi kesalahan database, coba lagi.'
+                        return render(request, 'update_kunjungan.html', {
+                            'id_kunjungan': id_kunjungan,
+                            'klien_list': klien_list,
+                            'hewan_list': hewan_list,
+                            'dokter_list': dokter_list,
+                            'perawat_list': perawat_list,
+                            'front_desk_list': front_desk_list,
+                            'tipe_kunjungan_list': tipe_kunjungan_list,
+                            'current_klien': current_klien,
+                            'current_nama_hewan': current_nama_hewan,
+                            'current_tipe_kunjungan': current_tipe_kunjungan,
+                            'current_waktu_mulai':   current_waktu_mulai_iso,
+                            'current_waktu_selesai': current_waktu_selesai_iso,
+                            'email_dokter_hewan' : email_dokter_hewan,
+                            'email_perawat_hewan' : email_perawat_hewan,
+                            'email_front_desk' : email_front_desk,
+                            'errors' : errors,
+
+                        })
+
 
     # Fetch the existing values to populate the form
     
@@ -722,6 +1171,8 @@ def update_kunjungan(request, id_kunjungan,no_dokter_hewan,no_perawat_hewan,no_f
         'email_dokter_hewan' : email_dokter_hewan,
         'email_perawat_hewan' : email_perawat_hewan,
         'email_front_desk' : email_front_desk,
+        'errors' : errors,
+
     })
 
 
@@ -747,53 +1198,83 @@ def delete_kunjungan(request, id_kunjungan,no_dokter_hewan,no_perawat_hewan,no_f
 
 
 
-def create_rekam_medis(request, id_kunjungan):
-    # Get the relevant kunjungan data based on id_kunjungan
-    with connection.cursor() as cursor:
-        cursor.execute("SET search_path TO pet_clinic;")
-        cursor.execute("""
-            SELECT id_kunjungan, no_identitas_klien, nama_hewan
-            FROM kunjungan
-            WHERE id_kunjungan = %s
-        """, [id_kunjungan])
-        kunjungan_data = cursor.fetchone()
 
+def create_rekam_medis(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien):
+    # Get the relevant kunjungan data based on id_kunjungan
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel front_desk
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_fdo = cursor.fetchone()
+        if not is_fdo:
+            # Jika no_pegawai tidak ada di front_desk, redirect login
+            return redirect('login')
+        
     if request.method == "POST":
         suhu = request.POST.get('suhu')
         berat_badan = request.POST.get('berat_badan')
-        kode_perawatan = request.POST.get('jenis_perawatan')
-        catatan = request.POST.get('catatan', '')
+        catatan = request.POST.get('catatan', '').strip()
+        print(catatan)
 
         # Insert the data into rekam_medis
-        # with connection.cursor() as cursor:
-        #     cursor.execute("SET search_path TO pet_clinic;")
-        #     cursor.execute("""
-        #         UPDATE kunjungan
-        #         SET suhu = %s, berat_badan = %s
-        #         WHERE id_kunjungan = %s
-        #     """, [suhu, berat_badan, id_kunjungan])
-        # with connection.cursor() as cursor:
-        #     cursor.execute("SET search_path TO pet_clinic;")
-        #     cursor.execute("""
-        #         UPDATE kunjungan_keperawatan
-        #         SET kode_perawatan = %s, catatan = %s
-        #         WHERE id_kunjungan = %s
-        #     """, [kode_perawatan,catatan, id_kunjungan])
-
-        # rekam_medis_context = {
-        #     'suhu': suhu,
-        #     'berat_badan': berat_badan,
-        #     'jenis_perawatan': jenis_perawatan,
-        #     'catatan': catatan,
-        #     'id_kunjungan': id_kunjungan
-        # }
-
-        # # Success message
-        # messages.success(request, 'Rekam medis berhasil dibuat!')
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+            cursor.execute("""
+                UPDATE kunjungan
+                SET suhu = %s, berat_badan = %s
+                WHERE id_kunjungan = %s
+                AND no_dokter_hewan = %s
+                AND no_perawat_hewan = %s
+                AND no_front_desk = %s
+                AND nama_hewan = %s
+                AND no_identitas_klien = %s
+            """, [suhu, berat_badan, id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
+        if catatan != '' and catatan is not None:
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic;")
+                cursor.execute("""
+                    UPDATE kunjungan_keperawatan
+                    SET  catatan = %s
+                    WHERE id_kunjungan = %s
+                    AND no_dokter_hewan = %s
+                    AND no_perawat_hewan = %s
+                    AND no_front_desk = %s
+                    AND nama_hewan = %s
+                    AND no_identitas_klien = %s
+                """, [catatan, id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
+        else:
+           with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic;")
+                cursor.execute("""
+                    UPDATE kunjungan_keperawatan
+                    SET  catatan = null
+                    WHERE id_kunjungan = %s
+                    AND no_dokter_hewan = %s
+                    AND no_perawat_hewan = %s
+                    AND no_front_desk = %s
+                    AND nama_hewan = %s
+                    AND no_identitas_klien = %s
+                """, [ id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien]) 
+        # Success message
+        messages.success(request, 'Rekam medis berhasil dibuat!')
 
         # Render the same page (view_rekam_medis) with the updated Rekam Medis data
-        return render(request, 'rekam_medis_view_dummy.html')
-
+        return redirect('rekam_medis_view' ,id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien )
     # Get the list of jenis perawatan
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
@@ -803,116 +1284,48 @@ def create_rekam_medis(request, id_kunjungan):
         """)
         jenis_perawatan_list = cursor.fetchall()
 
-    return render(request, 'create_rekam_medis.html', {
-        'id_kunjungan': id_kunjungan,
-        'kunjungan_data': kunjungan_data,
-        'jenis_perawatan_list': jenis_perawatan_list
-    })
-
-
-
-def create_rekam_medis(request, id_kunjungan):
-    # Get the relevant kunjungan data based on id_kunjungan
-    with connection.cursor() as cursor:
-        cursor.execute("SET search_path TO pet_clinic;")
-        cursor.execute("""
-            SELECT id_kunjungan, no_identitas_klien, nama_hewan
-            FROM kunjungan
-            WHERE id_kunjungan = %s
-        """, [id_kunjungan])
-        kunjungan_data = cursor.fetchone()
-
-    if request.method == "POST":
-        suhu = request.POST.get('suhu')
-        berat_badan = request.POST.get('berat_badan')
-        kode_perawatan = request.POST.get('jenis_perawatan')
-        catatan = request.POST.get('catatan', '')
-
-        # Insert the data into rekam_medis
-        # with connection.cursor() as cursor:
-        #     cursor.execute("SET search_path TO pet_clinic;")
-        #     cursor.execute("""
-        #         UPDATE kunjungan
-        #         SET suhu = %s, berat_badan = %s
-        #         WHERE id_kunjungan = %s
-        #     """, [suhu, berat_badan, id_kunjungan])
-        # with connection.cursor() as cursor:
-        #     cursor.execute("SET search_path TO pet_clinic;")
-        #     cursor.execute("""
-        #         UPDATE kunjungan_keperawatan
-        #         SET kode_perawatan = %s, catatan = %s
-        #         WHERE id_kunjungan = %s
-        #     """, [kode_perawatan,catatan, id_kunjungan])
-
-        # rekam_medis_context = {
-        #     'suhu': suhu,
-        #     'berat_badan': berat_badan,
-        #     'jenis_perawatan': jenis_perawatan,
-        #     'catatan': catatan,
-        #     'id_kunjungan': id_kunjungan
-        # }
-
-        # # Success message
-        # messages.success(request, 'Rekam medis berhasil dibuat!')
-
-        # Render the same page (view_rekam_medis) with the updated Rekam Medis data
-        return render(request, 'rekam_medis_view_dummy.html')
-
-    # Get the list of jenis perawatan
-    with connection.cursor() as cursor:
-        cursor.execute("SET search_path TO pet_clinic;")
-        cursor.execute("""
-            SELECT kode_perawatan, nama_perawatan FROM perawatan
-            ORDER BY kode_perawatan
-        """)
-        jenis_perawatan_list = cursor.fetchall()
-
-    return render(request, 'create_rekam_medis.html', {
-        'id_kunjungan': id_kunjungan,
-        'kunjungan_data': kunjungan_data,
-        'jenis_perawatan_list': jenis_perawatan_list
-    })
-def update_rekam_medis_dummy(request):
-    return render(request,'update_rekam_medis_dummy.html')
+    return render(request, 'create_rekam_medis.html')
 
 
 
 
-def create_rekam_medis_dummy_fdo(request):
-    # Get the relevant kunjungan data based on id_kunjungan
-
-    return render(request, 'rekam_medis_view_dummy_fdo.html')
-
-def create_rekam_medis_dummy_perawat(request):
-    # Get the relevant kunjungan data based on id_kunjungan
-
-    return render(request, 'rekam_medis_view_dummy_perawat.html')
-
-def create_rekam_medis_dummy_klien(request):
-    # Get the relevant kunjungan data based on id_kunjungan
-
-    return render(request, 'rekam_medis_view_dummy_klien.html')
-
-def create_rekam_medis_dummy(request):
-    # Get the relevant kunjungan data based on id_kunjungan
-
-    return render(request, 'rekam_medis_view_dummy.html')
 
 
-
-    # Get the list of 
 
 
 from django.shortcuts import render, redirect
 from django.db import connection
 from django.contrib import messages
 
-def update_rekam_medis(request, id_kunjungan):
+def update_rekam_medis(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel front_desk
+        cursor.execute("SELECT 1 FROM front_desk WHERE no_front_desk = %s", [no_pegawai])
+        is_fdo = cursor.fetchone()
+        if not is_fdo:
+            # Jika no_pegawai tidak ada di front_desk, redirect login
+            return redirect('login')
     if request.method == "POST":
         suhu = request.POST.get('suhu')
         berat_badan = request.POST.get('berat_badan')
-        jenis_perawatan = request.POST.get('jenis_perawatan')
-        catatan = request.POST.get('catatan', '')
+        catatan = request.POST.get('catatan', '').strip()
+        print(catatan)
 
         # Update the rekam medis for this kunjungan
         with connection.cursor() as cursor:
@@ -921,20 +1334,44 @@ def update_rekam_medis(request, id_kunjungan):
                 UPDATE kunjungan
                 SET suhu = %s, berat_badan = %s
                 WHERE id_kunjungan = %s
-            """, [suhu, berat_badan, id_kunjungan])
-        with connection.cursor() as cursor:
-            cursor.execute("SET search_path TO pet_clinic;")
-            cursor.execute("""
-                UPDATE kunjungan_keperawatan
-                SET catatan = %s
-                WHERE id_kunjungan = %s
-            """, [catatan, id_kunjungan])
+                AND no_dokter_hewan = %s
+                AND no_perawat_hewan = %s
+                AND no_front_desk = %s
+                AND nama_hewan = %s
+                AND no_identitas_klien = %s
+        """, [suhu,berat_badan,id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
+        
+        if  catatan != '' and catatan is not None:
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic;")
+                cursor.execute("""
+                    UPDATE kunjungan_keperawatan
+                    SET  catatan = %s
+                    WHERE id_kunjungan = %s
+                    AND no_dokter_hewan = %s
+                    AND no_perawat_hewan = %s
+                    AND no_front_desk = %s
+                    AND nama_hewan = %s
+                    AND no_identitas_klien = %s
+                """, [catatan, id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
+        else:
+           with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic;")
+                cursor.execute("""
+                    UPDATE kunjungan_keperawatan
+                    SET  catatan = null
+                    WHERE id_kunjungan = %s
+                    AND no_dokter_hewan = %s
+                    AND no_perawat_hewan = %s
+                    AND no_front_desk = %s
+                    AND nama_hewan = %s
+                    AND no_identitas_klien = %s
+                """, [ id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien]) 
         
         # Redirect to view the updated rekam medis (render view instead of redirect)
         rekam_medis_context = {
             'suhu': suhu,
             'berat_badan': berat_badan,
-            'jenis_perawatan': jenis_perawatan,
             'catatan': catatan,
             'id_kunjungan': id_kunjungan
         }
@@ -943,7 +1380,7 @@ def update_rekam_medis(request, id_kunjungan):
         messages.success(request, 'Rekam medis berhasil dibuat!')
 
         # Render the same page (view_rekam_medis) with the updated Rekam Medis data
-        return render(request, 'rekam_medis_view.html', rekam_medis_context)
+        return redirect('rekam_medis_view' ,id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien )
     # If the method is GET, fetch the current rekam medis data to populate the form
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
@@ -951,6 +1388,9 @@ def update_rekam_medis(request, id_kunjungan):
             SELECT
                 k.id_kunjungan,
                 k.no_identitas_klien,
+                k.no_dokter_hewan,
+                k.no_perawat_hewan,
+                k.no_front_desk,
                 k.nama_hewan,
                 k.tipe_kunjungan,
                 k.suhu,
@@ -958,7 +1398,12 @@ def update_rekam_medis(request, id_kunjungan):
                 r.kode_perawatan,
                 r.catatan
             FROM kunjungan k
-            LEFT JOIN kunjungan_keperawatan r ON k.id_kunjungan = r.id_kunjungan
+            LEFT JOIN kunjungan_keperawatan r ON k.id_kunjungan = r.id_kunjungan 
+            and k.no_identitas_klien = r.no_identitas_klien
+            and k.nama_hewan = r.nama_hewan
+            and k.no_perawat_hewan = r.no_perawat_hewan
+            and k.no_dokter_hewan = r.no_dokter_hewan
+            and k.no_front_desk = r.no_front_desk
             WHERE k.id_kunjungan = %s
         """, [id_kunjungan])
         kunjungan_data = cursor.fetchone()
@@ -971,54 +1416,327 @@ def update_rekam_medis(request, id_kunjungan):
             ORDER BY kode_perawatan
         """)
         jenis_perawatan_list = cursor.fetchall()
+        
+    if kunjungan_data[10] is None:
+        catatan = ''
+    else:
+        catatan = kunjungan_data[10]
 
     return render(request, 'update_rekam_medis.html', {
         'id_kunjungan': id_kunjungan,
         'no_identitas_klien': kunjungan_data[1],
-        'nama_hewan': kunjungan_data[2],
-        'tipe_kunjungan': kunjungan_data[3],
-        'suhu': kunjungan_data[4],  # Suhu from rekam medis
-        'berat_badan': kunjungan_data[5],  # Berat badan from rekam medis
-        'jenis_perawatan': kunjungan_data[6],  # Jenis perawatan from rekam medis
-        'catatan': kunjungan_data[7],  # Catatan from rekam medis
+        'no_dokter_hewan': kunjungan_data[2],
+        'no_perawat_hewan': kunjungan_data[3],
+        'no_front_desk': kunjungan_data[4],
+        'nama_hewan': kunjungan_data[5],
+        'suhu': kunjungan_data[7],  # Suhu from rekam medis
+        'berat_badan': kunjungan_data[8],  # Berat badan from rekam medis
+        'catatan': catatan,  # Catatan from rekam medis
         'jenis_perawatan_list': jenis_perawatan_list
     })
     
-# views.py
-from django.shortcuts import render
-from django.db import connection
 
-def rekam_medis_view(request, id_kunjungan):
+
+def rekam_medis_view(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel front_desk
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_fdo = cursor.fetchone()
+        if not is_fdo:
+            # Jika no_pegawai tidak ada di front_desk, redirect login
+            return redirect('login')
+        
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
         
-        # Query to fetch suhu and berat_badan from kunjungan
+        # Ambil suhu dan berat badan dari kunjungan berdasarkan composite PK
         cursor.execute("""
             SELECT suhu, berat_badan
             FROM kunjungan
             WHERE id_kunjungan = %s
-        """, [id_kunjungan])
+              AND no_dokter_hewan = %s
+              AND no_perawat_hewan = %s
+              AND no_front_desk = %s
+              AND nama_hewan = %s
+              AND no_identitas_klien = %s
+        """, [id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
         kunjungan_data = cursor.fetchone()
 
-        # Query to fetch catatan from kunjungan_keperawatan
+        # Ambil catatan dari kunjungan_keperawatan berdasarkan id_kunjungan (biasanya cukup id_kunjungan sebagai FK)
         cursor.execute("""
             SELECT catatan
             FROM kunjungan_keperawatan
-            WHERE id_kunjungan = %s
-        """, [id_kunjungan])
+             WHERE id_kunjungan = %s
+              AND no_dokter_hewan = %s
+              AND no_perawat_hewan = %s
+              AND no_front_desk = %s
+              AND nama_hewan = %s
+              AND no_identitas_klien = %s
+              LIMIT 1
+        """, [id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
         catatan_data = cursor.fetchone()
+        print(catatan_data)
 
-    # Prepare data to pass to the template
-    if kunjungan_data and catatan_data:
-        suhu, berat_badan = kunjungan_data
-        catatan = catatan_data[0]
-    else:
-        suhu = berat_badan = catatan = None  # If no data found
+    # Inisialisasi variabel hasil dengan format sesuai request
+    suhu = berat_badan = catatan = None
+
+    if kunjungan_data:
+        suhu = kunjungan_data[0] if kunjungan_data[0] is not None else "-"
+        berat_badan = kunjungan_data[1] if kunjungan_data[1] is not None else "-"
+
+    if catatan_data:
+        catatan = catatan_data[0] if catatan_data[0] is not None else ""
 
     return render(request, 'rekam_medis_view.html', {
         'suhu': suhu,
         'berat_badan': berat_badan,
         'catatan': catatan,
-        'id_kunjungan':id_kunjungan
+        'id_kunjungan': id_kunjungan,
+        'no_dokter_hewan':no_dokter_hewan, 
+        'no_perawat_hewan':no_perawat_hewan, 
+        'no_front_desk':no_front_desk, 
+        'nama_hewan':nama_hewan, 
+        'no_identitas_klien':no_identitas_klien
+    })
+    
+def rekam_medis_view_klien(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_identitas FROM klien WHERE email = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+        
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        
+        # Ambil suhu dan berat badan dari kunjungan berdasarkan composite PK
+        cursor.execute("""
+            SELECT suhu, berat_badan
+            FROM kunjungan
+            WHERE id_kunjungan = %s
+              AND no_dokter_hewan = %s
+              AND no_perawat_hewan = %s
+              AND no_front_desk = %s
+              AND nama_hewan = %s
+              AND no_identitas_klien = %s
+        """, [id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
+        kunjungan_data = cursor.fetchone()
+
+        # Ambil catatan dari kunjungan_keperawatan berdasarkan id_kunjungan (biasanya cukup id_kunjungan sebagai FK)
+        cursor.execute("""
+            SELECT catatan
+            FROM kunjungan_keperawatan
+             WHERE id_kunjungan = %s
+              AND no_dokter_hewan = %s
+              AND no_perawat_hewan = %s
+              AND no_front_desk = %s
+              AND nama_hewan = %s
+              AND no_identitas_klien = %s
+              LIMIT 1
+        """, [id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
+        catatan_data = cursor.fetchone()
+        print(catatan_data)
+
+    # Inisialisasi variabel hasil dengan format sesuai request
+    suhu = berat_badan = catatan = None
+
+    if kunjungan_data:
+        suhu = kunjungan_data[0] if kunjungan_data[0] is not None else "-"
+        berat_badan = kunjungan_data[1] if kunjungan_data[1] is not None else "-"
+
+    if catatan_data:
+        catatan = catatan_data[0] if catatan_data[0] is not None else ""
+
+    return render(request, 'rekam_medis_view_klien.html', {
+        'suhu': suhu,
+        'berat_badan': berat_badan,
+        'catatan': catatan,
+        'id_kunjungan': id_kunjungan,
+        'no_dokter_hewan':no_dokter_hewan, 
+        'no_perawat_hewan':no_perawat_hewan, 
+        'no_front_desk':no_front_desk, 
+        'nama_hewan':nama_hewan, 
+        'no_identitas_klien':no_identitas_klien
+    })
+    
+def rekam_medis_view_perawat(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel perawat_hewan
+        cursor.execute("SELECT 1 FROM perawat_hewan WHERE no_perawat_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di perawat_hewan, redirect login
+            return redirect('login')
+        
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        
+        # Ambil suhu dan berat badan dari kunjungan berdasarkan composite PK
+        cursor.execute("""
+            SELECT suhu, berat_badan
+            FROM kunjungan
+            WHERE id_kunjungan = %s
+              AND no_dokter_hewan = %s
+              AND no_perawat_hewan = %s
+              AND no_front_desk = %s
+              AND nama_hewan = %s
+              AND no_identitas_klien = %s
+        """, [id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
+        kunjungan_data = cursor.fetchone()
+
+        # Ambil catatan dari kunjungan_keperawatan berdasarkan id_kunjungan (biasanya cukup id_kunjungan sebagai FK)
+        cursor.execute("""
+            SELECT catatan
+            FROM kunjungan_keperawatan
+             WHERE id_kunjungan = %s
+              AND no_dokter_hewan = %s
+              AND no_perawat_hewan = %s
+              AND no_front_desk = %s
+              AND nama_hewan = %s
+              AND no_identitas_klien = %s
+              LIMIT 1
+        """, [id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
+        catatan_data = cursor.fetchone()
+        print(catatan_data)
+
+    # Inisialisasi variabel hasil dengan format sesuai request
+    suhu = berat_badan = catatan = None
+
+    if kunjungan_data:
+        suhu = kunjungan_data[0] if kunjungan_data[0] is not None else "-"
+        berat_badan = kunjungan_data[1] if kunjungan_data[1] is not None else "-"
+
+    if catatan_data:
+        catatan = catatan_data[0] if catatan_data[0] is not None else ""
+
+    return render(request, 'rekam_medis_view_perawat.html', {
+        'suhu': suhu,
+        'berat_badan': berat_badan,
+        'catatan': catatan,
+        'id_kunjungan': id_kunjungan,
+        'no_dokter_hewan':no_dokter_hewan, 
+        'no_perawat_hewan':no_perawat_hewan, 
+        'no_front_desk':no_front_desk, 
+        'nama_hewan':nama_hewan, 
+        'no_identitas_klien':no_identitas_klien
+    })
+    
+def rekam_medis_view_fdo(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel front_desk
+        cursor.execute("SELECT 1 FROM front_desk WHERE no_front_desk = %s", [no_pegawai])
+        is_fdo = cursor.fetchone()
+        if not is_fdo:
+            # Jika no_pegawai tidak ada di front_desk, redirect login
+            return redirect('login')
+        
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        
+        # Ambil suhu dan berat badan dari kunjungan berdasarkan composite PK
+        cursor.execute("""
+            SELECT suhu, berat_badan
+            FROM kunjungan
+            WHERE id_kunjungan = %s
+              AND no_dokter_hewan = %s
+              AND no_perawat_hewan = %s
+              AND no_front_desk = %s
+              AND nama_hewan = %s
+              AND no_identitas_klien = %s
+        """, [id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
+        kunjungan_data = cursor.fetchone()
+
+        # Ambil catatan dari kunjungan_keperawatan berdasarkan id_kunjungan (biasanya cukup id_kunjungan sebagai FK)
+        cursor.execute("""
+            SELECT catatan
+            FROM kunjungan_keperawatan
+             WHERE id_kunjungan = %s
+              AND no_dokter_hewan = %s
+              AND no_perawat_hewan = %s
+              AND no_front_desk = %s
+              AND nama_hewan = %s
+              AND no_identitas_klien = %s
+              LIMIT 1
+        """, [id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
+        catatan_data = cursor.fetchone()
+        print(catatan_data)
+
+    # Inisialisasi variabel hasil dengan format sesuai request
+    suhu = berat_badan = catatan = None
+
+    if kunjungan_data:
+        suhu = kunjungan_data[0] if kunjungan_data[0] is not None else "-"
+        berat_badan = kunjungan_data[1] if kunjungan_data[1] is not None else "-"
+
+    if catatan_data:
+        catatan = catatan_data[0] if catatan_data[0] is not None else ""
+
+    return render(request, 'rekam_medis_view_fdo.html', {
+        'suhu': suhu,
+        'berat_badan': berat_badan,
+        'catatan': catatan,
+        'id_kunjungan': id_kunjungan,
+        'no_dokter_hewan':no_dokter_hewan, 
+        'no_perawat_hewan':no_perawat_hewan, 
+        'no_front_desk':no_front_desk, 
+        'nama_hewan':nama_hewan, 
+        'no_identitas_klien':no_identitas_klien
     })
 

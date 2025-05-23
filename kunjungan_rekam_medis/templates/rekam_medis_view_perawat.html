@@ -1,4 +1,4 @@
-{% extends 'base_dokter_hewan.html' %}
+{% extends 'base_perawat_hewan.html' %}
 
 {% block title %}Rekam Medis{% endblock %}
 {% block extra_head %}
@@ -16,26 +16,21 @@
     <!-- Suhu Tubuh -->
     <div class="mb-4">
         <span class="text-lg font-medium">Suhu Tubuh:</span>
-        <div class="text-xl text-gray-700">20°C</div>
+        <div class="text-xl text-gray-700">{{ suhu }}°C</div>
     </div>
 
     <!-- Berat Badan -->
     <div class="mb-4">
         <span class="text-lg font-medium">Berat Badan:</span>
-        <div class="text-xl text-gray-700">20 kg</div>
+        <div class="text-xl text-gray-700">{{ berat_badan }} kg</div>
     </div>
 
     <!-- Catatan Medis -->
     <div class="mb-6">
         <span class="text-lg font-medium">Catatan Medis:</span>
-        <p class="text-gray-700">kelas</p>
+        <p class="text-gray-700">{{ catatan }}</p>
     </div>
 
-    <!-- Update Button -->
-    <div class="flex justify-end">
-        <a href="{% url 'update_rekam_medis_dummy'  %}" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
-            Update
-        </a>
-    </div>
+    
 </div>
 {% endblock %}
