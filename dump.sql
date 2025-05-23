@@ -597,4 +597,115 @@ BEFORE INSERT ON "USER"
 FOR EACH ROW
 EXECUTE FUNCTION prevent_duplicate_email();
 
+-- Fungsi validasi timestamp akhir tidak boleh lebih kecil dari timestamp awal
+CREATE OR REPLACE FUNCTION validate_timestamp_akhir()
+RETURNS trigger AS
+$$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        IF NEW.timestamp_akhir IS NOT NULL AND NEW.timestamp_akhir < NEW.timestamp_awal THEN
+            RAISE EXCEPTION 'ERROR: Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal saat INSERT.'
+            USING ERRCODE = '23505';
+        END IF;
+        RETURN NEW;
 
+    ELSIF TG_OP = 'UPDATE' THEN
+        IF NEW.timestamp_akhir IS NOT NULL AND NEW.timestamp_akhir < NEW.timestamp_awal THEN
+            RAISE EXCEPTION 'ERROR: Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal saat UPDATE.'
+            USING ERRCODE = '23505';
+        END IF;
+        RETURN NEW;
+    END IF;
+END;
+$$
+LANGUAGE plpgsql;
+
+
+-- Trigger yang memanggil fungsi validasi sebelum INSERT atau UPDATE pada tabel kunjungan
+CREATE TRIGGER trg_validate_timestamp_akhir
+BEFORE INSERT OR UPDATE ON kunjungan
+FOR EACH ROW EXECUTE FUNCTION validate_timestamp_akhir();
+
+/* ──────────────────────────────────────────────────────────
+   1.  FUNCTION
+   ──────────────────────────────────────────────────────────*/
+CREATE OR REPLACE FUNCTION validate_hewan_milik_klien()
+RETURNS trigger
+AS
+$$
+DECLARE
+    nama_pemilik text;
+BEGIN
+    -----------------------------------------------------------------
+    -- 1) Cari di INDIVIDU
+    -----------------------------------------------------------------
+    SELECT concat_ws(' ',
+                     i.nama_depan,
+                     coalesce(i.nama_tengah, ''),
+                     i.nama_belakang)
+      INTO nama_pemilik
+      FROM individu i
+     WHERE i.no_identitas_klien = NEW.no_identitas_klien;
+
+    -----------------------------------------------------------------
+    -- 2) Jika NULL, cari di PERUSAHAAN
+    -----------------------------------------------------------------
+    IF nama_pemilik IS NULL THEN
+        SELECT p.nama_perusahaan
+          INTO nama_pemilik
+          FROM perusahaan p
+         WHERE p.no_identitas_klien = NEW.no_identitas_klien;
+    END IF;
+
+    nama_pemilik := coalesce(nama_pemilik, '(tidak ditemukan)');
+
+    -----------------------------------------------------------------
+    -- 3) Validasi kepemilikan hewan
+    -----------------------------------------------------------------
+    IF NOT EXISTS (
+        SELECT 1
+          FROM hewan h
+         WHERE h.no_identitas_klien = NEW.no_identitas_klien
+           AND h.nama               = NEW.nama_hewan
+    ) THEN
+        RAISE EXCEPTION
+          'ERROR: Hewan "%s" tidak terdaftar atas nama pemilik "%s".',
+          NEW.nama_hewan, nama_pemilik
+          USING ERRCODE = '23514';          -- check_violation
+    END IF;
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+
+/* ──────────────────────────────────────────────────────────
+   2.  TRIGGER
+   ──────────────────────────────────────────────────────────*/
+DROP TRIGGER IF EXISTS trg_validate_hewan_milik_klien ON kunjungan;
+
+CREATE TRIGGER trg_validate_hewan_milik_klien
+BEFORE INSERT OR UPDATE ON kunjungan
+FOR EACH ROW
+EXECUTE FUNCTION validate_hewan_milik_klien();
+
+CREATE TRIGGER trg_validate_hewan_milik_klien_kunjungan_keperawatan
+BEFORE INSERT OR UPDATE ON KUNJUNGAN_KEPERAWATAN
+FOR EACH ROW
+EXECUTE FUNCTION validate_hewan_milik_klien();
+
+
+-- INSERT INTO "USER" (email, password, alamat, nomor_telepon) VALUES
+-- ('jeremi.felix67@example.com', 'password123', 'Jl. Raya No.67', '099934567890');
+-- INSERT INTO KLIEN (no_identitas, tanggal_registrasi, email) VALUES
+-- ('fff96c9e-3b3a-42d2-a692-532cb843e69e', '2025-01-01', 'jeremi.felix67@example.com');
+-- INSERT INTO PERUSAHAAN (no_identitas_klien, nama_perusahaan) 
+-- VALUES
+-- ('fff96c9e-3b3a-42d2-a692-532cb843e69e', 'Perusahaan Z');
+-- INSERT INTO KUNJUNGAN (id_kunjungan,nama_hewan,no_identitas_klien,no_front_desk,no_perawat_hewan,no_dokter_hewan,kode_vaksin,tipe_kunjungan,timestamp_awal,timestamp_akhir)
+-- VALUES
+-- ('dcec9499-172e-43b3-aa48-3981aee98825','Anjing 1','fff96c9e-3b3a-42d2-a692-532cb843e69e','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','VKS001','Darurat','2025-04-24 11:00:00','2025-04-24 13:00:00');
+-- INSERT INTO HEWAN(nama, no_identitas_klien,tanggal_lahir,id_jenis,url_foto) 
+-- VALUES
+-- ('Anjing 1', 'fff96c9e-3b3a-42d2-a692-532cb843e69e','2025-01-01','53f6ac39-e535-4d3f-8ab3-b663d69a4572','https://www.google.com/fotoanjing');

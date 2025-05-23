@@ -20,7 +20,6 @@
       <p class="text-gray-500">Manage your pet care visits</p>
     </div>
 
-  
   </div>
 
   <!-- Card -->
@@ -41,7 +40,6 @@
               <th class="px-4 py-3 font-medium text-center">Waktu Mulai</th>
               <th class="px-4 py-3 font-medium text-center">Waktu Akhir</th>
               <th class="px-4 py-3 font-medium text-center">Rekam Medis</th>
-
             </tr>
           </thead>
 
@@ -53,10 +51,10 @@
                 <td class="px-4 py-3 text-center">{{ k.no_identitas_klien }}</td>
                 <td class="px-4 py-3 text-center font-semibold text-blue-600">{{ k.nama_hewan }}</td>
                 <td class="px-4 py-3 text-center">{{ k.tipe_kunjungan }}</td>
-                <td class="px-4 py-3 text-center">{{ k.waktu_mulai }}</td>
-                <td class="px-4 py-3 text-center">{{ k.waktu_selesai }}</td>
+                <td class="px-4 py-3 text-center">{{ k.timestamp_awal }}</td>
+                <td class="px-4 py-3 text-center">{{ k.timestamp_akhir }}</td>
                 <td class="px-4 py-3 text-center">
-                  {% if not k.rekam_medis_exists %}
+                    {% if not k.punya_catatan and not k.punya_rekam_medis  %}
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#rekamMedisModal">
                       Lihat Rekam Medis
                     </button>
@@ -73,15 +71,17 @@
                               Maaf, sepertinya belum ada rekam medis yang dibuat untuk kunjungan ini.
                             </div>
                             <div class="modal-footer justify-content-center">
-                              <a href="{% url 'create_rekam_medis' k.id_kunjungan %}" class="btn btn-primary">Create</a>
                               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
                             </div>
                           </div>
                         </div>
                       </div>
-                  {% else %}
-                    <a href="{% url 'rekam_medis' k.id_kunjungan %}" class="btn btn-sm btn-outline-secondary">Lihat Rekam Medis</a>
-                  {% endif %}
+                 
+                    {% else %}
+                        <a href="{% url 'rekam_medis_view_klien' k.id_kunjungan k.no_dokter_hewan k.no_perawat_hewan k.no_front_desk k.nama_hewan k.no_identitas_klien %}" class="btn btn-sm btn-outline-primary">
+                            Lihat Rekam Medis
+                        </a>
+                    {% endif %}
                 </td>
                 
               </tr>
