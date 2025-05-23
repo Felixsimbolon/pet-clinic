@@ -70,7 +70,7 @@ def login_view(request):
 
                 if perawat:
                     # Kalau perawat
-                    return redirect('dashboard_perawat', id_perawat=perawat[0])
+                    return redirect('dashboard_perawat')
 
                 cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute("""
@@ -84,7 +84,7 @@ def login_view(request):
 
                 if frontdesk:
                     # Kalau front-desk
-                    return redirect('dashboard_frontdesk', id_frontdesk=frontdesk[0])
+                    return redirect('dashboard_frontdesk')
 
                 # Kalau bukan PEGAWAI, berarti KLIEN
                 cursor.execute("SET search_path TO pet_clinic;")
@@ -96,7 +96,7 @@ def login_view(request):
                 klien = cursor.fetchone()
 
                 if klien:
-                    return redirect('dashboard_klien', id_klien=klien[0])
+                    return redirect('dashboard_klien')
 
                 else:
                     messages.error(request, "Akun tidak dikenali sebagai Dokter, Perawat, Frontdesk, atau Klien.")

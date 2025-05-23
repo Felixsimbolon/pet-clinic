@@ -26,27 +26,18 @@
       {% csrf_token %}
       <div class="mb-3">
         <label for="suhu" class="form-label">Suhu Tubuh Pasien (°C)</label>
-        <input type="number" step="0.1" name="suhu" id="suhu" class="form-control" value="{{ suhu}}" required>
+        <input type="number" step="1" name="suhu" id="suhu" class="form-control" value="{{ suhu}}" required>
       </div>
 
       <div class="mb-3">
         <label for="berat_badan" class="form-label">Berat Badan Pasien (kg)</label>
-        <input type="number" step="0.1" name="berat_badan" id="berat_badan" class="form-control" value="{{ berat_badan }}" required>
+        <input type="number" step="0.01" name="berat_badan" id="berat_badan" class="form-control" value="{{ berat_badan }}" required>
       </div>
 
-      <div class="mb-3">
-        <label for="jenis_perawatan" class="form-label">Jenis Perawatan</label>
-        <select name="jenis_perawatan" id="jenis_perawatan" class="form-control" required>
-          <option value="" disabled>Pilih Jenis Perawatan</option>
-          <option value="Vaksinasi" {% if jenis_perawatan == 'Vaksinasi' %}selected{% endif %}>Vaksinasi</option>
-          <option value="Medical Check-Up" {% if jenis_perawatan == 'Medical Check-Up' %}selected{% endif %}>Medical Check-Up</option>
-          <option value="Perawatan Cacingan" {% if jenis_perawatan == 'Perawatan Cacingan' %}selected{% endif %}>Perawatan Cacingan</option>
-        </select>
-      </div>
 
       <div class="mb-3">
         <label for="catatan" class="form-label">Catatan Medis</label>
-        <textarea name="catatan" id="catatan" class="form-control" rows="3" required>{{ catatan }}</textarea>
+        <textarea name="catatan" id="catatan" class="form-control" rows="3" >{{ catatan }}</textarea>
       </div>
 
       <div class="mb-3 text-center">

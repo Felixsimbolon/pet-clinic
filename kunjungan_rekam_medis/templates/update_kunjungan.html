@@ -21,7 +21,7 @@
       <!-- Dropdown ID Klien -->
       <div>
         <label for="id_klien" class="block mb-1 font-medium text-gray-700">ID Klien</label>
-        <select id="id_klien" name="id_klien"
+        <select id="id_klien" name="id_klien" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih ID Klien --</option>
           {% for klien in klien_list %}
@@ -37,7 +37,7 @@
       <!-- Dropdown Nama Hewan -->
       <div>
         <label for="nama_hewan" class="block mb-1 font-medium text-gray-700">Nama Hewan</label>
-        <select id="nama_hewan" name="nama_hewan"
+        <select id="nama_hewan" name="nama_hewan" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih Nama Hewan --</option>
           {% for hewan in hewan_list %}
@@ -53,7 +53,7 @@
       <!-- Dropdown Dokter Hewan -->
        <div>
         <label for="dokter_hewan" class="block mb-1 font-medium text-gray-700">Dokter Hewan</label>
-        <select id="dokter_hewan" name="dokter_hewan"
+        <select id="dokter_hewan" name="dokter_hewan" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih Dokter Hewan --</option>
           {% for dokter in dokter_list %}
@@ -68,7 +68,7 @@
       <!-- Dropdown Perawat Hewan -->
       <div>
         <label for="perawat_hewan" class="block mb-1 font-medium text-gray-700">Perawat Hewan</label>
-        <select id="perawat_hewan" name="perawat_hewan"
+        <select id="perawat_hewan" name="perawat_hewan" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih Perawat Hewan --</option>
           {% for perawat in perawat_list %}
@@ -82,7 +82,7 @@
 
       <div>
         <label for="front_desk" class="block mb-1 font-medium text-gray-700">Front Desk</label>
-        <select id="front_desk" name="front_desk"
+        <select id="front_desk" name="front_desk" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih Front Desk --</option>
           {% for front_desk in front_desk_list %}
@@ -99,7 +99,7 @@
       <!-- Dropdown Metode Kunjungan -->
       <div>
         <label for="metode_kunjungan" class="block mb-1 font-medium text-gray-700">Metode Kunjungan</label>
-        <select id="metode_kunjungan" name="metode_kunjungan"
+        <select id="metode_kunjungan" name="metode_kunjungan" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih Metode Kunjungan --</option>
           {% for tipe_kunjungan in tipe_kunjungan_list %}
@@ -142,7 +142,7 @@
         </div>
 
       <div class="flex justify-end space-x-4">
-        <a href="{% url 'daftar_kunjungan' %}"
+        <a href="{% url 'daftar_kunjungan_fdo' %}"
            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Cancel</a>
         <button type="submit"
                 class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Create</button>
