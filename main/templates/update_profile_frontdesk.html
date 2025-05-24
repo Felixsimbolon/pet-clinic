@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Update Password - PetCare</title>
+  <title>Update Profile Klien - PetCare</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -21,7 +21,7 @@
       background-color: var(--light-color);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       min-height: 100vh;
-      padding-top: 100px; /* Untuk navbar fixed */
+      padding-top: 100px;
     }
 
     /* Navbar */
@@ -62,10 +62,10 @@
       background-color: var(--accent-color);
       color: var(--dark-color);
       transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
-    /* Form Update Password */
+    /* Form */
     .container {
       max-width: 600px;
       background-color: white;
@@ -86,7 +86,7 @@
       margin-bottom: 5px;
     }
 
-    input.form-control {
+    input.form-control, textarea.form-control {
       border-radius: 10px;
       padding: 10px 15px;
       margin-bottom: 20px;
@@ -114,7 +114,7 @@
       color: var(--dark-color);
     }
 
-    .btn-update-password {
+    .btn-update-profile {
       background-color: var(--dark-color);
       color: white;
       font-weight: 600;
@@ -124,7 +124,7 @@
       border: none;
     }
 
-    .btn-update-password:hover {
+    .btn-update-profile:hover {
       background-color: #0a3d62;
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
@@ -136,62 +136,73 @@
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">🐾 PetCare</a>
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link" href="#">Dashboard</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Kelola Jenis Hewan</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Kelola Kunjungan</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Daftar Klien</a>
-        </li>
-        <li class="nav-item">
-          <a class="btn btn-logout ms-3" href="#">Logout</a>
-        </li>
-      </ul>
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">🐾 PetCare</a>
+      <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+  
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+  
+          <li class="nav-item">
+            <a class="nav-link" href="#">Dashboard</a>
+          </li>
+  
+          <li class="nav-item">
+            <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
+          </li>
+  
+          <li class="nav-item">
+            <a class="nav-link" href="#">Daftar Kunjungan</a>
+          </li>
+  
+          <li class="nav-item">
+              <a class="nav-link" href="#">Daftar Vaksinasi</a>
+          </li>
+  
+          <li class="nav-item">
+            <a class="btn btn-logout ms-3" href="#">Logout</a>
+          </li>
+  
+        </ul>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>  
 
-<!-- Form Update Password -->
+<!-- Form Update Profile -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
 <div class="container mt-5">
-  <h1>Update Password</h1>
-
-  <form method="post">
+  <h1>Update Profile Klien Perusahaan</h1>
+  <form method="POST">
     {% csrf_token %}
     
     <div class="mb-3">
-      <label for="oldPassword" class="form-label">Password Lama <span class="text-danger">*</span></label>
-      <input type="password" class="form-control" id="oldPassword" name="old_password" placeholder="Password Lama" required>
+      <label for="alamat" class="form-label">Alamat <span class="text-danger">*</span></label>
+      <textarea class="form-control" id="alamat" name="alamat" rows="2" required>{{ alamat }}</textarea>
     </div>
-
+  
     <div class="mb-3">
-      <label for="newPassword" class="form-label">Password Baru <span class="text-danger">*</span></label>
-      <input type="password" class="form-control" id="newPassword" name="new_password" placeholder="Password Baru" required>
+      <label for="nomorTelepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
+      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" value="{{ nomor_telepon }}" required>
     </div>
-
+  
     <div class="mb-3">
-      <label for="confirmPassword" class="form-label">Konfirmasi Password Baru <span class="text-danger">*</span></label>
-      <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Konfirmasi Password Baru" required>
+      <label for="tanggalAkhirKerja" class="form-label">Tanggal Akhir Kerja <span class="text-danger">*</span></label>
+      <input type="date" class="form-control" id="tanggalAkhirKerja" name="tanggal_akhir_kerja" value="{{ tanggal_akhir_kerja }}" required>
     </div>
-
-    <div class="form-buttons d-flex justify-content-between">
-      <a href="javascript:history.back()" class="btn btn-secondary">Cancel</a>
-      <button type="submit" class="btn btn-primary">Update Password</button>
+  
+    <div class="form-buttons">
+      <a href="{% url 'dashboard_frontdesk' %}" class="btn btn-cancel">Cancel</a>
+      <button type="submit" class="btn btn-update-profile">Update Profile</button>
     </div>
   </form>
 </div>

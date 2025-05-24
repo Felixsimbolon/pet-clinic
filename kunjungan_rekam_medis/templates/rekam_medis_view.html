@@ -1,6 +1,13 @@
 {% extends 'base_dokter_hewan.html' %}
 
 {% block title %}Rekam Medis{% endblock %}
+{% block extra_head %}
+  <style>
+    /* ───── Fix konflik Tailwind vs Bootstrap ───── */
+    .navbar-collapse{ visibility:visible!important; }
+    .dropdown-menu { visibility: visible !important; }
+  </style>
+{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
@@ -26,7 +33,7 @@
 
     <!-- Update Button -->
     <div class="flex justify-end">
-        <a href="{% url 'update_rekam_medis' id_kunjungan %}" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
+        <a href="{% url 'update_rekam_medis' id_kunjungan no_dokter_hewan no_perawat_hewan no_front_desk nama_hewan no_identitas_klien %}" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
             Update
         </a>
     </div>

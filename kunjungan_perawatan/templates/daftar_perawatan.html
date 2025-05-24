@@ -71,7 +71,7 @@
               <td class="px-4 py-3">{{ t.catatan }}</td>
               <td class="px-4 py-3 space-x-1">
                 <!-- Edit -->
-                <a href="{% url 'edit_treatment' t.id_kunjungan %}"
+                <a href="{% url 'edit_treatment' t.id_kunjungan t.kode_perawatan t.no_dokter_hewan t.no_perawat_hewan t.no_front_desk t.nama_hewan t.no_identitas_klien%}"
                    class="inline-flex items-center rounded-full border border-blue-600 px-3 py-1 text-blue-600 text-xs
                           hover:bg-blue-50">
                   Edit
@@ -109,7 +109,7 @@
 
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form method="POST" action="{% url 'delete_treatment' t.id_kunjungan t.kode_perawatan %}">
+                    <form method="POST" action="{% url 'delete_treatment' t.id_kunjungan t.kode_perawatan t.no_dokter_hewan t.no_perawat_hewan t.no_front_desk t.nama_hewan t.no_identitas_klien%}">
                       {% csrf_token %}
                       <button type="submit" class="btn btn-danger">Confirm Deletion</button>
                     </form>

@@ -19,59 +19,85 @@
       <!-- Dropdown ID Klien -->
       <div>
         <label for="id_klien" class="block mb-1 font-medium text-gray-700">ID Klien</label>
-        <select id="id_klien" name="id_klien"
+        <select id="id_klien" name="id_klien" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih ID Klien --</option>
           {% for klien in klien_list %}
           <option value="{{ klien }}">{{ klien }}</option>
           {% endfor %}
         </select>
+        {% if errors.id_klien %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.id_klien }}</p>
+      {% endif %}
       </div>
 
 
       <!-- Dropdown Nama Hewan -->
       <div>
         <label for="nama_hewan" class="block mb-1 font-medium text-gray-700">Nama Hewan</label>
-        <select id="nama_hewan" name="nama_hewan"
+        <select id="nama_hewan" name="nama_hewan" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih Nama Hewan --</option>
           {% for hewan in hewan_list %}
-          <option value="{{ hewan.0 }}">{{ hewan.1 }}</option>
+          <option value="{{ hewan.nama }}">{{ hewan.nama }}</option>
           {% endfor %}
         </select>
+        {% if errors.nama_hewan %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.nama_hewan }}</p>
+      {% endif %}
       </div>
 
     
       <!-- Dropdown Dokter Hewan -->
-      {% comment %} <div>
-        <label for="id_klien" class="block mb-1 font-medium text-gray-700">Dokter Hewan</label>
-        <select id="id_klien" name="id_klien"
+       <div>
+        <label for="dokter_hewan" class="block mb-1 font-medium text-gray-700">Dokter Hewan</label>
+        <select id="dokter_hewan" name="dokter_hewan" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih Dokter Hewan --</option>
           {% for dokter in dokter_list %}
-          <option value="{{ dokter }}">{{ dokter.name }}</option>
+          <option value="{{ dokter.email }}">{{ dokter.email }}</option>
           {% endfor %}
         </select>
+        {% if errors.dokter_hewan %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.dokter_hewan }}</p>
+      {% endif %}
       </div>
 
       <!-- Dropdown Perawat Hewan -->
       <div>
-        <label for="id_klien" class="block mb-1 font-medium text-gray-700">Perawat Hewan</label>
-        <select id="id_klien" name="id_klien"
+        <label for="perawat_hewan" class="block mb-1 font-medium text-gray-700">Perawat Hewan</label>
+        <select id="perawat_hewan" name="perawat_hewan" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih Perawat Hewan --</option>
           {% for perawat in perawat_list %}
-          <option value="{{ perawat }}">{{ perawat.name }}</option>
+          <option value="{{ perawat.email }}">{{ perawat.email }}</option>
           {% endfor %}
         </select>
-      </div> {% endcomment %}
+        {% if errors.perawat_hewan %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.perawat_hewan }}</p>
+      {% endif %}
+      </div>
+
+      <div>
+        <label for="front_desk" class="block mb-1 font-medium text-gray-700">Front Desk</label>
+        <select id="front_desk" name="front_desk" required
+                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          <option value="" disabled selected>-- Pilih Front Desk --</option>
+          {% for front_desk in front_desk_list %}
+          <option value="{{ front_desk.email}}">{{ front_desk.email }}</option>
+          {% endfor %}
+        </select>
+        {% if errors.front_desk %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.front_desk }}</p>
+      {% endif %}
+      </div>
 
 
 
       <!-- Dropdown Metode Kunjungan -->
       <div>
         <label for="metode_kunjungan" class="block mb-1 font-medium text-gray-700">Metode Kunjungan</label>
-        <select id="metode_kunjungan" name="metode_kunjungan"
+        <select id="metode_kunjungan" name="metode_kunjungan" required
                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>-- Pilih Metode Kunjungan --</option>
           <option value="Janji Temu">Janji Temu</option>
@@ -80,20 +106,29 @@
 
           
         </select>
+        {% if errors.metode_kunjungan %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.metode_kunjungan }}</p>
+      {% endif %}
       </div>
 
       <!-- Waktu Mulai Penanganan -->
       <div>
-        <label for="waktu_mulai_penanganan" class="block mb-1 font-medium text-gray-700">Waktu Mulai Penanganan</label>
-        <input type="datetime-local" id="waktu_mulai_penanganan" name="waktu_mulai_penanganan"
+        <label for="timestamp_awal" class="block mb-1 font-medium text-gray-700">Waktu Mulai Penanganan</label>
+        <input type="datetime-local" id="timestamp_awal" name="timestamp_awal"  step ="1" required
                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        {% if errors.timestamp_awal %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.timestamp_awal }}</p>
+      {% endif %}
       </div>
 
       <!-- Waktu Selesai Penanganan -->
       <div>
-        <label for="waktu_selesai_penanganan" class="block mb-1 font-medium text-gray-700">Waktu Selesai Penanganan</label>
-        <input type="datetime-local" id="waktu_selesai_penanganan" name="waktu_selesai_penanganan"
+        <label for="timestamp_akhir" class="block mb-1 font-medium text-gray-700">Waktu Selesai Penanganan</label>
+        <input type="datetime-local" id="timestamp_akhir" name="timestamp_akhir" step ="1"
                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        {% if errors.timestamp_akhir %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.timestamp_akhir }}</p>
+      {% endif %}
       </div>
 
       <div class="flex justify-end space-x-4">

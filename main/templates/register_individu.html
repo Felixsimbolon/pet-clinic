@@ -222,58 +222,112 @@
         </div>
     </nav>
 
-    <div class="form-container">
-        <div class="card">
+    <div class="page-content">
+        <div class="form-container">
+          <div class="card">
             <div class="card-header">
-                <div class="icon-box">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h3 class="fw-bold mb-2">REGISTRASI KLIEN INDIVIDU</h3>
-                <p class="mb-0">Silakan lengkapi data diri Anda untuk mendaftar</p>
+              <div class="icon-box">
+                <i class="fas fa-user"></i>
+              </div>
+              <h3 class="fw-bold mb-2">REGISTRASI KLIEN INDIVIDU</h3>
+              <p class="mb-0">Silakan lengkapi data diri Anda untuk mendaftar</p>
             </div>
-
-            <form method="post">
-                <div class="form-group">
-                    <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                    <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="nama_depan" class="form-label">Nama Depan <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="nama_depan" name="nama_depan" placeholder="Nama Depan" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="nama_tengah" class="form-label">Nama Tengah</label>
-                    <input type="text" class="form-control" id="nama_tengah" name="nama_tengah" placeholder="Nama Tengah">
-                </div>
-
-                <div class="form-group">
-                    <label for="nama_belakang" class="form-label">Nama Belakang <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="nama_belakang" name="nama_belakang" placeholder="Nama Belakang" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="nomor_telepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
-                    <input type="tel" class="form-control" id="nomor_telepon" name="nomor_telepon" placeholder="Nomor Telepon" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="alamat" class="form-label">Alamat <span class="text-danger">*</span></label>
-                    <textarea class="form-control" id="alamat" name="alamat" rows="3" placeholder="Alamat" required></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-paper-plane me-2"></i>DAFTAR SEKARANG
-                </button>
+      
+            <form method="post" class="needs-validation" novalidate>
+              {% csrf_token %}
+              <div class="section-title">
+                <i class="fas fa-info-circle me-2"></i>Informasi Umum
+              </div>
+      
+              <!-- Email -->
+              <div class="mb-3">
+                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                <input type="email" id="email" name="email" class="form-control"
+                       placeholder="Email" value="{{ data.email|default:'' }}" required>
+                {% if errors.email %}
+                  <div class="invalid-feedback d-block">{{ errors.email }}</div>
+                {% else %}
+                  <div class="invalid-feedback">Email wajib diisi dengan format yang benar</div>
+                {% endif %}
+              </div>
+      
+              <!-- Nama Depan -->
+              <div class="mb-3">
+                <label for="nama_depan" class="form-label">Nama Depan <span class="text-danger">*</span></label>
+                <input type="text" id="nama_depan" name="nama_depan" class="form-control"
+                       placeholder="Nama Depan" value="{{ data.nama_depan|default:'' }}" required>
+                {% if errors.nama_depan %}
+                  <div class="invalid-feedback d-block">{{ errors.nama_depan }}</div>
+                {% else %}
+                  <div class="invalid-feedback">Nama depan wajib diisi</div>
+                {% endif %}
+              </div>
+      
+              <!-- Nama Tengah (opsional) -->
+              <div class="mb-3">
+                <label for="nama_tengah" class="form-label">Nama Tengah</label>
+                <input type="text" id="nama_tengah" name="nama_tengah" class="form-control"
+                       placeholder="Nama Tengah" value="{{ data.nama_tengah|default:'' }}">
+                    {% if errors.nama_tengah %}
+                  <div class="invalid-feedback d-block">{{ errors.nama_tengah }}</div>
+                    {% endif %}
+              </div>
+      
+              <!-- Nama Belakang -->
+              <div class="mb-3">
+                <label for="nama_belakang" class="form-label">Nama Belakang <span class="text-danger">*</span></label>
+                <input type="text" id="nama_belakang" name="nama_belakang" class="form-control"
+                       placeholder="Nama Belakang" value="{{ data.nama_belakang|default:'' }}" required>
+                {% if errors.nama_belakang %}
+                  <div class="invalid-feedback d-block">{{ errors.nama_belakang }}</div>
+                {% else %}
+                  <div class="invalid-feedback">Nama belakang wajib diisi</div>
+                {% endif %}
+              </div>
+      
+              <!-- Password -->
+              <div class="mb-3">
+                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                <input type="password" id="password" name="password" class="form-control"
+                       placeholder="Password" required>
+                {% if errors.password %}
+                  <div class="invalid-feedback d-block">{{ errors.password }}</div>
+                {% else %}
+                  <div class="invalid-feedback">Password wajib diisi</div>
+                {% endif %}
+              </div>
+      
+              <!-- Nomor Telepon -->
+              <div class="mb-3">
+                <label for="nomor_telepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
+                <input type="tel" id="nomor_telepon" name="nomor_telepon" class="form-control"
+                       placeholder="Contoh: 081234567890" value="{{ data.nomor_telepon|default:'' }}" required>
+                {% if errors.nomor_telepon %}
+                  <div class="invalid-feedback d-block">{{ errors.nomor_telepon }}</div>
+                {% else %}
+                  <div class="invalid-feedback">Nomor telepon wajib diisi</div>
+                {% endif %}
+              </div>
+      
+              <!-- Alamat -->
+              <div class="mb-3">
+                <label for="alamat" class="form-label">Alamat <span class="text-danger">*</span></label>
+                <textarea id="alamat" name="alamat" class="form-control" rows="3"
+                          placeholder="Alamat" required>{{ data.alamat|default:'' }}</textarea>
+                {% if errors.alamat %}
+                  <div class="invalid-feedback d-block">{{ errors.alamat }}</div>
+                {% else %}
+                  <div class="invalid-feedback">Alamat wajib diisi</div>
+                {% endif %}
+              </div>
+      
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane me-2"></i>DAFTAR SEKARANG
+              </button>
             </form>
+          </div>
         </div>
-    </div>
+      </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>

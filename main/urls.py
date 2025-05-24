@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import landing_page, register_view, login_view, register_individu, register_perusahaan, register_frontdesk,register_dokter, register_perawat,dashboard_dokter, dashboard_frontdesk, dashboard_klien, dashboard_perawat
+from .views import *
 
 urlpatterns = [
     path('', landing_page, name='landing'),
@@ -10,8 +10,17 @@ urlpatterns = [
     path('register/frontdesk/', register_frontdesk, name='register_frontdesk'),
     path('register/dokter/', register_dokter, name='register_dokter'),
     path('register/perawat/', register_perawat, name='register_perawat'),
-    path('dashboard/dokter/<uuid:id_dokter>/', dashboard_dokter, name='dashboard_dokter'),
-    path('dashboard/perawat/<uuid:id_perawat>/', dashboard_perawat, name='dashboard_perawat'),
-    path('dashboard/frontdesk/<uuid:id_frontdesk>/', dashboard_frontdesk, name='dashboard_frontdesk'),
-    path('dashboard/klien/<uuid:id_klien>/', dashboard_klien, name='dashboard_klien'),
+    path('dashboard/dokter/', dashboard_dokter, name='dashboard_dokter'),
+    path('dashboard/perawat/', dashboard_perawat, name='dashboard_perawat'),
+    path('dashboard/frontdesk/', dashboard_frontdesk, name='dashboard_frontdesk'),
+    path('dashboard/klien/', dashboard_klien, name='dashboard_klien'),
+    path('dashboard/dokter/update-password/', update_password, name='dokter_update_password'),
+    path('dashboard/perawat/update-password/', update_password, name='perawat_update_password'),
+    path('dashboard/frontdesk/update-password/', update_password, name='frontdesk_update_password'),
+    path('dashboard/klien/update-password/', update_password, name='klien_update_password'),
+    path('dashboard/dokter/update-profile/', update_profile, name='dokter_update_profile'),
+    path('dashboard/perawat/update-profile/', update_profile, name='perawat_update_profile'),
+    path('dashboard/frontdesk/update-profile/', update_profile_frontdesk, name='frontdesk_update_profile'),
+    path('dashboard/klien/update-profile/individu/', update_profile_individu, name='klien_update_profile_individu'),
+    path('dashboard/klien/update-profile/perusahaan/', update_profile_perusahaan, name='klien_update_profile_perusahaan'),
 ]

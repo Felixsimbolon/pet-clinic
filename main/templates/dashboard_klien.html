@@ -258,10 +258,10 @@
         <div class="profile-header">
             <h1 class="profile-title">Profile Klien</h1>
             <div class="action-buttons">
-                <a href="#" class="btn btn-password">
+                <a href="{% url 'klien_update_password' %}" class="btn btn-password">
                     <i class="fas fa-key"></i>Update Password
                 </a>
-                <a href="#" class="btn btn-update">
+                <a href="{% url update_profile_url_name %}" class="btn btn-update">
                     <i class="fas fa-user-edit"></i>Update Profile
                 </a>
             </div>
@@ -270,27 +270,27 @@
         <div class="profile-info">
             <div class="info-item">
                 <div class="info-label">Nomor Identitas</div>
-                <div class="info-value">DOK12345678</div>
+                <div class="info-value">{{ klien.nomor_identitas }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Email</div>
-                <div class="info-value">oke@example.com</div>
+                <div class="info-value">{{ klien.email }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Nama</div>
-                <div class="info-value">anin</div>
+                <div class="info-value">{{ klien.nama }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Tanggal Pendaftaran</div>
-                <div class="info-value">2022-01-15</div>
+                <div class="info-value">{{ klien.tanggal_pendaftaran }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Alamat</div>
-                <div class="info-value">Jl. Sehat No.123, Jakarta</div>
+                <div class="info-value">{{ klien.alamat }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Nomor Telepon</div>
-                <div class="info-value">+62 812-3456-7890</div>
+                <div class="info-value">{{ klien.nomor_telepon }}</div>
             </div>
         </div>
 

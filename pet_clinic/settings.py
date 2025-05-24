@@ -18,6 +18,8 @@ from urllib.parse import urlparse
 
 load_dotenv()
 
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -50,7 +52,6 @@ INSTALLED_APPS = [
     'manajemen_obat',
     'data_klien_hewan',
     'manajemen_vaksinasi',
-    # 'merah',
     'main',
     'jenis_hewan',
     'hewan_peliharaan'
@@ -90,37 +91,32 @@ WSGI_APPLICATION = 'pet_clinic.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Replace the DATABASES section of your settings.py with this
-DATABASE_URL='postgresql://neondb_owner:npg_wNGaE2ZkHv7M@ep-winter-wildflower-a4ox1ffc-pooler.us-east-1.aws.neon.tech/petclinic-b-07?sslmode=require'
+DATABASE_URL='postgresql://neondb_owner:npg_k4iLjmFXEZR6@ep-winter-thunder-a5no38r0-pooler.us-east-2.aws.neon.tech/petclinic-b-07?sslmode=require'
 # Parse database URL
 DATABASE_URL = os.getenv("DATABASE_URL")
 tmpPostgres = urlparse(DATABASE_URL)
-
 
 # Fix: Ensure path is properly decoded to string before manipulating
 path = tmpPostgres.path
 if isinstance(path, bytes):
     path = path.decode('utf-8')
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'petclinic-b-07',  # Now working with a string
-#         'USER': 'neondb_owner',
-#         'PASSWORD': 'npg_wNGaE2ZkHv7M',
-#         'HOST': 'ep-winter-wildflower-a4ox1ffc-pooler.us-east-1.aws.neon.tech',
-#         'PORT': 5432,
-#         'OPTIONS': {
-#             'sslmode': 'require'
-#         }
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'petclinic-b-07',  # Now working with a string
+        'USER': 'neondb_owner',
+        'PASSWORD': 'npg_wNGaE2ZkHv7M',
+        'HOST': 'ep-winter-wildflower-a4ox1ffc-pooler.us-east-1.aws.neon.tech',
+        'PORT': 5432,
+        'OPTIONS': {
+            'sslmode': 'require'
+        }
     }
 }
+SESSION_ENGINE = 'main.neon_session_backend'
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
