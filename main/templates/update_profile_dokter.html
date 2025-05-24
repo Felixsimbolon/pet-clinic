@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Update Profile Frontdesk - PetCare</title>
+  <title>Update Profile Dokter - PetCare</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -98,6 +98,41 @@
       gap: 15px;
       margin-top: 20px;
     }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin: 40px 0 20px 0;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--accent-color);
+    }
+
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .table thead th {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: 500;
+        border: none;
+        padding: 12px 15px;
+    }
+
+    .table tbody td {
+        padding: 12px 15px;
+        border-color: #eee;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
 
     .btn-cancel {
       background-color: white;
@@ -181,29 +216,96 @@
 {% endif %}
 
 <div class="container mt-5">
-  <h1>Update Profile Frontdesk</h1>
+  <h1>Update Profile Dokter</h1>
   <form method="POST">
     {% csrf_token %}
     
     <div class="mb-3">
       <label for="alamat" class="form-label">Alamat <span class="text-danger">*</span></label>
-      <textarea class="form-control" id="alamat" name="alamat" rows="2" required>{{ alamat }}</textarea>
+      <textarea class="form-control" id="alamat" name="alamat" rows="2" required>{{ dokter.alamat }}</textarea>
     </div>
   
     <div class="mb-3">
       <label for="nomorTelepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" value="{{ nomor_telepon }}" required>
+      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" value="{{ dokter.nomor_telepon }}" required>
     </div>
   
     <div class="mb-3">
       <label for="tanggalAkhirKerja" class="form-label">Tanggal Akhir Kerja <span class="text-danger">*</span></label>
-      <input type="date" class="form-control" id="tanggalAkhirKerja" name="tanggal_akhir_kerja" value="{{ tanggal_akhir_kerja }}" required>
+      <input type="date" class="form-control" id="tanggalAkhirKerja" name="tanggal_akhir_kerja" value="{{ dokter.tanggal_akhir_kerja }}" required>
     </div>
   
+    <h2 class="section-title">Daftar Sertifikat</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nomor Sertifikat</th>
+                    <th>Nama Sertifikat</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sertifikat %}
+                <tr>
+                    <td>{{ s.no }}</td>
+
+                    <input type="hidden" name="nomor_sertifikat_lama" value="{{ s.nomor_sertifikat }}">
+                    
+                    <td>
+                        <input type="text" class="form-control" name="nomor_sertifikat" value="{{ s.nomor_sertifikat }}" required>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="nama_sertifikat" value="{{ s.nama_sertifikat }}" required>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="section-title">Daftar Jadwal Praktik</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Hari</th>
+                    <th>Jam</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for j in jadwal %}
+                <tr>
+                    <td>{{ j.no }}</td>
+
+                    <!-- Hidden: nilai lama -->
+                    <input type="hidden" name="hari_praktik_lama" value="{{ j.hari }}">
+                    <input type="hidden" name="jam_mulai_lama" value="{{ j.jam_mulai }}">
+                    <input type="hidden" name="jam_selesai_lama" value="{{ j.jam_selesai }}">
+
+                    <!-- Editable input: nilai baru -->
+                    <td>
+                        <input type="text" class="form-control" name="hari_praktik" value="{{ j.hari }}" required>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <input type="time" name="jam_mulai" value="{{ j.jam_mulai }}" class="form-control" required>
+                            <span class="mt-2">-</span>
+                            <input type="time" name="jam_selesai" value="{{ j.jam_selesai }}" class="form-control" required>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
     <div class="form-buttons">
-      <a href="{% url 'dashboard_frontdesk' %}" class="btn btn-cancel">Cancel</a>
+      <a href="{% url 'dashboard_dokter' %}" class="btn btn-cancel">Cancel</a>
       <button type="submit" class="btn btn-update-profile">Update Profile</button>
     </div>
+    
   </form>
 </div>
 
