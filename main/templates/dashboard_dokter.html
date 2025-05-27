@@ -42,7 +42,7 @@
             color: white;
             font-weight: 500;
             margin-right: 20px;
-            font-size: 1rem;
+            font-size: 0.8rem;
         }
 
         .nav-link:hover {
@@ -274,7 +274,7 @@
         <div class="profile-header">
             <h1 class="profile-title">Profile Dokter</h1>
             <div class="action-buttons">
-                <a href="#" class="btn btn-password">
+                <a href="{% url 'dokter_update_password' %}" class="btn btn-password">
                     <i class="fas fa-key"></i>Update Password
                 </a>
                 <a href="#" class="btn btn-update">
@@ -286,31 +286,31 @@
         <div class="profile-info">
             <div class="info-item">
                 <div class="info-label">Nomor Identitas</div>
-                <div class="info-value">DOK12345678</div>
+                <div class="info-value">{{ dokter.no_dokter_hewan }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Nomor Izin Praktik</div>
-                <div class="info-value">IP-987654321</div>
+                <div class="info-value">{{ dokter.no_izin_praktik }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Email</div>
-                <div class="info-value">dokter@example.com</div>
+                <div class="info-value">{{ dokter.email }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Tanggal Diterima</div>
-                <div class="info-value">2022-01-15</div>
+                <div class="info-value">{{ dokter.tanggal_mulai_kerja }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Tanggal Akhir Kerja</div>
-                <div class="info-value">2026-12-31</div>
+                <div class="info-value">{{ dokter.tanggal_akhir_kerja }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Alamat</div>
-                <div class="info-value">Jl. Sehat No.123, Jakarta</div>
+                <div class="info-value">{{ dokter.alamat }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Nomor Telepon</div>
-                <div class="info-value">+62 812-3456-7890</div>
+                <div class="info-value">{{ dokter.nomor_telepon }}</div>
             </div>
         </div>
 
@@ -325,21 +325,15 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for s in sertifikat %}
                     <tr>
-                        <td>1</td>
-                        <td>SRT-001</td>
-                        <td>Veterinary Medicine Certification</td>
+                        <td>{{ s.no }}</td>
+                        <td>{{ s.nomor_sertifikat }}</td>
+                        <td>{{ s.nama_sertifikat }}</td>
                     </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>SRT-002</td>
-                        <td>Advanced Surgery Course</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>SRT-003</td>
-                        <td>Animal Behavior Specialist</td>
-                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">Belum ada sertifikat.</td></tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -355,21 +349,15 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for j in jadwal %}
                     <tr>
-                        <td>1</td>
-                        <td>Senin</td>
-                        <td>08:00 - 14:00</td>
+                        <td>{{ j.no }}</td>
+                        <td>{{ j.hari }}</td>
+                        <td>{{ j.jam }}</td>
                     </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Rabu</td>
-                        <td>10:00 - 16:00</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>Jumat</td>
-                        <td>12:00 - 18:00</td>
-                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">Belum ada jadwal praktik.</td></tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
