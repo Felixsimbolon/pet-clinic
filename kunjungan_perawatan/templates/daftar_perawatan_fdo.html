@@ -42,7 +42,6 @@
                   <th class="px-4 py-3 font-medium">Dokter</th>
                   <th class="px-4 py-3 font-medium">FDO</th>
                   <th class="px-4 py-3 font-medium">Perawatan</th>
-                  <th class="px-4 py-3 font-medium">Catatan Medis</th>
                 </tr>
             </thead>
 
@@ -62,12 +61,14 @@
                 </span>
                 {{ t.nama_perawatan }}
               </td>
-              <td class="px-4 py-3">{{ t.catatan }}</td>
                 <!-- Edit -->
                
             </tr>
 
-            <!-- Modal Delete (Bootstrap tetap dipakai untuk JS) -->
+            {% empty %}
+              <tr>
+                <td colspan="8" class="text-center text-muted py-4">Tidak ada data Perawatan.</td>
+              </tr>
             {% endfor %}
           </tbody>
         </table>

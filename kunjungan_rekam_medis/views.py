@@ -85,7 +85,7 @@ def daftar_kunjungan_fdo(request):
             # Cek apakah kunjungan keperawatan ada catatan (menggunakan PK gabungan)
             cursor.execute("""
                 SELECT EXISTS (
-                    SELECT 1 FROM kunjungan_keperawatan
+                    SELECT 1 FROM kunjungan
                     WHERE id_kunjungan = %s
                       AND no_identitas_klien = %s
                       AND nama_hewan = %s
@@ -290,9 +290,9 @@ def daftar_kunjungan_klien(request):
                 no_perawat_hewan,
                 timestamp_awal,
                 timestamp_akhir
-            FROM kunjungan
+            FROM kunjungan where no_identitas_klien = (select no_identitas from klien where email = %s)
             ORDER BY timestamp_awal DESC
-        """)
+        """,[request.session['user_email']])
         kunjungan_rows = list(cursor.fetchall())
 
         for i, row in enumerate(kunjungan_rows):
@@ -430,7 +430,7 @@ def daftar_kunjungan(request):
             # Cek apakah kunjungan keperawatan ada catatan (menggunakan PK gabungan)
             cursor.execute("""
                 SELECT EXISTS (
-                    SELECT 1 FROM kunjungan_keperawatan
+                    SELECT 1 FROM kunjungan
                     WHERE id_kunjungan = %s
                       AND no_identitas_klien = %s
                       AND nama_hewan = %s
@@ -1248,7 +1248,7 @@ def create_rekam_medis(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan,
             with connection.cursor() as cursor:
                 cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute("""
-                    UPDATE kunjungan_keperawatan
+                    UPDATE kunjungan
                     SET  catatan = %s
                     WHERE id_kunjungan = %s
                     AND no_dokter_hewan = %s
@@ -1261,7 +1261,7 @@ def create_rekam_medis(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan,
            with connection.cursor() as cursor:
                 cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute("""
-                    UPDATE kunjungan_keperawatan
+                    UPDATE kunjungan
                     SET  catatan = null
                     WHERE id_kunjungan = %s
                     AND no_dokter_hewan = %s
@@ -1345,7 +1345,7 @@ def update_rekam_medis(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan,
             with connection.cursor() as cursor:
                 cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute("""
-                    UPDATE kunjungan_keperawatan
+                    UPDATE kunjungan
                     SET  catatan = %s
                     WHERE id_kunjungan = %s
                     AND no_dokter_hewan = %s
@@ -1358,7 +1358,7 @@ def update_rekam_medis(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan,
            with connection.cursor() as cursor:
                 cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute("""
-                    UPDATE kunjungan_keperawatan
+                    UPDATE kunjungan
                     SET  catatan = null
                     WHERE id_kunjungan = %s
                     AND no_dokter_hewan = %s
@@ -1396,7 +1396,7 @@ def update_rekam_medis(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan,
                 k.suhu,
                 k.berat_badan,
                 r.kode_perawatan,
-                r.catatan
+                k.catatan
             FROM kunjungan k
             LEFT JOIN kunjungan_keperawatan r ON k.id_kunjungan = r.id_kunjungan 
             and k.no_identitas_klien = r.no_identitas_klien
@@ -1481,14 +1481,14 @@ def rekam_medis_view(request, id_kunjungan, no_dokter_hewan, no_perawat_hewan, n
         # Ambil catatan dari kunjungan_keperawatan berdasarkan id_kunjungan (biasanya cukup id_kunjungan sebagai FK)
         cursor.execute("""
             SELECT catatan
-            FROM kunjungan_keperawatan
+            FROM kunjungan
              WHERE id_kunjungan = %s
               AND no_dokter_hewan = %s
               AND no_perawat_hewan = %s
               AND no_front_desk = %s
               AND nama_hewan = %s
               AND no_identitas_klien = %s
-              LIMIT 1
+             
         """, [id_kunjungan, no_dokter_hewan, no_perawat_hewan, no_front_desk, nama_hewan, no_identitas_klien])
         catatan_data = cursor.fetchone()
         print(catatan_data)
@@ -1550,7 +1550,7 @@ def rekam_medis_view_klien(request, id_kunjungan, no_dokter_hewan, no_perawat_he
         # Ambil catatan dari kunjungan_keperawatan berdasarkan id_kunjungan (biasanya cukup id_kunjungan sebagai FK)
         cursor.execute("""
             SELECT catatan
-            FROM kunjungan_keperawatan
+            FROM kunjungan
              WHERE id_kunjungan = %s
               AND no_dokter_hewan = %s
               AND no_perawat_hewan = %s
@@ -1628,7 +1628,7 @@ def rekam_medis_view_perawat(request, id_kunjungan, no_dokter_hewan, no_perawat_
         # Ambil catatan dari kunjungan_keperawatan berdasarkan id_kunjungan (biasanya cukup id_kunjungan sebagai FK)
         cursor.execute("""
             SELECT catatan
-            FROM kunjungan_keperawatan
+            FROM kunjungan
              WHERE id_kunjungan = %s
               AND no_dokter_hewan = %s
               AND no_perawat_hewan = %s
@@ -1706,7 +1706,7 @@ def rekam_medis_view_fdo(request, id_kunjungan, no_dokter_hewan, no_perawat_hewa
         # Ambil catatan dari kunjungan_keperawatan berdasarkan id_kunjungan (biasanya cukup id_kunjungan sebagai FK)
         cursor.execute("""
             SELECT catatan
-            FROM kunjungan_keperawatan
+            FROM kunjungan
              WHERE id_kunjungan = %s
               AND no_dokter_hewan = %s
               AND no_perawat_hewan = %s
