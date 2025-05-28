@@ -1,7 +1,35 @@
 from django.shortcuts import render, redirect
 from django.db import connection
+from django.shortcuts import render, redirect
+from django.db import connection, DatabaseError
+
 
 def list_prescriptions(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+    
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel dokter_hewan
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di dokter_hewan, redirect login
+            return redirect('login')
+        
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
 
@@ -33,41 +61,62 @@ def list_prescriptions(request):
 
 
 def create_prescription(request):
+    error         = None
+    selected_tr   = None
+    selected_med  = None
+    entered_qty   = None
+
     if request.method == 'POST':
-        kode_perawatan = request.POST['perawatan']
-        kode_obat      = request.POST['obat']
-        qty            = int(request.POST['quantity'])
+        selected_tr  = request.POST.get('perawatan')
+        selected_med = request.POST.get('obat')
+        entered_qty  = request.POST.get('quantity')
 
-        with connection.cursor() as cursor:
-            cursor.execute("SET search_path TO pet_clinic;")
+        try:
+            qty = int(entered_qty)
+            with connection.cursor() as cursor:
+                if connection.vendor == 'postgresql':
+                    cursor.execute("SET search_path TO pet_clinic;")
 
-            cursor.execute("""
-                INSERT INTO perawatan_obat (kode_perawatan, kode_obat, kuantitas_obat)
-                VALUES (%s, %s, %s)
-            """, [kode_perawatan, kode_obat, qty])
+                cursor.execute("""
+                    INSERT INTO perawatan_obat
+                      (kode_perawatan, kode_obat, kuantitas_obat)
+                    VALUES (%s, %s, %s)
+                """, [selected_tr, selected_med, qty])
 
-        return redirect('prescription_list')
+            return redirect('prescription_list')
+
+        except (DatabaseError, ValueError) as e:
+            raw = str(e)
+            if 'CONTEXT:' in raw:
+                error = raw.split('CONTEXT:')[0].strip()
+            else:
+                error = raw
 
     with connection.cursor() as cursor:
-        cursor.execute("SET search_path TO pet_clinic;")
+        if connection.vendor == 'postgresql':
+            cursor.execute("SET search_path TO pet_clinic;")
 
         cursor.execute("""
             SELECT kode_perawatan, nama_perawatan
             FROM perawatan
             ORDER BY kode_perawatan
         """)
-        treatments = cursor.fetchall()   
+        treatments = cursor.fetchall()
 
         cursor.execute("""
             SELECT kode, nama, stok
             FROM obat
             ORDER BY kode
         """)
-        medicines = cursor.fetchall()    
+        medicines = cursor.fetchall()
 
     return render(request, 'create_prescription.html', {
-        'treatments': treatments,
-        'medicines':  medicines,
+        'treatments':   treatments,
+        'medicines':    medicines,
+        'error':        error,
+        'selected_tr':  selected_tr,
+        'selected_med': selected_med,
+        'entered_qty':  entered_qty,
     })
 
 
