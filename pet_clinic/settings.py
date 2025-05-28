@@ -83,6 +83,10 @@ TEMPLATES = [
         },
     },
 ]
+CSRF_TRUSTED_ORIGINS = [
+    'https://pet-clinic-production-06a6.up.railway.app',
+]
+
 
 WSGI_APPLICATION = 'pet_clinic.wsgi.application'
 
