@@ -1,175 +1,130 @@
-
-
-
 {% extends 'base_dokter_hewan.html' %}
-{% block title %}Update Treatment{% endblock %}
+{% block title %}Create Treatment{% endblock %}
+
 {% block extra_head %}
-  <style>
-    /* ───── Fix konflik Tailwind vs Bootstrap ───── */
-    .navbar-collapse{ visibility:visible!important; }
-  </style>
+<style>
+  .navbar-collapse { visibility: visible !important; }
+
+  .dropdown-details {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  .dropdown-details summary {
+    list-style: none;
+    cursor: pointer;
+    padding: .5rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: .375rem;
+    background: white;
+  }
+  .dropdown-details summary::-webkit-details-marker { display: none; }
+
+  .dropdown-details .list {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: .375rem;
+    background: white;
+    z-index: 10;
+  }
+  .dropdown-details .item {
+    padding: .25rem .75rem;
+    cursor: pointer;
+  }
+  .dropdown-details .item + .item { border-top: 1px solid #eee; }
+  .dropdown-details .item p { margin: 2px 0; font-size: .875rem; }
+  .dropdown-details .item:hover { background: #f3f4f6; }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto mt-12 p-8 bg-white rounded-lg shadow">
-    <h1 class="text-2xl font-semibold mb-6">Create New Treatment</h1>
-    
+  <h1 class="text-2xl font-semibold mb-6">Create New Treatment</h1>
 
-    <form method="POST" class="space-y-6">
-      {% csrf_token %}
+  <form method="POST" class="space-y-6">
+    {% csrf_token %}
 
-      <!-- Dropdown Kunjungan -->
-      <div class=" border-gray-300 rounded-md p-1">
-        <label for="kunjungan" class="block mb-1 font-medium text-gray-700">Kunjungan</label>
-        <select
-          id="kunjungan"
-          name="kunjungan" required
-          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
-        >
-          <option value="" disabled selected>-- Pilih Kunjungan --</option>
-          {% for k in kunjungan_list %}
-          <option value="{{ k }}">{{ k }}</option>
-          {% endfor %}
-        </select>
-        {% if errors.kunjungan %}
-        <p class="text-red-600 text-sm mt-1">{{ errors.kunjungan }}</p>
+    <!-- Custom Dropdown Kunjungan -->
+    <details class="dropdown-details">
+      <!-- Read-only ID display -->
+      <summary id="summary-kunjungan">
+        {% if selected.id %}
+          ID: {{ selected.id }} – {{ selected.nama }}
+        {% else %}
+          -- Pilih Kunjungan --
+        {% endif %}
+      </summary>
+
+      <!-- hidden input untuk form -->
+      <input type="hidden" name="kunjungan" id="input-kunjungan" value="{{ data.kunjungan }}"/>
+
+      <div class="list">
+        {% for k in kunjungan_list %}
+        <div class="item" onclick="
+          document.getElementById('input-kunjungan').value =
+            '{{ k.id }}|{{ k.dokter }}|{{ k.perawat }}|{{ k.front }}|{{ k.nama }}|{{ k.klien }}';
+          document.getElementById('summary-kunjungan').textContent =
+            'ID: {{ k.id }} – {{ k.nama }}';
+          this.closest('details').removeAttribute('open');
+        ">
+          <p><strong>id_kunjungan:</strong> {{ k.id }}</p>
+          <p><strong>nama_hewan:</strong> {{ k.nama }}</p>
+          <p><strong>no_identitas_klien:</strong> {{ k.klien }}</p>
+          <p><strong>no_front_desk:</strong> {{ k.front }}</p>
+          <p><strong>no_dokter_hewan:</strong> {{ k.dokter }}</p>
+          <p><strong>no_perawat_hewan:</strong> {{ k.perawat }}</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if errors.kunjungan %}
+      <p class="text-red-600 text-sm mt-1">{{ errors.kunjungan }}</p>
       {% endif %}
-      </div>
+    </details>
 
-      <!-- Dropdown HEWAN -->
-      <div class=" border-gray-300 rounded-md p-1">
-        <label for="hewan" class="block mb-1 font-medium text-gray-700">hewan</label>
-        <select
-          id="hewan"
-          name="hewan" required
-          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
+    <!-- Dropdown Jenis Perawatan (di bawah detail) -->
+    <div>
+      <label for="jenis_perawatan" class="block mb-1 font-medium text-gray-700">
+        Jenis Perawatan
+      </label>
+      <select
+        id="jenis_perawatan"
+        name="jenis_perawatan"
+        required
+        class="w-full border-2 border-gray-300 rounded-md p-2"
+      >
+        <option value="" disabled {% if not data.jenis_perawatan %}selected{% endif %}>
+          -- Pilih Jenis Perawatan --
+        </option>
+        {% for kode, nama in jenis_list %}
+        <option
+          value="{{ kode }} – {{ nama }}"
+          {% if data.jenis_perawatan == kode %}selected{% endif %}
         >
-          <option value="" disabled selected>-- Pilih hewan --</option>
-          {% for k in hewan_list %}
-          <option value="{{ k }}">{{ k }}</option>
-          {% endfor %}
-        </select>
-        {% if errors.hewan %}
-        <p class="text-red-600 text-sm mt-1">{{ errors.hewan }}</p>
+          {{ kode }} – {{ nama }}
+        </option>
+        {% endfor %}
+      </select>
+      {% if errors.jenis_perawatan %}
+      <p class="text-red-600 text-sm mt-1">{{ errors.jenis_perawatan }}</p>
       {% endif %}
-      </div>
+    </div>
 
-      <!-- Dropdown KLIEN -->
-      <div class=" border-gray-300 rounded-md p-1">
-        <label for="klien" class="block mb-1 font-medium text-gray-700">klien</label>
-        <select
-          id="klien"
-          name="klien" required
-          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
-        >
-          <option value="" disabled selected>-- Pilih klien --</option>
-          {% for k in klien_list %}
-          <option value="{{ k }}">{{ k }}</option>
-          {% endfor %}
-        </select>
-        {% if errors.klien %}
-        <p class="text-red-600 text-sm mt-1">{{ errors.klien }}</p>
-      {% endif %}
-      </div>
+   
 
-      <!-- Dropdown FDO -->
-      <div class=" border-gray-300 rounded-md p-1">
-        <label for="front_desk" class="block mb-1 font-medium text-gray-700">front_desk</label>
-        <select
-          id="front_desk"
-          name="front_desk" required
-          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
-        >
-          <option value="" disabled selected>-- Pilih front desk --</option>
-          {% for k in front_desk_list %}
-          <option value="{{ k }}">{{ k }}</option>
-          {% endfor %}
-        </select>
-        {% if errors.front_desk %}
-        <p class="text-red-600 text-sm mt-1">{{ errors.front_desk }}</p>
-      {% endif %}
-      </div>
-
-      <!-- Dropdown DOKTER -->
-      <div class=" border-gray-300 rounded-md p-1">
-        <label for="dokter" class="block mb-1 font-medium text-gray-700">dokter</label>
-        <select
-          id="dokter"
-          name="dokter" required
-          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
-        >
-          <option value="" disabled selected>-- Pilih dokter --</option>
-          {% for k in dokter_list %}
-          <option value="{{ k }}">{{ k }}</option>
-          {% endfor %}
-        </select>
-        {% if errors.dokter %}
-        <p class="text-red-600 text-sm mt-1">{{ errors.dokter }}</p>
-      {% endif %}
-      </div>
-
-      <!-- Dropdown PERAWAT -->
-      <div class=" border-gray-300 rounded-md p-1">
-        <label for="perawat" class="block mb-1 font-medium text-gray-700">perawat</label>
-        <select
-          id="perawat"
-          name="perawat" required
-          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
-        >
-          <option value="" disabled selected>-- Pilih perawat --</option>
-          {% for k in perawat_list %}
-          <option value="{{ k }}">{{ k }}</option>
-          {% endfor %}
-        </select>
-        {% if errors.perawat %}
-        <p class="text-red-600 text-sm mt-1">{{ errors.perawat }}</p>
-      {% endif %}
-      </div>
-
-      <!-- Dropdown Jenis Perawatan -->
-      <div class=" border-gray-300 rounded-md p-1">
-        <label for="jenis_perawatan" class="block mb-1 font-medium text-gray-700">Jenis Perawatan</label>
-        <select
-          id="jenis_perawatan"
-          name="jenis_perawatan" required
-          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
-        >
-          <option value="" disabled selected>-- Pilih Jenis Perawatan --</option>
-          {% for kode, nama in jenis_list %}
-          <option value="{{ kode }}">{{ kode }} – {{ nama }}</option>
-          {% endfor %}
-        </select>
-        {% if errors.jenis_perawatan %}
-        <p class="text-red-600 text-sm mt-1">{{ errors.jenis_perawatan }}</p>
-      {% endif %}
-      </div>
-
-      <!-- Catatan Medis -->
-      <div class="border-gray-300 rounded-md p-1">
-        <label for="catatan" class="block mb-1 font-medium text-gray-700">Catatan Medis (Optional)</label>
-        <textarea
-          id="catatan"
-          name="catatan"
-          rows="3"
-          class="w-full border-2 border-gray-300 rounded-md p-1 focus:outline-none focus:border-2 focus:border-blue-500"
-          placeholder="Hewan d jaga terus ya!"
-        ></textarea>
-      </div>
-
-      <div class="flex justify-end space-x-4">
-        <a
-          href="{% url 'daftar_perawatan' %}"
-          class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-        >
-          Cancel
-        </a>
-        <button
-          type="submit"
-          class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Create
-        </button>
-      </div>
-    </form>
-  </div>
+    <!-- Buttons -->
+    <div class="flex justify-end space-x-4">
+      <a href="{% url 'daftar_perawatan' %}"
+         class="px-4 py-2 bg-gray-200 rounded-md">Cancel</a>
+      <button type="submit"
+              class="px-6 py-2 bg-blue-600 text-white rounded-md">
+        Create
+      </button>
+    </div>
+  </form>
+</div>
 {% endblock content %}

@@ -47,7 +47,6 @@
                   <th class="px-4 py-3 font-medium">Dokter</th>
                   <th class="px-4 py-3 font-medium">FDO</th>
                   <th class="px-4 py-3 font-medium">Perawatan</th>
-                  <th class="px-4 py-3 font-medium">Catatan Medis</th>
                   <th class="px-4 py-3 font-medium">Action</th>
                 </tr>
             </thead>
@@ -68,7 +67,6 @@
                 </span>
                 {{ t.nama_perawatan }}
               </td>
-              <td class="px-4 py-3">{{ t.catatan }}</td>
               <td class="px-4 py-3 space-x-1">
                 <!-- Edit -->
                 <a href="{% url 'edit_treatment' t.id_kunjungan t.kode_perawatan t.no_dokter_hewan t.no_perawat_hewan t.no_front_desk t.nama_hewan t.no_identitas_klien%}"
@@ -117,6 +115,10 @@
                 </div>
               </div>
             </div>
+            {% empty %}
+              <tr>
+                <td colspan="8" class="text-center text-muted py-4">Tidak ada data Perawatan.</td>
+              </tr>
             {% endfor %}
           </tbody>
         </table>
