@@ -11,8 +11,10 @@ urlpatterns = [
     # Data stok vaksin
     path('stok-vaksin/', views.data_stok_vaksin, name='data_stok_vaksin'),
     path('stok-vaksin/create/', views.create_vaccine, name='create_vaccine'),
-    path('stok-vaksin/add-stock/', views.add_vaccine_stock, name='add_vaccine_stock'),
-    path('stok-vaksin/edit/<str:kode>/', views.edit_vaccine, name='edit_vaccine'),
+    # path('stok-vaksin/add-stock/', views.add_vaccine_stock, name='add_vaccine_stock'),
+    # path('stok-vaksin/edit/<str:kode>/', views.edit_vaccine, name='edit_vaccine'),
+    path('add_vaccine_stock/<str:kode>/', views.add_vaccine_stock, name='add_vaccine_stock'),
+    path('edit_vaccine/<str:kode>/', views.edit_vaccine, name='edit_vaccine'),
     path('stok-vaksin/delete/<str:kode>/', views.delete_vaccine, name='delete_vaccine'),
     
     # Vaksinasi hewan

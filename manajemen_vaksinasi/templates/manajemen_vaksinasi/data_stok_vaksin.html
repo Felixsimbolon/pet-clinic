@@ -2,6 +2,21 @@
 {% block title %}Data Stok Vaksin - Klinik Hewan{% endblock %}
 {% block header %}List Vaccine{% endblock %}
 {% block content %}
+
+<!-- Display Messages -->
+{% if messages %}
+    <div class="row mb-3">
+        <div class="col-12">
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
 <div class="row mb-4">
     <div class="col-md-12">
         <div class="card">
@@ -10,9 +25,9 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="input-group">
-                            <input type="text" id="searchInput" class="form-control" placeholder="Search Vaccine Name">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Cari nama vaksin...">
                             <button class="btn btn-outline-secondary" type="button" id="clearSearch">
-                                <i class="fas fdaa-times"></i>
+                                <i class="fas fa-times"></i>
                             </button>
                         </div>
                     </div>
@@ -33,7 +48,7 @@
                                 <th>Nama Vaksin</th>
                                 <th>Harga</th>
                                 <th>Stok</th>
-                                <th colspan="2">Action</th>
+                                <th colspan="3">Action</th>
                             </tr>
                         </thead>
                         <tbody id="vaccineTableBody">
@@ -43,145 +58,151 @@
                                 <th class="vaccine-id">{{ stok.kode }}</th>
                                 <td class="vaccine-name">{{ stok.nama }}</td>
                                 <td>{{ stok.harga }}</td>
-                                <td>{{ stok.stok }}</td> <!--stok vaksin-->
+                                <td>{{ stok.stok }}</td>
                                 <td>
                                     <!-- Button to trigger update stock modal -->
-                                    <button type="button" class="btn btn-sm btn-warning btn-update-stock" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#updateStockModal"
-                                        data-id="{{ stok.kode }}"
-                                        data-name="{{ stok.nama }}"
-                                        data-stock="{{ stok.stok }}">
+                                    <button type="button" class="btn btn-sm btn-warning"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#updateStockModal-{{ stok.kode }}">
                                         Update Stock
                                     </button>
-                                    <!-- Modal for Update Stock -->
-                                    <div class="modal fade" id="updateStockModal" tabindex="-1" aria-labelledby="updateStockModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="updateStockModalLabel">Update Vaccine Stock</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form id="updateStockForm" method="post" action="">
-                                                        {% csrf_token %}
-                                                        <div class="mb-3">
-                                                            <h6 id="update_stock_title" class="fw-bold"></h6>
-                                                            <input type="hidden" id="update_stock_id_vaksin" name="kode_vaksin">
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label for="update_stock_value" class="form-label">Stok</label>
-                                                            <input type="number" class="form-control" id="update_stock_value" name="stok" required>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <button type="submit" form="updateStockForm" class="btn btn-primary">Update Stock</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </td>
                                 <td>
                                     <!-- Button to trigger update vaccine modal -->
-                                    <button type="button" class="btn btn-sm btn-warning btn-update-vaccine" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#updateVaccineModal"
-                                        data-id="{{ stok.kode }}"
-                                        data-name="{{ stok.nama }}"
-                                        data-price="{{ stok.harga }}">
+                                    <button type="button" class="btn btn-sm btn-info"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#updateVaccineModal-{{ stok.kode }}">
                                         Update
                                     </button>
-                                    <!-- Modal for Update Vaccine -->
-                                    <div class="modal fade" id="updateVaccineModal" tabindex="-1" aria-labelledby="updateVaccineModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="updateVaccineModalLabel">Update Vaccine</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form id="updateVaccineForm" method="post" action="">
-                                                        {% csrf_token %}
-                                                        <div class="mb-3">
-                                                            <label for="update_id_vaksin" class="form-label">ID Vaksin</label>
-                                                            <input type="text" class="form-control bg-light" 
-                                                                   id="update_id_vaksin" 
-                                                                   name="kode" 
-                                                                   value="{{ stok.kode }}" 
-                                                                   readonly>
-                                                        </div>
-                                                        
-                                                        <div class="mb-3">
-                                                            <label for="update_nama_vaksin" class="form-label">Nama Vaksin</label>
-                                                            <input type="text" class="form-control" id="update_nama_vaksin" name="nama_vaksin" required value="{{ stok.nama }}" >
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label for="update_harga" class="form-label">Harga</label>
-                                                            <input type="number" class="form-control" id="update_harga" name="harga" required>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <button type="submit" form="updateVaccineForm" class="btn btn-primary">Update</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </td>
                                 <td>
                                     <!-- Button to trigger delete modal -->
-                                    <button type="button" class="btn btn-sm action-btn btn-outline-danger" 
-                                        data-bs-toggle="modal" data-bs-target="#deleteModal-{{ stok.kode }}">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal-{{ stok.kode }}">
                                         <i class="fas fa-trash-alt me-1"></i>Delete
                                     </button>
-
-                                    <!-- Modal for Delete Confirmation -->
-                                    <div class="modal fade" id="deleteModal-{{ stok.kode }}" tabindex="-1" aria-labelledby="deleteModalLabel-{{ stok.kode }}" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content border border-dark">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title text-danger fw-bold" id="deleteModalLabel-{{ stok.kode }}">
-                                                        Delete Vaccine
-                                                    </h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body text-center">
-                                                    Apakah kamu yakin untuk menghapus Vaksin 
-                                                    <span class="fw-bold text-danger" id="modalVaccineName-{{ stok.kode }}">{{ stok.nama }}</span> dengan
-                                                    <span class="fw-bold text-danger" id="modalVaccineId-{{ stok.kode }}">{{ stok.kode }}</span>?
-                                                </div>
-                                                <div class="modal-footer justify-content-center">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <form method="post" action="{% url 'manajemen_vaksinasi:delete_vaccine' stok.kode %}">
-                                                        {% csrf_token %}
-                                                        <button type="submit" class="btn btn-danger">Confirm Deletion</button>
-                                                    </form>                                                                                     
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </td>
                             </tr>
+
+                            <!-- Modal for Update Stock -->
+                            <div class="modal fade" id="updateStockModal-{{ stok.kode }}" tabindex="-1" 
+                                 aria-labelledby="updateStockModalLabel-{{ stok.kode }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="updateStockModalLabel-{{ stok.kode }}">
+                                                Update Stock - {{ stok.nama }} ({{ stok.kode }})
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form method="post" action="{% url 'manajemen_vaksinasi:add_vaccine_stock' stok.kode %}">
+                                            <div class="modal-body">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="kode_vaksin" value="{{ stok.kode }}">
+                                                <div class="mb-3">
+                                                    <label for="stok-{{ stok.kode }}" class="form-label">Current Stock: {{ stok.stok }}</label>
+                                                    <input type="number" class="form-control" id="stok-{{ stok.kode }}" 
+                                                           name="stok" value="{{ stok.stok }}" required min="0">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-primary">Update Stock</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal for Update Vaccine -->
+                            <div class="modal fade" id="updateVaccineModal-{{ stok.kode }}" tabindex="-1" 
+                                 aria-labelledby="updateVaccineModalLabel-{{ stok.kode }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="updateVaccineModalLabel-{{ stok.kode }}">
+                                                Update Vaccine - {{ stok.kode }}
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form method="post" action="{% url 'manajemen_vaksinasi:edit_vaccine' stok.kode %}">
+                                            <div class="modal-body">
+                                                {% csrf_token %}
+                                                <div class="mb-3">
+                                                    <label for="kode-{{ stok.kode }}" class="form-label">ID Vaksin</label>
+                                                    <input type="text" class="form-control bg-light" 
+                                                           id="kode-{{ stok.kode }}" name="kode" 
+                                                           value="{{ stok.kode }}" readonly>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="nama-{{ stok.kode }}" class="form-label">Nama Vaksin</label>
+                                                    <input type="text" class="form-control" 
+                                                           id="nama-{{ stok.kode }}" name="nama_vaksin" 
+                                                           value="{{ stok.nama }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="harga-{{ stok.kode }}" class="form-label">Harga</label>
+                                                    <input type="number" class="form-control" 
+                                                           id="harga-{{ stok.kode }}" name="harga" 
+                                                           value="{{ stok.harga }}" required min="0">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-primary">Update Vaccine</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal for Delete Confirmation -->
+                            <div class="modal fade" id="deleteModal-{{ stok.kode }}" tabindex="-1" 
+                                 aria-labelledby="deleteModalLabel-{{ stok.kode }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border border-dark">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-danger fw-bold" id="deleteModalLabel-{{ stok.kode }}">
+                                                Delete Vaccine
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            Apakah kamu yakin untuk menghapus Vaksin 
+                                            <span class="fw-bold text-danger">{{ stok.nama }}</span> dengan ID
+                                            <span class="fw-bold text-danger">{{ stok.kode }}</span>?
+                                        </div>
+                                        <div class="modal-footer justify-content-center">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <form method="post" action="{% url 'manajemen_vaksinasi:delete_vaccine' stok.kode %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+                                            </form>                                                                                     
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             {% empty %}
                             <tr>
-                                <td colspan="7" class="text-center">Belum ada data stok vaksin.</td>
+                                <td colspan="8" class="text-center">Belum ada data stok vaksin.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                     <!-- No results message -->
-                    <div id="noResultsMessage" class="alert alert-info text-center d-none">
-                        Tidak ada vaksin yang sesuai dengan pencarian.
+                    <div id="noResultsMessage" class="alert alert-warning text-center d-none">
+                        <i class="fas fa-search me-2"></i>
+                        <strong>Tidak ada vaksin dengan nama tersebut</strong>
+                        <br>
+                        <small class="text-muted">Coba gunakan kata kunci yang berbeda atau buat vaksin baru</small>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 <!-- Modal for Create New Vaccine -->
 <div class="modal fade" id="createVaccineModal" tabindex="-1" aria-labelledby="createVaccineModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -214,48 +235,14 @@
         </div>
     </div>
 </div>
+
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // JavaScript to update modals with data
     document.addEventListener('DOMContentLoaded', function () {
-        // Handle update stock button clicks
-        document.querySelectorAll('.btn-update-stock').forEach(function(button) {
-            button.addEventListener('click', function() {
-                var id = this.getAttribute('data-id');
-                var name = this.getAttribute('data-name');
-                var stock = this.getAttribute('data-stock');
-                
-                document.getElementById('update_stock_title').textContent = name + ' (' + id + ')';
-                document.getElementById('update_stock_id_vaksin').value = id;
-                document.getElementById('update_stock_value').value = stock;
-                
-                // Update form action
-                document.getElementById('updateStockForm').action = '{% url "manajemen_vaksinasi:add_vaccine_stock" %}';
-            });
-        });
-        
-        // Handle update vaccine button clicks
-        document.querySelectorAll('.btn-update-vaccine').forEach(function(button) {
-            button.addEventListener('click', function() {
-                var id = this.getAttribute('data-id');
-                var name = this.getAttribute('data-name');
-                var price = this.getAttribute('data-price');
-                
-                // Display ID as text only
-                document.getElementById('display_id_vaksin').textContent = id;
-                // Still keep ID in hidden field for form submission
-                // document.getElementById('update_id_vaksin').value = id;
-                document.getElementById('update_nama_vaksin').value = name;
-                document.getElementById('update_harga').value = price.replace(/[^\d]/g, ''); // Remove non-numeric chars
-                
-                // Update form action
-                document.getElementById('updateVaccineForm').action = '{% url "manajemen_vaksinasi:edit_vaccine" "0" %}'.replace('0', id);
-            });
-        });
-
-        // Search functionality
+        // Search functionality only - no complex form handling
         const searchInput = document.getElementById('searchInput');
         const clearSearchBtn = document.getElementById('clearSearch');
         const vaccineRows = document.querySelectorAll('.vaccine-row');

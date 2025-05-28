@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Update Pet</title>
+  <title>Delete Pet</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -68,16 +68,15 @@
       align-items: center;
       padding: 40px 15px;
     }
-
     .card {
       background: white;
       padding: 30px;
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      max-width: 600px;
+      max-width: 550px;
       width: 100%;
+      text-align: center;
     }
-
     .card-header {
       background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       color: white;
@@ -87,45 +86,45 @@
       margin-bottom: 30px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
-
-    label {
+    .card-header p {
+      color: white;
+      margin-bottom: 0;
+      font-size: 1rem;
+    }
+    p {
+      font-size: 1.1rem;
+      color: var(--dark-color);
+      margin-bottom: 30px;
+    }
+    .highlight-danger {
+      color: var(--danger-color);
       font-weight: 600;
-      margin-top: 10px;
-      color: var(--primary-color);
     }
-
-    .form-select, .form-control {
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid var(--accent-color);
-      transition: all 0.3s;
-    }
-
-    .form-select:focus, .form-control:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 8px var(--accent-color);
-    }
-
-    .btn-primary {
-      background-color: var(--primary-color);
+    .btn-danger {
+      background-color: var(--danger-color);
       border: none;
       padding: 10px 20px;
       border-radius: 8px;
     }
-
-    .btn-primary:hover {
-      background-color: var(--dark-color);
+    .btn-danger:hover {
+      background-color: #c82333;
       transform: translateY(-2px);
       box-shadow: 0 5px 10px rgba(0,0,0,0.1);
     }
-
     .btn-outline-secondary {
+      border-color: var(--danger-color);
+      color: var(--danger-color);
       border-radius: 8px;
       padding: 10px 20px;
     }
-
-    .d-flex.justify-content-end {
-      gap: 10px;
+    .btn-outline-secondary:hover {
+      background-color: var(--danger-color);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+    .d-flex.justify-content-center {
+      gap: 15px;
     }
   </style>
 </head>
@@ -164,51 +163,33 @@
   </div>
 </nav>
 
-<!-- Content -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<!-- Page Content -->
 <div class="page-content">
   <div class="card">
     <div class="card-header">
-      <h2 class="fw-bold mb-0">Update Pet</h2>
-      <p class="mb-0">Perbarui data hewan peliharaan</p>
+      <h2 class="fw-bold mb-0">Delete Pet</h2>
+      <p>Konfirmasi penghapusan hewan peliharaan</p>
     </div>
 
-    <form>
-      <div class="mb-3">
-        <label for="pemilik" class="form-label">Pemilik</label>
-        <select class="form-select" id="pemilik" disabled>
-          <option selected>John Doe</option>
-          <option>PT Pecinta Kucing</option>
-          <option>PT Aku Sayang Hewan</option>
-        </select>
-      </div>
+    <form method="post">
+      {% csrf_token %}
+      <p>
+        Apakah kamu yakin ingin menghapus hewan 
+        <span class="highlight-danger">{{ nama_hewan }}</span> 
+        milik <span class="highlight-danger">{{ nama_pemilik }}</span>?
+      </p>
 
-      <div class="mb-3">
-        <label for="jenisHewan" class="form-label">Jenis Hewan</label>
-        <select class="form-select" id="jenisHewan" required>
-          <option selected>Kucing</option>
-          <option>Anjing</option>
-          <option>Hamster</option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label for="namaHewan" class="form-label">Nama Hewan</label>
-        <input type="text" class="form-control" id="namaHewan" value="Snowy" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="tanggalLahir" class="form-label">Tanggal Lahir Hewan</label>
-        <input type="date" class="form-control" id="tanggalLahir" value="2020-02-09" required>
-      </div>
-
-      <div class="mb-4">
-        <label for="urlFoto" class="form-label">URL Foto Hewan</label>
-        <input type="url" class="form-control" id="urlFoto" value="https://kucingsaya.com" required>
-      </div>
-
-      <div class="d-flex justify-content-end">
-        <a href="#" class="btn btn-outline-secondary">Cancel</a>
-        <button type="submit" class="btn btn-primary">Update</button>
+      <div class="d-flex justify-content-center">
+        <a href="{% url 'list_hewan' %}" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-danger">Confirm Deletion</button>
       </div>
     </form>
   </div>

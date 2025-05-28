@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Delete Pet</title>
+  <title>Delete Animal Type</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -31,20 +31,24 @@
       border-radius: 0 0 15px 15px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+
     .navbar-brand {
       color: white;
       font-weight: bold;
       font-size: 1.5rem;
     }
+
     .nav-link {
       color: white;
       font-weight: 500;
       margin-right: 20px;
       font-size: 1rem;
     }
+
     .nav-link:hover {
       color: var(--accent-color);
     }
+
     .btn-logout {
       background-color: white;
       color: var(--primary-color);
@@ -53,6 +57,7 @@
       padding: 8px 16px;
       transition: all 0.3s;
     }
+
     .btn-logout:hover {
       background-color: var(--accent-color);
       color: var(--dark-color);
@@ -68,6 +73,7 @@
       align-items: center;
       padding: 40px 15px;
     }
+
     .card {
       background: white;
       padding: 30px;
@@ -77,6 +83,7 @@
       width: 100%;
       text-align: center;
     }
+
     .card-header {
       background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       color: white;
@@ -86,43 +93,51 @@
       margin-bottom: 30px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
+
     .card-header p {
-      color: white;
+      color: white; /* Tambahan ini! */
       margin-bottom: 0;
       font-size: 1rem;
     }
+
     p {
       font-size: 1.1rem;
       color: var(--dark-color);
       margin-bottom: 30px;
     }
+
     .highlight-danger {
       color: var(--danger-color);
       font-weight: 600;
     }
+
     .btn-danger {
       background-color: var(--danger-color);
       border: none;
       padding: 10px 20px;
       border-radius: 8px;
     }
+
     .btn-danger:hover {
       background-color: #c82333;
       transform: translateY(-2px);
       box-shadow: 0 5px 10px rgba(0,0,0,0.1);
     }
+
     .btn-outline-secondary {
       border-color: var(--danger-color);
       color: var(--danger-color);
       border-radius: 8px;
       padding: 10px 20px;
     }
+
     .btn-outline-secondary:hover {
       background-color: var(--danger-color);
       color: white;
       transform: translateY(-2px);
       box-shadow: 0 5px 10px rgba(0,0,0,0.1);
     }
+
     .d-flex.justify-content-center {
       gap: 15px;
     }
@@ -130,7 +145,7 @@
 </head>
 <body>
 
-<!-- Navbar -->
+<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-custom">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">🐾 PetCare</a>
@@ -163,20 +178,27 @@
   </div>
 </nav>
 
-<!-- Page Content -->
+<!-- PAGE CONTENT -->
 <div class="page-content">
   <div class="card">
     <div class="card-header">
-      <h2 class="fw-bold mb-0">Delete Pet</h2>
-      <p>Konfirmasi penghapusan hewan peliharaan</p>
+      <h2 class="fw-bold mb-0">Delete Animal Type</h2>
+      <p>Konfirmasi penghapusan jenis hewan</p>
     </div>
 
-    <p>Apakah kamu yakin ingin menghapus hewan <span class="highlight-danger">Snowy</span> milik <span class="highlight-danger">John Doe</span>?</p>
+    <form method="POST">
+      {% csrf_token %}
+      <p>
+        Apakah kamu yakin ingin menghapus jenis hewan
+        <span class="highlight-danger">{{ jenis.nama }}</span>
+        dengan kode <span class="highlight-danger">{{ jenis.id }}</span>?
+      </p>
 
-    <div class="d-flex justify-content-center">
-      <a href="#" class="btn btn-outline-secondary">Cancel</a>
-      <button type="submit" class="btn btn-danger">Confirm Deletion</button>
-    </div>
+      <div class="d-flex justify-content-center gap-3 mt-4">
+        <a href="{% url 'list_jenis_hewan' %}" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+      </div>
+    </form>
   </div>
 </div>
 

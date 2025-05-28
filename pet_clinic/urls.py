@@ -29,4 +29,5 @@ urlpatterns = [
     path('manajemen_vaksinasi/', include('manajemen_vaksinasi.urls')),
     path('', include('main.urls')),
     path('jenis-hewan/', include('jenis_hewan.urls')),
+    path('hewan/', include('hewan_peliharaan.urls')),
 ]
