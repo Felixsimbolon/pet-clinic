@@ -79,31 +79,33 @@
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 
           <li class="nav-item">
-            <a class="nav-link" href="#">Dashboard</a>
+          <a class="nav-link" href="{% url 'dashboard_dokter' %}">
+            Dashboard
+          </a>
+        </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'list_jenis_hewan' %}">Daftar Jenis Hewan</a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="#">Daftar Jenis Hewan</a>
+            <a class="nav-link" href="{% url 'daftar_perawatan' %}">Perawatan Hewan</a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="#">Perawatan Hewan</a>
+            <a class="nav-link" href="{% url 'daftar_kunjungan' %}">Daftar Kunjungan</a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="#">Daftar Kunjungan</a>
+            <a class="nav-link" href="{% url 'treatment_list' %}">Manajemen Jenis Perawatan</a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="#">Manajemen Jenis Perawatan</a>
-          </li>
+            <a class="nav-link" href="{% url 'prescription_list' %}">Manajemen Pemberian Obat</a>
+        </li>
 
           <li class="nav-item">
-             <a class="nav-link" href="#">Manajemen Pemberian Obat</a>
-          </li>
-
-          <li class="nav-item">
-             <a class="nav-link" href="#">Manajemen Vaksinasi Hewan</a>
+             <a class="nav-link" href="{% url 'manajemen_vaksinasi:vaksinasi_hewan' %}">Manajemen Vaksinasi Hewan</a>
           </li>
 
           <li class="nav-item">

@@ -1,30 +1,44 @@
 {% extends 'base.html' %}
-
 {% block title %}Create New Prescription{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
   <h1 class="h3 mb-4">Create New Prescription</h1>
 
-  <form method="post" id="prescription-form" novalidate>
+  {# Inline error alert from trigger or validation #}
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" novalidate>
     {% csrf_token %}
 
     <div class="mb-3">
       <label for="perawatan" class="form-label">Jenis Perawatan</label>
-      <select name="perawatan" id="perawatan" class="form-select">
-        <option value="" disabled selected>Pilih Jenis Perawatan</option>
+      <select name="perawatan" id="perawatan"
+              class="form-select" required>
+        <option value="" disabled {% if not selected_tr %}selected{% endif %}>
+          Pilih Jenis Perawatan
+        </option>
         {% for kode, nama in treatments %}
-          <option value="{{ kode }}">{{ kode }} – {{ nama }}</option>
+          <option value="{{ kode }}"
+                  {% if kode == selected_tr %}selected{% endif %}>
+            {{ kode }} – {{ nama }}
+          </option>
         {% endfor %}
       </select>
     </div>
 
     <div class="mb-3">
       <label for="obat" class="form-label">Obat</label>
-      <select name="obat" id="obat" class="form-select">
-        <option value="" disabled selected>Pilih Obat</option>
+      <select name="obat" id="obat"
+              class="form-select" required>
+        <option value="" disabled {% if not selected_med %}selected{% endif %}>
+          Pilih Obat
+        </option>
         {% for kode, nama, stok in medicines %}
-          <option value="{{ kode }}" data-stock="{{ stok }}">
+          <option value="{{ kode }}" data-stock="{{ stok }}"
+                  {% if kode == selected_med %}selected{% endif %}>
             {{ kode }} – {{ nama }} [{{ stok }}]
           </option>
         {% endfor %}
@@ -34,7 +48,11 @@
     <div class="mb-3">
       <label for="quantity" class="form-label">Kuantitas Obat</label>
       <input type="number" name="quantity" id="quantity"
-             class="form-control" min="1" placeholder="1">
+             class="form-control"
+             min="1"
+             placeholder="1"
+             value="{{ entered_qty|default:'' }}"
+             required>
     </div>
 
     <div class="d-flex justify-content-end">
