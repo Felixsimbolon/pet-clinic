@@ -169,6 +169,7 @@ CREATE TABLE KUNJUNGAN (
   timestamp_akhir     TIMESTAMP,
   suhu                INT,
   berat_badan         NUMERIC(5,2),
+  catatan             TEXT,
   PRIMARY KEY (
     id_kunjungan,
     nama_hewan,
@@ -198,7 +199,7 @@ CREATE TABLE KUNJUNGAN_KEPERAWATAN (
   no_perawat_hewan    UUID          NOT NULL,
   no_dokter_hewan     UUID          NOT NULL,
   kode_perawatan      VARCHAR(10)   NOT NULL,
-  catatan             TEXT,
+
   PRIMARY KEY (
     id_kunjungan,
     nama_hewan,
