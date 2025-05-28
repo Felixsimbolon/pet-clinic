@@ -84,7 +84,7 @@ TEMPLATES = [
     },
 ]
 CSRF_TRUSTED_ORIGINS = [
-    'https://pet-clinic-production-06a6.up.railway.app',
+    'https://pet-clinic-07.up.railway.app',
 ]
 
 
