@@ -583,8 +583,8 @@ CREATE INDEX django_session_expire_date_idx ON django_session(expire_date);
 CREATE OR REPLACE FUNCTION prevent_duplicate_email()
 RETURNS trigger AS $$
 BEGIN
-    IF EXISTS (SELECT 1 FROM "USER" WHERE email = NEW.email) THEN
-        RAISE EXCEPTION 'Email % sudah terdaftar.', NEW.email
+    IF EXISTS (SELECT 1 FROM "USER" WHERE LOWER(email) = LOWER(NEW.email)) THEN
+        RAISE EXCEPTION 'ERROR:Email "%" sudah terdaftar. Gunakan email lain.', NEW.email
               USING ERRCODE = '23505';
     END IF;
     RETURN NEW;
@@ -605,14 +605,14 @@ $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         IF NEW.timestamp_akhir IS NOT NULL AND NEW.timestamp_akhir < NEW.timestamp_awal THEN
-            RAISE EXCEPTION 'ERROR: Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal saat INSERT.'
+            RAISE EXCEPTION 'ERROR: Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal.'
             USING ERRCODE = '23505';
         END IF;
         RETURN NEW;
 
     ELSIF TG_OP = 'UPDATE' THEN
         IF NEW.timestamp_akhir IS NOT NULL AND NEW.timestamp_akhir < NEW.timestamp_awal THEN
-            RAISE EXCEPTION 'ERROR: Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal saat UPDATE.'
+            RAISE EXCEPTION 'ERROR: Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal.'
             USING ERRCODE = '23505';
         END IF;
         RETURN NEW;
@@ -670,7 +670,7 @@ BEGIN
            AND h.nama               = NEW.nama_hewan
     ) THEN
         RAISE EXCEPTION
-          'ERROR: Hewan "%s" tidak terdaftar atas nama pemilik "%s".',
+          'ERROR: Hewan "%s" tidak terdaftar atas nama pemilik %s.',
           NEW.nama_hewan, nama_pemilik
           USING ERRCODE = '23514';          -- check_violation
     END IF;

@@ -53,7 +53,8 @@
       <!-- Read-only ID display -->
       <summary id="summary-kunjungan">
         {% if selected.id %}
-          ID: {{ selected.id }} – {{ selected.nama }}
+          ID: {{ selected.id }}
+          
         {% else %}
           -- Pilih Kunjungan --
         {% endif %}
@@ -68,7 +69,7 @@
           document.getElementById('input-kunjungan').value =
             '{{ k.id }}|{{ k.dokter }}|{{ k.perawat }}|{{ k.front }}|{{ k.nama }}|{{ k.klien }}';
           document.getElementById('summary-kunjungan').textContent =
-            'ID: {{ k.id }} – {{ k.nama }}';
+            'ID: {{ k.id }}';
           this.closest('details').removeAttribute('open');
         ">
           <p><strong>id_kunjungan:</strong> {{ k.id }}</p>
