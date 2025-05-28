@@ -12,6 +12,31 @@ def index2(request):
 
 def data_klien_hewan(request):
     """View untuk halaman data klien hewan"""
+    # untuk role FDO
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+    
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel front_desk
+        cursor.execute("SELECT 1 FROM front_desk WHERE no_front_desk = %s", [no_pegawai])
+        is_fdo = cursor.fetchone()
+        if not is_fdo:
+            # Jika no_pegawai tidak ada di front_desk, redirect login
+            return redirect('login')
+        
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
         
@@ -92,6 +117,21 @@ def data_klien_hewan(request):
 
 def data_klien_hewan_klien(request):
     """View untuk halaman data klien hewan ROLE KLIEN"""
+    # untuk role KLIEN
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_identitas FROM klien WHERE email = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
     with connection.cursor() as cursor:
         cursor.execute("SET search_path TO pet_clinic;")
         

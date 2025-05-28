@@ -4,7 +4,7 @@ from django.db import connection, transaction
 from django.http import Http404, JsonResponse
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 import psycopg2
 import logging
 
@@ -20,40 +20,116 @@ def index2(request):
     return redirect('manajemen_vaksinasi:vaksinasi_hewan_klien')
 
 # VIEWS CRUD data dan stok vaksin (perawat)
-# udah bener
-def data_stok_vaksin(request):
-    """View untuk halaman data stok vaksin"""
+# udh bener
+@require_GET
+def check_vaccine_usage(request, kode):
+    """API endpoint untuk mengecek apakah vaksin sedang digunakan"""
     try:
-        # Ambil data stok vaksin dari database
         with connection.cursor() as cursor:
             cursor.execute("SET search_path TO pet_clinic;")
-            cursor.execute("""
-                SELECT kode, nama, harga, stok
-                FROM vaksin
-                ORDER BY kode;
-            """)
-            rows = cursor.fetchall()
             
+            # Cek apakah vaksin exists
+            cursor.execute("SELECT nama, stok FROM vaksin WHERE kode = %s", [kode])
+            vaccine_result = cursor.fetchone()
+            
+            if not vaccine_result:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Vaksin tidak ditemukan'
+                }, status=404)
+            
+            nama_vaksin, stok = vaccine_result
+            
+            # Hitung penggunaan vaksin
+            cursor.execute("""
+                SELECT COUNT(*) FROM kunjungan 
+                WHERE kode_vaksin = %s
+            """, [kode])
+            usage_count = cursor.fetchone()[0]
+            
+            return JsonResponse({
+                'success': True,
+                'vaccine_code': kode,
+                'vaccine_name': nama_vaksin,
+                'stock': stok,
+                'usage_count': usage_count,
+                'can_delete': usage_count == 0
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in check_vaccine_usage: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': f'Terjadi kesalahan: {str(e)}'
+        }, status=500)
+
+# udah bener
+def data_stok_vaksin(request):
+    """View untuk halaman data stok vaksin dengan pencarian"""
+    # untuk role PERAWAT
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel perawat_hewan
+        cursor.execute("SELECT 1 FROM perawat_hewan WHERE no_perawat_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di perawat_hewan, redirect login
+            return redirect('login')
+    keyword = request.GET.get('q', '').strip().lower()
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+            if keyword:
+                cursor.execute("""
+                    SELECT kode, nama, harga, stok
+                    FROM vaksin
+                    WHERE LOWER(kode) LIKE %s OR LOWER(nama) LIKE %s
+                    ORDER BY kode;
+                """, [f"%{keyword}%", f"%{keyword}%"])
+            else:
+                cursor.execute("""
+                    SELECT kode, nama, harga, stok
+                    FROM vaksin
+                    ORDER BY kode;
+                """)
+
+            rows = cursor.fetchall()
+
         stok_list = [
             {
-                'no': idx,
                 'kode': row[0],
                 'nama': row[1],
                 'harga': f"Rp{row[2]:,.0f}".replace(',', '.'),
-                'harga_raw': row[2],  # Keep raw value for editing
+                'harga_raw': row[2], 
                 'stok': row[3],
             }
-            for idx, row in enumerate(rows, 1)
+            for row in rows
         ]
     except Exception as e:
         logger.error(f"Error in data_stok_vaksin: {e}")
-        messages.error(request, f'Terjadi kesalahan saat mengambil data: {str(e)}')
+        messages.error(request, f'Terjadi kesalahan: {str(e)}')
         stok_list = []
-    
-    context = {
-        'stok_list': stok_list
-    }
-    return render(request, 'manajemen_vaksinasi/data_stok_vaksin.html', context)
+
+    return render(request, 'manajemen_vaksinasi/data_stok_vaksin.html', {
+        'stok_list': stok_list,
+        'query': keyword
+    })
 
 
 # udah bener
@@ -134,7 +210,7 @@ def create_vaccine(request):
         
     return redirect('manajemen_vaksinasi:data_stok_vaksin')
 
-# belom bisa HELPPPP (gak ke update stok vaksin nya)
+# udh bener
 @require_POST
 def add_vaccine_stock(request,kode):
     """View untuk memperbarui stok vaksin dengan nilai baru"""
@@ -187,7 +263,7 @@ def add_vaccine_stock(request,kode):
     
     return redirect('manajemen_vaksinasi:data_stok_vaksin')
 
-# blm bener (blm keganti data vaksin nya)
+# udh bener
 @require_POST  
 def edit_vaccine(request, kode):
     """View untuk mengedit data vaksin"""
@@ -245,17 +321,16 @@ def edit_vaccine(request, kode):
         messages.error(request, 'Terjadi kesalahan sistem')
     
     return redirect('manajemen_vaksinasi:data_stok_vaksin')
-    
-# udah bener
+
 @require_POST
 def delete_vaccine(request, kode):
-    """View untuk menghapus data vaksin"""
+    """View untuk menghapus data vaksin dengan trigger database"""
     try:
         with transaction.atomic():
             with connection.cursor() as cursor:
                 cursor.execute("SET search_path TO pet_clinic;")
                 
-                # Check if vaccine exists
+                # Check if vaccine exists dan ambil nama untuk pesan
                 cursor.execute("SELECT nama FROM vaksin WHERE kode = %s", [kode])
                 result = cursor.fetchone()
                 
@@ -265,18 +340,8 @@ def delete_vaccine(request, kode):
                 
                 nama_vaksin = result[0]
                 
-                # Check if vaccine is used in any vaccinations
-                cursor.execute("""
-                    SELECT COUNT(*) FROM kunjungan
-                    WHERE kode_vaksin = %s
-                """, [kode])
-                count = cursor.fetchone()[0]
-                
-                if count > 0:
-                    messages.error(request, f'Vaksin {nama_vaksin} tidak dapat dihapus karena sedang digunakan ({count} kunjungan)')
-                    return redirect('manajemen_vaksinasi:data_stok_vaksin')
-                    
-                # Perform deletion
+                # Trigger database akan otomatis mengecek penggunaan vaksin
+                # dan memberikan error jika vaksin sedang digunakan
                 cursor.execute("DELETE FROM vaksin WHERE kode = %s", [kode])
                 
                 affected_rows = cursor.rowcount
@@ -284,22 +349,51 @@ def delete_vaccine(request, kode):
                     messages.error(request, 'Gagal menghapus vaksin')
                     return redirect('manajemen_vaksinasi:data_stok_vaksin')
                 
-        messages.success(request, f'Vaksin {nama_vaksin} berhasil dihapus')
-        logger.info(f"Vaksin berhasil dihapus: {kode}")
-        
+                messages.success(request, f'Vaksin {nama_vaksin} berhasil dihapus')
+                logger.info(f"Vaksin berhasil dihapus: {kode}")
+                
     except psycopg2.IntegrityError as e:
         logger.error(f"Integrity error in delete_vaccine: {e}")
-        messages.error(request, 'Vaksin tidak dapat dihapus karena masih memiliki relasi dengan data lain')
+        error_message = str(e)
+        
+        # Cek apakah error dari trigger kita
+        if "telah digunakan untuk vaksinasi" in error_message:
+            messages.error(request, 'Vaksin tidak dapat dihapus dikarenakan telah digunakan untuk vaksinasi')
+        else:
+            messages.error(request, 'Vaksin tidak dapat dihapus karena masih memiliki relasi dengan data lain')
+            
     except Exception as e:
         logger.error(f"Error in delete_vaccine: {e}")
-        messages.error(request, f'Terjadi kesalahan: {str(e)}')
+        error_message = str(e)
         
+        # Cek apakah error dari trigger kita
+        if "telah digunakan untuk vaksinasi" in error_message:
+            messages.error(request, 'Vaksin tidak dapat dihapus dikarenakan telah digunakan untuk vaksinasi')
+        else:
+            messages.error(request, f'Terjadi kesalahan: {error_message}')
+    
     return redirect('manajemen_vaksinasi:data_stok_vaksin')
 
 # VIEWS CRUD MANAJEMEN VAKSIN (dokter)
-# blm bener soalnya blm filter berdasarkan klien
+# udh bener
 def vaksinasi_hewan_klien(request):
     """View untuk halaman vaksinasi hewan klien side"""
+    # untuk role KLIEN
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_identitas FROM klien WHERE email = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+        
     # Get filter parameters
     pet_filter = request.GET.get('pet', None)
     vaksin_filter = request.GET.get('vaksin', None)
@@ -392,9 +486,35 @@ def vaksinasi_hewan_klien(request):
     
     return render(request, 'manajemen_vaksinasi/vaksinasi_hewan_klien.html', context)
 
-# udah bener
+# udh bener
 def vaksinasi_hewan(request):
-    """View untuk halaman vaksinasi hewan"""
+    """View untuk halaman vaksinasi hewan - menampilkan semua vaksin terlepas dari stok"""
+    # untuk role dokter
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+    
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel dokter_hewan
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di dokter_hewan, redirect login
+            return redirect('login')
+        
     try:
         # Ambil data kunjungan vaksinasi hewan dari database
         with connection.cursor() as cursor:
@@ -423,13 +543,12 @@ def vaksinasi_hewan(request):
                 for row in rows
             ]
 
-        # Ambil data stok vaksin untuk dropdown
+        # UPDATED: Ambil SEMUA vaksin tanpa filter stok (menampilkan semua termasuk stok 0)
         with connection.cursor() as cursor:
             cursor.execute("SET search_path TO pet_clinic;")
             cursor.execute("""
                 SELECT kode, nama, harga, stok
                 FROM vaksin
-                WHERE stok > 0
                 ORDER BY nama;
             """)
             vaksin_rows = cursor.fetchall()
@@ -440,6 +559,7 @@ def vaksinasi_hewan(request):
                     'nama': row[1],
                     'harga': row[2],
                     'stok': row[3],
+                    'display_text': f"{row[1]} (Stok: {row[3]})" + (" - HABIS" if row[3] == 0 else "")
                 }
                 for row in vaksin_rows
             ]
@@ -480,10 +600,9 @@ def vaksinasi_hewan(request):
     
     return render(request, 'manajemen_vaksinasi/vaksinasi_hewan.html', context)
 
-# udah bener
 @require_POST
 def create_vaksinasi(request):
-    """View untuk membuat vaksinasi baru"""
+    """View untuk membuat vaksinasi baru - disederhanakan karena trigger mengelola stok"""
     try:
         # Ambil data dari form
         kunjungan_id = request.POST.get('kunjungan_id', '').strip()
@@ -519,87 +638,50 @@ def create_vaksinasi(request):
                     messages.error(request, f'Kunjungan {kunjungan_id} sudah memiliki vaksinasi')
                     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
                 
-                # Check vaksin exists dan stok
-                cursor.execute("""
-                    SELECT kode, nama, stok FROM vaksin WHERE kode = %s
-                """, [vaksin_id])
-                vaksin_result = cursor.fetchone()
-                
-                if not vaksin_result:
-                    messages.error(request, f'Vaksin dengan kode {vaksin_id} tidak ditemukan')
-                    return redirect('manajemen_vaksinasi:vaksinasi_hewan')
-                
-                vaksin_kode, vaksin_nama, vaksin_stok = vaksin_result
-                
-                if vaksin_stok <= 0:
-                    messages.error(request, f'Stok vaksin {vaksin_nama} tidak mencukupi')
-                    return redirect('manajemen_vaksinasi:vaksinasi_hewan')
-                
-                logger.info(f"Data valid - akan update kunjungan dan kurangi stok")
-                
-                # Update kunjungan
+                # Trigger database akan otomatis:
+                # 1. Mengecek apakah vaksin exists
+                # 2. Mengecek apakah stok mencukupi (akan error jika stok 0)
+                # 3. Mengurangi stok jika berhasil
                 cursor.execute("""
                     UPDATE kunjungan
                     SET kode_vaksin = %s
                     WHERE id_kunjungan = %s AND kode_vaksin IS NULL
                 """, [vaksin_id, kunjungan_id])
                 
-                kunjungan_affected = cursor.rowcount
-                logger.info(f"Kunjungan update affected rows: {kunjungan_affected}")
-                
-                if kunjungan_affected == 0:
+                affected_rows = cursor.rowcount
+                if affected_rows == 0:
                     messages.error(request, f'Gagal mengupdate kunjungan {kunjungan_id}')
                     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
                 
-                cursor.execute("""
-                    select stok from vaksin
-                    WHERE kode = %s 
-                """, [vaksin_id])
-                stok_sekarang = cursor.fetchone()[0]
-                # Kurangi stok vaksin
-                cursor.execute("""
-                    UPDATE vaksin
-                    SET stok = %s
-                    WHERE kode = %s AND stok > 0
-                """, [stok_sekarang,vaksin_id])
+                # Ambil nama vaksin untuk pesan sukses
+                cursor.execute("SELECT nama FROM vaksin WHERE kode = %s", [vaksin_id])
+                vaksin_nama = cursor.fetchone()[0]
                 
-                vaksin_affected = cursor.rowcount
-                logger.info(f"Vaksin update affected rows: {vaksin_affected}")
-                
-                if vaksin_affected == 0:
-                    messages.error(request, f'Gagal mengurangi stok vaksin {vaksin_nama}')
-                    return redirect('manajemen_vaksinasi:vaksinasi_hewan')
-                
-                # Verify hasil
-                cursor.execute("SELECT kode_vaksin FROM kunjungan WHERE id_kunjungan = %s", [kunjungan_id])
-                verify_kunjungan = cursor.fetchone()[0]
-                
-                cursor.execute("SELECT stok FROM vaksin WHERE kode = %s", [vaksin_id])
-                verify_stok = cursor.fetchone()[0]
-                
-                logger.info(f"Verifikasi - Vaksin di kunjungan: {verify_kunjungan}, Stok baru: {verify_stok}")
-                
-                if verify_kunjungan == vaksin_id:
-                    messages.success(request, f'Vaksinasi berhasil dibuat untuk kunjungan {kunjungan_id} dengan vaksin {vaksin_nama}')
-                    logger.info(f"Vaksinasi berhasil dibuat")
-                else:
-                    messages.error(request, f'Verifikasi gagal untuk kunjungan {kunjungan_id}')
+                messages.success(request, f'Vaksinasi berhasil dibuat untuk kunjungan {kunjungan_id} dengan vaksin {vaksin_nama}')
+                logger.info(f"Vaksinasi berhasil dibuat")
 
     except Exception as e:
         logger.error(f"Error in create_vaksinasi: {e}")
-        import traceback
-        logger.error(f"Full traceback: {traceback.format_exc()}")
-        messages.error(request, f'Terjadi kesalahan: {str(e)}')
+        error_message = str(e)
+        
+        # Cek apakah error dari trigger kita
+        if "tidak mencukupi untuk vaksinasi" in error_message:
+            # Extract vaccine name from error message
+            start = error_message.find('"') + 1
+            end = error_message.find('"', start)
+            vaccine_name = error_message[start:end] if start > 0 and end > start else "vaksin"
+            messages.error(request, f'Stok vaksin {vaccine_name} tidak mencukupi untuk vaksinasi')
+        else:
+            messages.error(request, f'Terjadi kesalahan: {error_message}')
             
     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
 
-# udah bener
-@require_POST
+@require_POST  
 def update_vaksinasi(request, id_kunjungan):
-    """View untuk mengupdate vaksinasi dengan debug lengkap"""
+    """View untuk mengupdate vaksinasi - disederhanakan karena trigger mengelola stok"""
     try:
         vaksin_id = request.POST.get('vaksin_id', '').strip()
-        logger.info(f"=== START UPDATE VAKSINASI ===")
+        logger.info(f"=== UPDATE VAKSINASI ===")
         logger.info(f"ID Kunjungan: {id_kunjungan}")
         logger.info(f"Vaksin ID: {vaksin_id}")
         
@@ -611,11 +693,7 @@ def update_vaksinasi(request, id_kunjungan):
             with connection.cursor() as cursor:
                 cursor.execute("SET search_path TO pet_clinic;")
                 
-                cursor.execute("SELECT current_schema();")
-                current_schema = cursor.fetchone()[0]
-                logger.info(f"Current schema: {current_schema}")
-                
-                # Ambil vaksin lama di kunjungan
+                # Ambil vaksin lama
                 cursor.execute("""
                     SELECT kode_vaksin FROM kunjungan WHERE id_kunjungan = %s
                 """, [id_kunjungan])
@@ -626,111 +704,39 @@ def update_vaksinasi(request, id_kunjungan):
                     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
                 
                 current_vaksin = result[0]
-                logger.info(f"Current vaksin di kunjungan: {current_vaksin}")
-
-                # Jika vaksin lama dan baru sama, keluar lebih awal
+                
+                # Jika vaksin sama, tidak perlu update
                 if current_vaksin == vaksin_id:
                     messages.info(request, 'Vaksin yang dipilih sama dengan yang sudah ada')
-                    logger.info("Vaksin lama dan baru sama, proses update dibatalkan")
-                    return redirect('manajemen_vaksinasi:vaksinasi_hewan')
-
-                # Ambil data vaksin baru
-                cursor.execute("""
-                    SELECT kode, nama, stok FROM vaksin WHERE kode = %s
-                """, [vaksin_id])
-                vaksin_baru = cursor.fetchone()
-                
-                if not vaksin_baru:
-                    messages.error(request, 'Vaksin tidak ditemukan')
                     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
                 
-                vaksin_baru_kode, vaksin_baru_nama, stok_baru_sebelum = vaksin_baru
-                logger.info(f"Vaksin baru - Kode: {vaksin_baru_kode}, Nama: {vaksin_baru_nama}, Stok sebelum: {stok_baru_sebelum}")
-                
-                if stok_baru_sebelum <= 0:
-                    messages.error(request, 'Stok vaksin tidak mencukupi')
-                    return redirect('manajemen_vaksinasi:vaksinasi_hewan')
-
-                # Ambil data vaksin lama (jika ada)
-                stok_lama_sebelum = None
-                stok_lama_sesudah = None
-                if current_vaksin:
-                    cursor.execute("""
-                        SELECT kode, nama, stok FROM vaksin WHERE kode = %s
-                    """, [current_vaksin])
-                    vaksin_lama = cursor.fetchone()
-                    if vaksin_lama:
-                        vaksin_lama_kode, vaksin_lama_nama, stok_lama_sebelum = vaksin_lama
-                        logger.info(f"Vaksin lama - Kode: {vaksin_lama_kode}, Nama: {vaksin_lama_nama}, Stok sebelum: {stok_lama_sebelum}")
-
-                logger.info("=== MULAI PROSES UPDATE ===")
-
-                # Kembalikan stok vaksin lama hanya jika berbeda dengan vaksin baru
-                if current_vaksin and current_vaksin != vaksin_id:
-                    logger.info(f"Mengembalikan stok vaksin lama: {current_vaksin}")
-                    cursor.execute("""
-                        UPDATE vaksin SET stok = stok  WHERE kode = %s
-                    """, [current_vaksin])
-                    affected_rows = cursor.rowcount
-                    logger.info(f"UPDATE vaksin lama - Affected rows: {affected_rows}")
-                    
-                    cursor.execute("SELECT stok FROM vaksin WHERE kode = %s", [current_vaksin])
-                    stok_lama_sesudah = cursor.fetchone()[0]
-                    logger.info(f"Stok vaksin lama setelah dikembalikan: {stok_lama_sesudah}")
-                else:
-                    # Jika vaksin lama sama dengan vaksin baru atau tidak ada vaksin lama
-                    stok_lama_sesudah = stok_lama_sebelum
-
-                # Update vaksin di kunjungan
-                logger.info(f"Update kunjungan {id_kunjungan} dengan vaksin {vaksin_id}")
                 cursor.execute("""
                     UPDATE kunjungan SET kode_vaksin = %s WHERE id_kunjungan = %s
                 """, [vaksin_id, id_kunjungan])
-                affected_rows = cursor.rowcount
-                logger.info(f"UPDATE kunjungan - Affected rows: {affected_rows}")
                 
-                cursor.execute("SELECT kode_vaksin FROM kunjungan WHERE id_kunjungan = %s", [id_kunjungan])
-                vaksin_di_kunjungan = cursor.fetchone()[0]
-                logger.info(f"Vaksin di kunjungan setelah update: {vaksin_di_kunjungan}")
-
-                # Kurangi stok vaksin baru
-                logger.info(f"Mengurangi stok vaksin baru: {vaksin_id}")
-                cursor.execute("""
-                    UPDATE vaksin SET stok = stok  WHERE kode = %s
-                """, [vaksin_id])
-                affected_rows = cursor.rowcount
-                logger.info(f"UPDATE vaksin baru - Affected rows: {affected_rows}")
-
-                cursor.execute("SELECT stok FROM vaksin WHERE kode = %s", [vaksin_id])
-                stok_baru_sesudah = cursor.fetchone()[0]
-                logger.info(f"Stok vaksin baru setelah dikurangi: {stok_baru_sesudah}")
-
-                # Transaction ID untuk debug
-                cursor.execute("SELECT txid_current();")
-                transaction_id = cursor.fetchone()[0]
-                logger.info(f"Transaction ID: {transaction_id}")
-
-                logger.info("=== SELESAI PROSES UPDATE ===")
-                logger.info(f"Summary perubahan stok vaksin:")
-                logger.info(f"- Vaksin lama ({current_vaksin}): {stok_lama_sebelum} -> {stok_lama_sesudah}")
-                logger.info(f"- Vaksin baru ({vaksin_id}): {stok_baru_sebelum} -> {stok_baru_sesudah}")
-                
-        messages.success(request, f'Vaksinasi berhasil diupdate untuk kunjungan {id_kunjungan}')
-        logger.info("=== END UPDATE VAKSINASI ===")
+                messages.success(request, f'Vaksinasi berhasil diupdate untuk kunjungan {id_kunjungan}')
+                logger.info("Update vaksinasi berhasil")
 
     except Exception as e:
-        logger.error(f"ERROR in update_vaksinasi: {str(e)}")
-        logger.error(f"Error type: {type(e)}")
-        import traceback
-        logger.error(f"Full traceback: {traceback.format_exc()}")
-        messages.error(request, f'Terjadi kesalahan: {str(e)}')
+        logger.error(f"Error in update_vaksinasi: {e}")
+        error_message = str(e)
+        
+        # Cek apakah error dari trigger kita
+        if "tidak mencukupi untuk vaksinasi" in error_message:
+            # Extract vaccine name from error message
+            start = error_message.find('"') + 1
+            end = error_message.find('"', start)
+            vaccine_name = error_message[start:end] if start > 0 and end > start else "vaksin"
+            messages.error(request, f'Stok vaksin {vaccine_name} tidak mencukupi untuk vaksinasi')
+        else:
+            messages.error(request, f'Terjadi kesalahan: {error_message}')
 
     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
 
 # udah bener
 @require_POST
 def delete_vaksinasi(request, id_kunjungan):
-    """View untuk menghapus vaksinasi"""
+    """View untuk menghapus vaksinasi - disederhanakan karena trigger mengelola stok"""
     try:
         logger.info(f"Delete vaksinasi - id_kunjungan: {id_kunjungan}")
         
@@ -738,7 +744,7 @@ def delete_vaksinasi(request, id_kunjungan):
             with connection.cursor() as cursor:
                 cursor.execute("SET search_path TO pet_clinic;")
                 
-                # Get current vaccine code
+                # Cek apakah kunjungan ada dan memiliki vaksinasi
                 cursor.execute("""
                     SELECT kode_vaksin FROM kunjungan WHERE id_kunjungan = %s
                 """, [id_kunjungan])
@@ -754,12 +760,7 @@ def delete_vaksinasi(request, id_kunjungan):
                     messages.error(request, 'Kunjungan tidak memiliki vaksinasi')
                     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
                 
-                # Return vaccine to stock
-                cursor.execute("""
-                    UPDATE vaksin SET stok = stok  WHERE kode = %s
-                """, [current_vaksin])
-                    
-                # Set vaccine code to NULL
+                # Trigger database akan otomatis mengembalikan stok vaksin
                 cursor.execute("""
                     UPDATE kunjungan SET kode_vaksin = NULL WHERE id_kunjungan = %s
                 """, [id_kunjungan])
