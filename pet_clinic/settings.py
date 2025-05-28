@@ -91,7 +91,7 @@ WSGI_APPLICATION = 'pet_clinic.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Replace the DATABASES section of your settings.py with this
-DATABASE_URL='postgresql://neondb_owner:npg_k4iLjmFXEZR6@ep-winter-thunder-a5no38r0-pooler.us-east-2.aws.neon.tech/petclinic-b-07?sslmode=require'
+DATABASE_URL='postgresql://neondb_owner:npg_wNGaE2ZkHv7M@ep-winter-wildflower-a4ox1ffc-pooler.us-east-1.aws.neon.tech/petclinic-b-07?sslmode=require'
 # Parse database URL
 DATABASE_URL = os.getenv("DATABASE_URL")
 tmpPostgres = urlparse(DATABASE_URL)
