@@ -4,7 +4,7 @@ from django.db import connection, transaction
 from django.http import Http404, JsonResponse
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 import psycopg2
 import logging
 
@@ -20,40 +20,92 @@ def index2(request):
     return redirect('manajemen_vaksinasi:vaksinasi_hewan_klien')
 
 # VIEWS CRUD data dan stok vaksin (perawat)
-# udah bener
-def data_stok_vaksin(request):
-    """View untuk halaman data stok vaksin"""
+# View baru untuk mengecek status vaksin
+@require_GET
+def check_vaccine_usage(request, kode):
+    """API endpoint untuk mengecek apakah vaksin sedang digunakan"""
     try:
-        # Ambil data stok vaksin dari database
         with connection.cursor() as cursor:
             cursor.execute("SET search_path TO pet_clinic;")
-            cursor.execute("""
-                SELECT kode, nama, harga, stok
-                FROM vaksin
-                ORDER BY kode;
-            """)
-            rows = cursor.fetchall()
             
+            # Cek apakah vaksin exists
+            cursor.execute("SELECT nama, stok FROM vaksin WHERE kode = %s", [kode])
+            vaccine_result = cursor.fetchone()
+            
+            if not vaccine_result:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Vaksin tidak ditemukan'
+                }, status=404)
+            
+            nama_vaksin, stok = vaccine_result
+            
+            # Hitung penggunaan vaksin
+            cursor.execute("""
+                SELECT COUNT(*) FROM kunjungan 
+                WHERE kode_vaksin = %s
+            """, [kode])
+            usage_count = cursor.fetchone()[0]
+            
+            return JsonResponse({
+                'success': True,
+                'vaccine_code': kode,
+                'vaccine_name': nama_vaksin,
+                'stock': stok,
+                'usage_count': usage_count,
+                'can_delete': usage_count == 0
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in check_vaccine_usage: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': f'Terjadi kesalahan: {str(e)}'
+        }, status=500)
+
+# udah bener
+def data_stok_vaksin(request):
+    """View untuk halaman data stok vaksin dengan pencarian"""
+    keyword = request.GET.get('q', '').strip().lower()
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+            if keyword:
+                cursor.execute("""
+                    SELECT kode, nama, harga, stok
+                    FROM vaksin
+                    WHERE LOWER(kode) LIKE %s OR LOWER(nama) LIKE %s
+                    ORDER BY kode;
+                """, [f"%{keyword}%", f"%{keyword}%"])
+            else:
+                cursor.execute("""
+                    SELECT kode, nama, harga, stok
+                    FROM vaksin
+                    ORDER BY kode;
+                """)
+
+            rows = cursor.fetchall()
+
         stok_list = [
             {
-                'no': idx,
                 'kode': row[0],
                 'nama': row[1],
                 'harga': f"Rp{row[2]:,.0f}".replace(',', '.'),
-                'harga_raw': row[2],  # Keep raw value for editing
+                'harga_raw': row[2], 
                 'stok': row[3],
             }
-            for idx, row in enumerate(rows, 1)
+            for row in rows
         ]
     except Exception as e:
         logger.error(f"Error in data_stok_vaksin: {e}")
-        messages.error(request, f'Terjadi kesalahan saat mengambil data: {str(e)}')
+        messages.error(request, f'Terjadi kesalahan: {str(e)}')
         stok_list = []
-    
-    context = {
-        'stok_list': stok_list
-    }
-    return render(request, 'manajemen_vaksinasi/data_stok_vaksin.html', context)
+
+    return render(request, 'manajemen_vaksinasi/data_stok_vaksin.html', {
+        'stok_list': stok_list,
+        'query': keyword
+    })
 
 
 # udah bener
@@ -134,7 +186,7 @@ def create_vaccine(request):
         
     return redirect('manajemen_vaksinasi:data_stok_vaksin')
 
-# belom bisa HELPPPP (gak ke update stok vaksin nya)
+# udh bener
 @require_POST
 def add_vaccine_stock(request,kode):
     """View untuk memperbarui stok vaksin dengan nilai baru"""
@@ -187,7 +239,7 @@ def add_vaccine_stock(request,kode):
     
     return redirect('manajemen_vaksinasi:data_stok_vaksin')
 
-# blm bener (blm keganti data vaksin nya)
+# udh bener
 @require_POST  
 def edit_vaccine(request, kode):
     """View untuk mengedit data vaksin"""
@@ -247,15 +299,63 @@ def edit_vaccine(request, kode):
     return redirect('manajemen_vaksinasi:data_stok_vaksin')
     
 # udah bener
+# @require_POST
+# def delete_vaccine(request, kode):
+#     """View untuk menghapus data vaksin"""
+#     try:
+#         with transaction.atomic():
+#             with connection.cursor() as cursor:
+#                 cursor.execute("SET search_path TO pet_clinic;")
+                
+#                 # Check if vaccine exists
+#                 cursor.execute("SELECT nama FROM vaksin WHERE kode = %s", [kode])
+#                 result = cursor.fetchone()
+                
+#                 if not result:
+#                     messages.error(request, 'Vaksin tidak ditemukan')
+#                     return redirect('manajemen_vaksinasi:data_stok_vaksin')
+                
+#                 nama_vaksin = result[0]
+                
+#                 # Check if vaccine is used in any vaccinations
+#                 cursor.execute("""
+#                     SELECT COUNT(*) FROM kunjungan
+#                     WHERE kode_vaksin = %s
+#                 """, [kode])
+#                 count = cursor.fetchone()[0]
+                
+#                 if count > 0:
+#                     messages.error(request, f'Vaksin {nama_vaksin} tidak dapat dihapus karena sedang digunakan ({count} kunjungan)')
+#                     return redirect('manajemen_vaksinasi:data_stok_vaksin')
+                    
+#                 # Perform deletion
+#                 cursor.execute("DELETE FROM vaksin WHERE kode = %s", [kode])
+                
+#                 affected_rows = cursor.rowcount
+#                 if affected_rows == 0:
+#                     messages.error(request, 'Gagal menghapus vaksin')
+#                     return redirect('manajemen_vaksinasi:data_stok_vaksin')
+                
+#         messages.success(request, f'Vaksin {nama_vaksin} berhasil dihapus')
+#         logger.info(f"Vaksin berhasil dihapus: {kode}")
+        
+#     except psycopg2.IntegrityError as e:
+#         logger.error(f"Integrity error in delete_vaccine: {e}")
+#         messages.error(request, 'Vaksin tidak dapat dihapus karena masih memiliki relasi dengan data lain')
+#     except Exception as e:
+#         logger.error(f"Error in delete_vaccine: {e}")
+#         messages.error(request, f'Terjadi kesalahan: {str(e)}')
+        
+#     return redirect('manajemen_vaksinasi:data_stok_vaksin')
 @require_POST
 def delete_vaccine(request, kode):
-    """View untuk menghapus data vaksin"""
+    """View untuk menghapus data vaksin dengan trigger database"""
     try:
         with transaction.atomic():
             with connection.cursor() as cursor:
                 cursor.execute("SET search_path TO pet_clinic;")
                 
-                # Check if vaccine exists
+                # Check if vaccine exists dan ambil nama untuk pesan
                 cursor.execute("SELECT nama FROM vaksin WHERE kode = %s", [kode])
                 result = cursor.fetchone()
                 
@@ -265,18 +365,8 @@ def delete_vaccine(request, kode):
                 
                 nama_vaksin = result[0]
                 
-                # Check if vaccine is used in any vaccinations
-                cursor.execute("""
-                    SELECT COUNT(*) FROM kunjungan
-                    WHERE kode_vaksin = %s
-                """, [kode])
-                count = cursor.fetchone()[0]
-                
-                if count > 0:
-                    messages.error(request, f'Vaksin {nama_vaksin} tidak dapat dihapus karena sedang digunakan ({count} kunjungan)')
-                    return redirect('manajemen_vaksinasi:data_stok_vaksin')
-                    
-                # Perform deletion
+                # Trigger database akan otomatis mengecek penggunaan vaksin
+                # dan memberikan error jika vaksin sedang digunakan
                 cursor.execute("DELETE FROM vaksin WHERE kode = %s", [kode])
                 
                 affected_rows = cursor.rowcount
@@ -284,16 +374,29 @@ def delete_vaccine(request, kode):
                     messages.error(request, 'Gagal menghapus vaksin')
                     return redirect('manajemen_vaksinasi:data_stok_vaksin')
                 
-        messages.success(request, f'Vaksin {nama_vaksin} berhasil dihapus')
-        logger.info(f"Vaksin berhasil dihapus: {kode}")
-        
+                messages.success(request, f'Vaksin {nama_vaksin} berhasil dihapus')
+                logger.info(f"Vaksin berhasil dihapus: {kode}")
+                
     except psycopg2.IntegrityError as e:
         logger.error(f"Integrity error in delete_vaccine: {e}")
-        messages.error(request, 'Vaksin tidak dapat dihapus karena masih memiliki relasi dengan data lain')
+        error_message = str(e)
+        
+        # Cek apakah error dari trigger kita
+        if "telah digunakan untuk vaksinasi" in error_message:
+            messages.error(request, 'Vaksin tidak dapat dihapus dikarenakan telah digunakan untuk vaksinasi')
+        else:
+            messages.error(request, 'Vaksin tidak dapat dihapus karena masih memiliki relasi dengan data lain')
+            
     except Exception as e:
         logger.error(f"Error in delete_vaccine: {e}")
-        messages.error(request, f'Terjadi kesalahan: {str(e)}')
+        error_message = str(e)
         
+        # Cek apakah error dari trigger kita
+        if "telah digunakan untuk vaksinasi" in error_message:
+            messages.error(request, 'Vaksin tidak dapat dihapus dikarenakan telah digunakan untuk vaksinasi')
+        else:
+            messages.error(request, f'Terjadi kesalahan: {error_message}')
+    
     return redirect('manajemen_vaksinasi:data_stok_vaksin')
 
 # VIEWS CRUD MANAJEMEN VAKSIN (dokter)
