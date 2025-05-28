@@ -1142,6 +1142,21 @@ def update_profile_dokter(request):
                 WHERE email_user = %s
             """, [tanggal_akhir_kerja, user_email])
 
+            # --- Cek apakah jadwal praktik dokter masih ada setelah update ---
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM jadwal_praktik jp
+                JOIN dokter_hewan dh ON jp.no_dokter_hewan = dh.no_dokter_hewan
+                JOIN tenaga_medis tm ON dh.no_dokter_hewan = tm.no_tenaga_medis
+                JOIN pegawai p ON tm.no_tenaga_medis = p.no_pegawai
+                WHERE p.email_user = %s
+            """, [user_email])
+
+            jumlah_jadwal = cursor.fetchone()[0]
+
+            if jumlah_jadwal == 0:
+                messages.info(request, f'Semua jadwal praktik dokter dengan email "{user_email}" telah dihapus karena dokter sudah tidak aktif.')
+
             # Update sertifikat
             list_no_lama = request.POST.getlist('nomor_sertifikat_lama')
             list_no_baru = request.POST.getlist('nomor_sertifikat')

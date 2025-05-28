@@ -181,6 +181,13 @@
   </div>
 </nav>
 
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+      {{ message }}
+    </div>
+  {% endfor %}
+  {% endif %}
 <!-- PAGE CONTENT -->
 <div class="page-content">
   <div class="card">

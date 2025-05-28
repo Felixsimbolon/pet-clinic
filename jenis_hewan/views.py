@@ -80,12 +80,15 @@ def create_jenis_hewan(request):
             })
 
         with connection.cursor() as cursor:
-            cursor.execute("""
-                INSERT INTO pet_clinic.jenis_hewan (nama_jenis)
-                VALUES (%s)
-            """, [nama_jenis])
-
-        return redirect('list_jenis_hewan')
+            try:
+                cursor.execute("SET search_path TO pet_clinic;")
+                cursor.execute("""
+                    INSERT INTO jenis_hewan (nama_jenis)
+                    VALUES (%s)
+                """, [nama_jenis])
+                return redirect('list_jenis_hewan')
+            except Exception as e:
+                messages.error(request, str(e))
 
     return render(request, 'create_jenis_hewan.html')
 

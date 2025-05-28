@@ -168,13 +168,17 @@ def delete_hewan(request, nama, no_identitas_klien):
 
         nama_hewan, nama_pemilik = result
 
-        # Jika POST: hapus data
-        if request.method == 'POST':
-            cursor.execute("""
-                DELETE FROM pet_clinic.hewan
-                WHERE nama = %s AND no_identitas_klien = %s
-            """, [nama, no_identitas_klien])
-            return redirect('list_hewan')
+        with connection.cursor() as cursor:
+            if request.method == 'POST':
+                try:
+                    cursor.execute("SET search_path TO pet_clinic;")
+                    cursor.execute("""
+                        DELETE FROM hewan
+                        WHERE nama = %s AND no_identitas_klien = %s
+                    """, [nama, no_identitas_klien])
+                    return redirect('list_hewan')
+                except Exception as e:
+                    messages.error(request, str(e))
 
     context = {
         'nama_hewan': nama_hewan,
