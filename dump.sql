@@ -583,8 +583,8 @@ CREATE INDEX django_session_expire_date_idx ON django_session(expire_date);
 CREATE OR REPLACE FUNCTION prevent_duplicate_email()
 RETURNS trigger AS $$
 BEGIN
-    IF EXISTS (SELECT 1 FROM "USER" WHERE email = NEW.email) THEN
-        RAISE EXCEPTION 'Email % sudah terdaftar.', NEW.email
+    IF EXISTS (SELECT 1 FROM "USER" WHERE LOWER(email) = LOWER(NEW.email)) THEN
+        RAISE EXCEPTION 'ERROR:Email "%" sudah terdaftar. Gunakan email lain.', NEW.email
               USING ERRCODE = '23505';
     END IF;
     RETURN NEW;
@@ -605,14 +605,14 @@ $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         IF NEW.timestamp_akhir IS NOT NULL AND NEW.timestamp_akhir < NEW.timestamp_awal THEN
-            RAISE EXCEPTION 'ERROR: Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal saat INSERT.'
+            RAISE EXCEPTION 'ERROR: Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal.'
             USING ERRCODE = '23505';
         END IF;
         RETURN NEW;
 
     ELSIF TG_OP = 'UPDATE' THEN
         IF NEW.timestamp_akhir IS NOT NULL AND NEW.timestamp_akhir < NEW.timestamp_awal THEN
-            RAISE EXCEPTION 'ERROR: Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal saat UPDATE.'
+            RAISE EXCEPTION 'ERROR: Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal.'
             USING ERRCODE = '23505';
         END IF;
         RETURN NEW;
@@ -670,7 +670,7 @@ BEGIN
            AND h.nama               = NEW.nama_hewan
     ) THEN
         RAISE EXCEPTION
-          'ERROR: Hewan "%s" tidak terdaftar atas nama pemilik "%s".',
+          'ERROR: Hewan "%s" tidak terdaftar atas nama pemilik %s.',
           NEW.nama_hewan, nama_pemilik
           USING ERRCODE = '23514';          -- check_violation
     END IF;
@@ -696,6 +696,16 @@ BEFORE INSERT OR UPDATE ON KUNJUNGAN_KEPERAWATAN
 FOR EACH ROW
 EXECUTE FUNCTION validate_hewan_milik_klien();
 
+
+INSERT INTO HEWAN(nama, no_identitas_klien,tanggal_lahir,id_jenis,url_foto) 
+VALUES
+('Anjing 99', '1245646a-9821-4cd8-95f3-1729be8936ed','2025-01-01','53f6ac39-e535-4d3f-8ab3-b663d69a4572','https://www.google.com/fotoanjing');
+INSERT INTO KUNJUNGAN (id_kunjungan,nama_hewan,no_identitas_klien,no_front_desk,no_perawat_hewan,no_dokter_hewan,kode_vaksin,tipe_kunjungan,timestamp_awal)
+VALUES
+('abcd6500-172e-43b3-aa48-3981aee98825','Anjing 1','1245646a-9821-4cd8-95f3-1729be8936ed','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','VKS001','Darurat','2025-04-24 11:00:00');
+INSERT INTO KUNJUNGAN_KEPERAWATAN (id_kunjungan,nama_hewan,no_identitas_klien,no_front_desk,no_perawat_hewan,no_dokter_hewan,kode_perawatan)
+VALUES
+('abcd6500-172e-43b3-aa48-3981aee98825','Anjing 1','1245646a-9821-4cd8-95f3-1729be8936ed','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','PRW0000001');
 
 -- INSERT INTO "USER" (email, password, alamat, nomor_telepon) VALUES
 -- ('jeremi.felix67@example.com', 'password123', 'Jl. Raya No.67', '099934567890');
