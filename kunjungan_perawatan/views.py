@@ -561,6 +561,31 @@ def edit_treatment(request, id_kunjungan, kode_perawatan,no_dokter_hewan,no_pera
             ORDER BY kode_perawatan
         """)
         jenis_list = cursor.fetchall()
+        cursor.execute("""
+                SELECT email_user
+                FROM pegawai
+                WHERE no_pegawai = %s
+                LIMIT 1
+            """, [no_dokter_hewan])
+        dokter_email = cursor.fetchone()[0] if cursor.rowcount else ''
+
+            # ── ambil email perawat (fetchone) ──────────────────────
+        cursor.execute("""
+                SELECT email_user
+                FROM pegawai
+                WHERE no_pegawai = %s
+                LIMIT 1
+            """, [no_perawat_hewan])
+        perawat_email = cursor.fetchone()[0] if cursor.rowcount else ''
+
+            # ── ambil email front-desk (fetchone) ───────────────────
+        cursor.execute("""
+                SELECT email_user
+                FROM pegawai
+                WHERE no_pegawai = %s
+                LIMIT 1
+            """, [no_front_desk])
+        front_desk_email = cursor.fetchone()[0] if cursor.rowcount else ''
 
     if request.method == "POST":
         new_kode = request.POST.get('jenis_perawatan','').strip()
@@ -581,6 +606,12 @@ def edit_treatment(request, id_kunjungan, kode_perawatan,no_dokter_hewan,no_pera
                         'current_kode': current_kode,
                         'jenis_list': jenis_list,
                         'errors':errors,
+                        'kode_perawatan':kode_perawatan,
+                        'dokter_email':dokter_email,
+                        'perawat_email':perawat_email,
+                        'front_desk_email':front_desk_email,
+                        'nama_hewan':nama_hewan,
+                        'no_identitas_klien':no_identitas_klien
                     })
                     
                 cursor.execute("SET search_path TO pet_clinic;")
@@ -602,6 +633,12 @@ def edit_treatment(request, id_kunjungan, kode_perawatan,no_dokter_hewan,no_pera
         'id_kunjungan': id_kunjungan,
         'current_kode': current_kode,
         'jenis_list': jenis_list,
+        'kode_perawatan':kode_perawatan,
+        'dokter_email':dokter_email,
+        'perawat_email':perawat_email,
+        'front_desk_email':front_desk_email,
+        'nama_hewan':nama_hewan,
+        'no_identitas_klien':no_identitas_klien
     })
 
 

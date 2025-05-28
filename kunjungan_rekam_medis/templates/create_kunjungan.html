@@ -140,5 +140,32 @@
     </form>
   </div>
 </body>
+<script>
+  // mapping dikirim dari views
+  const HEWAN_MAP = {{ hewan_map_json|safe }};
+
+  const klienSel  = document.getElementById('id_klien');
+  const hewanSel  = document.getElementById('nama_hewan');
+
+  klienSel.addEventListener('change', () => {
+    const id = klienSel.value;
+    const list = HEWAN_MAP[id] || [];
+
+    // kosongkan dropdown hewan
+    hewanSel.innerHTML =
+      '<option value="" disabled selected>-- Pilih Nama Hewan --</option>';
+
+    // isi ulang
+    list.forEach(nama => {
+      const opt = document.createElement('option');
+      opt.value  = nama;
+      opt.textContent = nama;
+      hewanSel.appendChild(opt);
+    });
+
+    // enable/disable sesuai ketersediaan
+    hewanSel.disabled = list.length === 0;
+  });
+</script>
 
 {% endblock content %}
