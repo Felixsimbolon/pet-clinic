@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Create New Animal Type</title>
+  <title>Update Animal Type</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -14,14 +14,13 @@
       --dark-color: #012a4a;
       --light-color: #f0f5f9;
       --danger-color: #dc3545;
+      --disabled-bg: #d1d5db;
     }
 
     body {
       background-color: var(--light-color);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
     /* Navbar */
@@ -65,13 +64,12 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    /* Content */
+    /* Card */
     .page-content {
-      flex: 1;
+      padding: 40px 15px;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 40px 15px;
     }
 
     .card {
@@ -79,24 +77,18 @@
       padding: 30px;
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      max-width: 500px;
       width: 100%;
+      max-width: 550px;
     }
 
     .card-header {
       background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       color: white;
       text-align: center;
-      padding: 20px;
+      padding: 25px;
       border-radius: 12px;
       margin-bottom: 30px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    label {
-      font-weight: 600;
-      margin-bottom: 5px;
-      color: var(--dark-color);
     }
 
     .form-control {
@@ -104,20 +96,21 @@
       border: 1px solid #ced4da;
     }
 
-    .btn-dark {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      transition: all 0.3s;
+    .form-control:disabled {
+      background-color: var(--disabled-bg);
     }
 
-    .btn-dark:hover {
+    .btn-primary {
+      background-color: var(--primary-color);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+    }
+
+    .btn-primary:hover {
       background-color: var(--dark-color);
       transform: translateY(-2px);
       box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-      color: white;
     }
 
     .btn-outline-secondary {
@@ -135,7 +128,7 @@
     }
 
     .d-flex.justify-content-end {
-      gap: 10px;
+      gap: 15px;
     }
   </style>
 </head>
@@ -151,55 +144,55 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-
         <li class="nav-item">
           <a class="nav-link" href="#">Dashboard</a>
         </li>
-
         <li class="nav-item">
           <a class="nav-link" href="#">Kelola Jenis Hewan</a>
         </li>
-
         <li class="nav-item">
           <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
         </li>
-
         <li class="nav-item">
           <a class="nav-link" href="#">Kelola Kunjungan</a>
         </li>
-
         <li class="nav-item">
           <a class="nav-link" href="#">Daftar Klien</a>
         </li>
-
         <li class="nav-item">
           <a class="btn btn-logout ms-3" href="#">Logout</a>
         </li>
-
       </ul>
     </div>
   </div>
 </nav>
 
-<!-- PAGE CONTENT -->
+<!-- HALAMAN UTAMA -->
 <div class="page-content">
   <div class="card">
     <div class="card-header">
-      <h2 class="fw-bold mb-0">Create New Animal Type</h2>
+      <h2 class="fw-bold mb-0">Update Animal Type</h2>
+      <p class="mb-0">Perbarui data jenis hewan</p>
     </div>
 
     <form method="post" class="needs-validation" novalidate>
-      <div class="mb-4">
-        <label for="namaJenis" class="form-label">Nama Jenis</label>
-        <input type="text" class="form-control" id="namaJenis" name="nama_jenis" placeholder="Contoh: Kucing, Anjing, Burung" required value="Kucing">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="idJenis" class="form-label fw-semibold">ID Jenis Hewan</label>
+        <input type="text" class="form-control" id="idJenis" value="{{ jenis.id }}" disabled>
+      </div>
+
+      <div class="mb-3">
+        <label for="namaJenis" class="form-label fw-semibold">Nama Jenis</label>
+        <input type="text" class="form-control" id="namaJenis" name="nama_jenis" value="{{ jenis.nama }}" required>
         <div class="invalid-feedback">
           Nama jenis wajib diisi.
         </div>
       </div>
 
-      <div class="d-flex justify-content-end">
-        <a href="#" class="btn btn-outline-secondary">Cancel</a>
-        <button type="submit" class="btn btn-dark">Create</button>
+      <div class="d-flex justify-content-end mt-4">
+        <a href="{% url 'list_jenis_hewan' %}" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Update</button>
       </div>
     </form>
   </div>

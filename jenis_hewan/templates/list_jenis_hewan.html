@@ -176,7 +176,7 @@
       </div>
 
       <div class="d-flex justify-content-end">
-        <a href="#" class="btn btn-primary">
+        <a href="{% url 'create_jenis_hewan' %}" class="btn btn-primary">
           <i class="fas fa-plus me-2"></i>Create New Animal Type
         </a>
       </div>
@@ -191,58 +191,25 @@
           </tr>
         </thead>
         <tbody>
+          {% for jenis in jenis_list %}
           <tr>
-            <td>1</td>
-            <td>JH001</td>
-            <td>Kucing</td>
+            <td>{{ jenis.no }}</td>
+            <td>{{ jenis.id_jenis }}</td>
+            <td>{{ jenis.nama_jenis }}</td>
             <td>
-              <a href="#" class="btn btn-primary btn-sm me-2">
+              <a href="{% url 'update_jenis_hewan' jenis.id_jenis %}" class="btn btn-primary btn-sm me-2">
                 <i class="fas fa-edit"></i> Update
               </a>
-              <a href="#" class="btn btn-danger btn-sm">
+              <a href="{% url 'delete_jenis_hewan' jenis.id_jenis %}" class="btn btn-danger btn-sm">
                 <i class="fas fa-trash-alt"></i> Delete
               </a>
             </td>
           </tr>
+          {% empty %}
           <tr>
-            <td>2</td>
-            <td>JH002</td>
-            <td>Anjing</td>
-            <td>
-              <a href="#" class="btn btn-primary btn-sm me-2">
-                <i class="fas fa-edit"></i> Update
-              </a>
-              <a href="#" class="btn btn-danger btn-sm">
-                <i class="fas fa-trash-alt"></i> Delete
-              </a>
-            </td>
+            <td colspan="4">Tidak ada data jenis hewan.</td>
           </tr>
-          <tr>
-            <td>3</td>
-            <td>JH003</td>
-            <td>Hamster</td>
-            <td>
-              <a href="#" class="btn btn-primary btn-sm me-2">
-                <i class="fas fa-edit"></i> Update
-              </a>
-              <a href="#" class="btn btn-danger btn-sm">
-                <i class="fas fa-trash-alt"></i> Delete
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>JH004</td>
-            <td>Burung</td>
-            <td>
-              <a href="#" class="btn btn-primary btn-sm me-2">
-                <i class="fas fa-edit"></i> Update
-              </a>
-              <a href="#" class="btn btn-danger btn-sm">
-                <i class="fas fa-trash-alt"></i> Delete
-              </a>
-            </td>
-          </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>

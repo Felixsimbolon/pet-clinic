@@ -232,7 +232,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Daftar Jenis Hewan</a>
+            <a class="nav-link" href="{% url 'list_jenis_hewan' %}">Daftar Jenis Hewan</a>
         </li>
 
         <li class="nav-item">
@@ -268,6 +268,14 @@
   </div>
 </nav>
 
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-info">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
 <!-- Isi Halaman -->
 <div class="container mt-5">
     <div class="profile-card">
@@ -277,7 +285,7 @@
                 <a href="{% url 'dokter_update_password' %}" class="btn btn-password">
                     <i class="fas fa-key"></i>Update Password
                 </a>
-                <a href="#" class="btn btn-update">
+                <a href="{% url 'dokter_update_profile' %}" class="btn btn-update">
                     <i class="fas fa-user-edit"></i>Update Profile
                 </a>
             </div>

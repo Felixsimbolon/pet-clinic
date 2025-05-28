@@ -1323,3 +1323,288 @@ def update_profile_frontdesk(request):
             }
 
     return render(request, 'update_profile_frontdesk.html', data)
+
+def update_profile_dokter(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    if request.method == 'POST':
+        alamat = request.POST.get('alamat')
+        nomor_telepon = request.POST.get('nomor_telepon')
+        tanggal_akhir_kerja = request.POST.get('tanggal_akhir_kerja')
+
+        if not alamat or not nomor_telepon or not tanggal_akhir_kerja:
+            messages.error(request, "Semua field wajib diisi.")
+            return redirect('frontdesk_update_profile')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            # Update alamat & nomor telepon
+            cursor.execute("""
+                UPDATE "USER"
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, nomor_telepon, user_email])
+
+            # Update tanggal akhir kerja
+            cursor.execute("""
+                UPDATE PEGAWAI
+                SET tanggal_akhir_kerja = %s
+                WHERE email_user = %s
+            """, [tanggal_akhir_kerja, user_email])
+
+            # --- Cek apakah jadwal praktik dokter masih ada setelah update ---
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM jadwal_praktik jp
+                JOIN dokter_hewan dh ON jp.no_dokter_hewan = dh.no_dokter_hewan
+                JOIN tenaga_medis tm ON dh.no_dokter_hewan = tm.no_tenaga_medis
+                JOIN pegawai p ON tm.no_tenaga_medis = p.no_pegawai
+                WHERE p.email_user = %s
+            """, [user_email])
+
+            jumlah_jadwal = cursor.fetchone()[0]
+
+            if jumlah_jadwal == 0:
+                messages.info(request, f'Semua jadwal praktik dokter dengan email "{user_email}" telah dihapus karena dokter sudah tidak aktif.')
+
+            # Update sertifikat
+            list_no_lama = request.POST.getlist('nomor_sertifikat_lama')
+            list_no_baru = request.POST.getlist('nomor_sertifikat')
+            list_nama = request.POST.getlist('nama_sertifikat')
+
+            for no_lama, no_baru, nama in zip(list_no_lama, list_no_baru, list_nama):
+                cursor.execute("""
+                    UPDATE sertifikat_kompetensi
+                    SET no_sertifikat_kompetensi = %s,
+                        nama_sertifikat = %s
+                    WHERE no_sertifikat_kompetensi = %s
+                """, [no_baru, nama, no_lama])
+
+            # Update jam praktek
+            list_hari_lama = request.POST.getlist('hari_praktik_lama')
+            list_jam_mulai_lama = request.POST.getlist('jam_mulai_lama')
+            list_jam_selesai_lama = request.POST.getlist('jam_selesai_lama')
+
+            list_hari_baru = request.POST.getlist('hari_praktik')
+            list_jam_mulai_baru = request.POST.getlist('jam_mulai')
+            list_jam_selesai_baru = request.POST.getlist('jam_selesai')
+
+            # Ambil no_dokter dulu
+            cursor.execute("""
+                SELECT dh.no_dokter_hewan
+                FROM dokter_hewan dh
+                JOIN tenaga_medis tm ON dh.no_dokter_hewan = tm.no_tenaga_medis
+                JOIN pegawai p ON tm.no_tenaga_medis = p.no_pegawai
+                WHERE p.email_user = %s
+            """, [user_email])
+            res = cursor.fetchone()
+            no_dokter = res[0] if res else None
+
+            for hari_lama, mulai_lama, selesai_lama, hari_baru, mulai_baru, selesai_baru in zip(
+                list_hari_lama, list_jam_mulai_lama, list_jam_selesai_lama,
+                list_hari_baru, list_jam_mulai_baru, list_jam_selesai_baru
+            ):
+                jam_lama = f"{mulai_lama.strip()}-{selesai_lama.strip()}"
+                jam_baru = f"{mulai_baru.strip()}-{selesai_baru.strip()}"
+
+                cursor.execute("""
+                    UPDATE jadwal_praktik
+                    SET hari = %s, jam = %s
+                    WHERE no_dokter_hewan = %s AND hari = %s AND jam = %s
+                """, [hari_baru, jam_baru, no_dokter, hari_lama, jam_lama])
+
+                print("UPDATED?", cursor.rowcount, jam_lama, "→", jam_baru)
+
+        messages.success(request, "Profil berhasil diperbarui.")
+        return redirect('dashboard_dokter')
+
+    # GET method → prefill form
+    dokter_info = {}
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""       
+            SELECT 
+                dh.no_dokter_hewan,
+                u.alamat, 
+                u.nomor_telepon, 
+                p.tanggal_akhir_kerja
+            FROM dokter_hewan dh
+            JOIN tenaga_medis tm ON dh.no_dokter_hewan = tm.no_tenaga_medis
+            JOIN pegawai p ON tm.no_tenaga_medis = p.no_pegawai
+            JOIN "USER" u ON p.email_user = u.email
+            WHERE u.email = %s
+        """, [user_email])
+
+        row = cursor.fetchone()
+        id_dokter = row[0] if row else None
+
+        if row:
+            dokter_info = {
+                'alamat': row[1],
+                'nomor_telepon': row[2],
+                'tanggal_akhir_kerja': row[3].strftime('%Y-%m-%d') if row[3] else ''
+            }
+
+            #--- Ambil daftar sertifikat dokter
+            cursor.execute("""
+                SELECT no_tenaga_medis
+                FROM tenaga_medis
+                WHERE no_tenaga_medis = %s
+            """, [str(id_dokter)])
+            tenaga_medis = cursor.fetchone()
+
+            if tenaga_medis:
+                no_tenaga_medis = tenaga_medis[0]
+                cursor.execute("""
+                SELECT sk.no_sertifikat_kompetensi, sk.nama_sertifikat
+                FROM sertifikat_kompetensi sk
+                WHERE sk.no_tenaga_medis = %s
+                """, [str(no_tenaga_medis)])
+                rows = cursor.fetchall()
+                daftar_sertifikat = [
+                    {'no': i+1, 'nomor_sertifikat': r[0], 'nama_sertifikat': r[1]}
+                    for i, r in enumerate(rows)
+                ]
+
+            #--- Ambil daftar jadwal praktik dokter
+            cursor.execute("""
+                SELECT hari, jam
+                FROM jadwal_praktik
+                WHERE no_dokter_hewan = %s
+                ORDER BY 
+                    CASE
+                        WHEN lower(hari) = 'senin' THEN 1
+                        WHEN lower(hari) = 'selasa' THEN 2
+                        WHEN lower(hari) = 'rabu' THEN 3
+                        WHEN lower(hari) = 'kamis' THEN 4
+                        WHEN lower(hari) = 'jumat' THEN 5
+                        WHEN lower(hari) = 'sabtu' THEN 6
+                        WHEN lower(hari) = 'minggu' THEN 7
+                        ELSE 8
+                    END, jam ASC
+            """, [str(id_dokter)])
+            rows = cursor.fetchall()
+            daftar_jadwal = []
+            for i, (hari, jam_str) in enumerate(rows):
+                if '-' in jam_str:
+                    jam_mulai, jam_selesai = jam_str.split('-')
+                else:
+                    jam_mulai, jam_selesai = '', ''
+                
+                daftar_jadwal.append({
+                    'no': i+1,
+                    'hari': hari,
+                    'jam_mulai': jam_mulai.strip(),
+                    'jam_selesai': jam_selesai.strip()
+                })
+
+    return render(request, 'update_profile_dokter.html', {
+        'dokter': dokter_info,
+        'sertifikat': daftar_sertifikat,
+        'jadwal': daftar_jadwal
+    })
+
+def update_profile_perawat(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    if request.method == 'POST':
+        alamat = request.POST.get('alamat')
+        nomor_telepon = request.POST.get('nomor_telepon')
+        tanggal_akhir_kerja = request.POST.get('tanggal_akhir_kerja')
+
+        if not alamat or not nomor_telepon or not tanggal_akhir_kerja:
+            messages.error(request, "Semua field wajib diisi.")
+            return redirect('frontdesk_update_profile')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            # Update alamat & nomor telepon
+            cursor.execute("""
+                UPDATE "USER"
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, nomor_telepon, user_email])
+
+            # Update tanggal akhir kerja
+            cursor.execute("""
+                UPDATE PEGAWAI
+                SET tanggal_akhir_kerja = %s
+                WHERE email_user = %s
+            """, [tanggal_akhir_kerja, user_email])
+
+            # Update sertifikat
+            list_no_lama = request.POST.getlist('nomor_sertifikat_lama')
+            list_no_baru = request.POST.getlist('nomor_sertifikat')
+            list_nama = request.POST.getlist('nama_sertifikat')
+
+            for no_lama, no_baru, nama in zip(list_no_lama, list_no_baru, list_nama):
+                cursor.execute("""
+                    UPDATE sertifikat_kompetensi
+                    SET no_sertifikat_kompetensi = %s,
+                        nama_sertifikat = %s
+                    WHERE no_sertifikat_kompetensi = %s
+                """, [no_baru, nama, no_lama])
+
+        messages.success(request, "Profil berhasil diperbarui.")
+        return redirect('dashboard_perawat')
+
+    # GET method → prefill form
+    dokter_info = {}
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
+        cursor.execute("""       
+            SELECT 
+                ph.no_perawat_hewan,
+                u.alamat, 
+                u.nomor_telepon, 
+                p.tanggal_akhir_kerja
+            FROM perawat_hewan ph
+            JOIN tenaga_medis tm ON ph.no_perawat_hewan = tm.no_tenaga_medis
+            JOIN pegawai p ON tm.no_tenaga_medis = p.no_pegawai
+            JOIN "USER" u ON p.email_user = u.email
+            WHERE u.email = %s
+        """, [user_email])
+
+        row = cursor.fetchone()
+        id_perawat = row[0] if row else None
+
+        if row:
+            perawat_info = {
+                'alamat': row[1],
+                'nomor_telepon': row[2],
+                'tanggal_akhir_kerja': row[3].strftime('%Y-%m-%d') if row[3] else ''
+            }
+
+            #--- Ambil daftar sertifikat dokter
+            cursor.execute("""
+                SELECT no_tenaga_medis
+                FROM tenaga_medis
+                WHERE no_tenaga_medis = %s
+            """, [str(id_perawat)])
+            tenaga_medis = cursor.fetchone()
+
+            if tenaga_medis:
+                no_tenaga_medis = tenaga_medis[0]
+                cursor.execute("""
+                SELECT sk.no_sertifikat_kompetensi, sk.nama_sertifikat
+                FROM sertifikat_kompetensi sk
+                WHERE sk.no_tenaga_medis = %s
+                """, [str(no_tenaga_medis)])
+                rows = cursor.fetchall()
+                daftar_sertifikat = [
+                    {'no': i+1, 'nomor_sertifikat': r[0], 'nama_sertifikat': r[1]}
+                    for i, r in enumerate(rows)
+                ]
+
+    return render(request, 'update_profile_perawat.html', {
+        'perawat': perawat_info,
+        'sertifikat': daftar_sertifikat
+    })

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Create New Pet</title>
+  <title>Update Pet</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -31,24 +31,20 @@
       border-radius: 0 0 15px 15px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-
     .navbar-brand {
       color: white;
       font-weight: bold;
       font-size: 1.5rem;
     }
-
     .nav-link {
       color: white;
       font-weight: 500;
       margin-right: 20px;
       font-size: 1rem;
     }
-
     .nav-link:hover {
       color: var(--accent-color);
     }
-
     .btn-logout {
       background-color: white;
       color: var(--primary-color);
@@ -57,7 +53,6 @@
       padding: 8px 16px;
       transition: all 0.3s;
     }
-
     .btn-logout:hover {
       background-color: var(--accent-color);
       color: var(--dark-color);
@@ -65,7 +60,7 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    /* Page Content */
+    /* Content */
     .page-content {
       flex: 1;
       display: flex;
@@ -136,7 +131,7 @@
 </head>
 <body>
 
-<!-- NAVBAR -->
+<!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-custom">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">🐾 PetCare</a>
@@ -146,83 +141,81 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-
         <li class="nav-item">
           <a class="nav-link" href="#">Dashboard</a>
         </li>
-
         <li class="nav-item">
           <a class="nav-link" href="#">Kelola Jenis Hewan</a>
         </li>
-
         <li class="nav-item">
           <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
         </li>
-
         <li class="nav-item">
           <a class="nav-link" href="#">Kelola Kunjungan</a>
         </li>
-
         <li class="nav-item">
           <a class="nav-link" href="#">Daftar Klien</a>
         </li>
-
         <li class="nav-item">
           <a class="btn btn-logout ms-3" href="#">Logout</a>
         </li>
-
       </ul>
     </div>
   </div>
 </nav>
 
-<!-- PAGE CONTENT -->
+<!-- Content -->
 <div class="page-content">
   <div class="card">
     <div class="card-header">
-      <h2 class="fw-bold mb-0">Create New Pet</h2>
-      <p class="mb-0">Lengkapi data hewan peliharaan baru</p>
+      <h2 class="fw-bold mb-0">Update Pet</h2>
+      <p class="mb-0">Perbarui data hewan peliharaan</p>
     </div>
 
-    <form>
+    <form method="post">
+      {% csrf_token %}
+      
+      <!-- Pemilik -->
       <div class="mb-3">
         <label for="pemilik" class="form-label">Pemilik</label>
-        <select class="form-select" id="pemilik" required>
-          <option selected disabled>Pilih pemilik</option>
-          <option>John Doe</option>
-          <option>PT Pecinta Kucing</option>
-          <option>PT Aku Sayang Hewan</option>
+        <select class="form-select" id="pemilik" name="pemilik" disabled>
+          <option selected>{{ nama_klien }}</option>
         </select>
+        <input type="hidden" name="pemilik" value="{{ no_identitas_klien }}">
       </div>
-
+    
+      <!-- Jenis Hewan -->
       <div class="mb-3">
         <label for="jenisHewan" class="form-label">Jenis Hewan</label>
-        <select class="form-select" id="jenisHewan" required>
-          <option selected disabled>Pilih jenis hewan</option>
-          <option>Kucing</option>
-          <option>Anjing</option>
-          <option>Hamster</option>
+        <select class="form-select" id="jenisHewan" name="jenis_hewan" required>
+          {% for jenis in jenis_list %}
+            <option value="{{ jenis.0 }}" {% if jenis.0 == id_jenis %}selected{% endif %}>{{ jenis.1 }}</option>
+          {% endfor %}
         </select>
       </div>
-
+    
+      <!-- Nama Hewan -->
       <div class="mb-3">
-        <label for="namaHewan" class="form-label">Nama Hewan Peliharaan</label>
-        <input type="text" class="form-control" id="namaHewan" placeholder="Nama Hewan" required>
+        <label for="namaHewan" class="form-label">Nama Hewan</label>
+        <input type="text" class="form-control" id="namaHewan" name="nama_hewan" value="{{ nama }}" required>
       </div>
-
+    
+      <!-- Tanggal Lahir -->
       <div class="mb-3">
         <label for="tanggalLahir" class="form-label">Tanggal Lahir Hewan</label>
-        <input type="date" class="form-control" id="tanggalLahir" required>
+        <input type="date" class="form-control" id="tanggalLahir" name="tanggal_lahir" value="{{ tanggal_lahir }}" required>
       </div>
-
-      <div class="mb-4">
+    
+      <!-- URL Foto -->
+      <div class="mb-3">
         <label for="urlFoto" class="form-label">URL Foto Hewan</label>
-        <input type="url" class="form-control" id="urlFoto" placeholder="https://example.com" required>
+        <input type="url" class="form-control" id="urlFoto" name="foto_url" value="{{ foto_url }}" required>
       </div>
-
+    
+      <!-- Tombol -->
       <div class="d-flex justify-content-end">
-        <a href="#" class="btn btn-outline-secondary">Cancel</a>
-        <button type="submit" class="btn btn-primary">Create</button>
+        <a href="{% url 'list_hewan' %}" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Update</button>
       </div>
     </form>
   </div>
