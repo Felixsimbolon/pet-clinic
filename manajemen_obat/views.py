@@ -3,6 +3,31 @@ from django.shortcuts import render, redirect
 from django.db import connection
 
 def list_medicines(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+    
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel dokter_hewan
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di dokter_hewan, redirect login
+            return redirect('login')
+        
     q = request.GET.get('q', '').strip()
 
     with connection.cursor() as cursor:
@@ -40,6 +65,30 @@ def list_medicines(request):
     })
 
 def list_medicines_perawat(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel perawat_hewan
+        cursor.execute("SELECT 1 FROM perawat_hewan WHERE no_perawat_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di perawat_hewan, redirect login
+            return redirect('login')
+        
     q = request.GET.get('q', '').strip()
 
     with connection.cursor() as cursor:
