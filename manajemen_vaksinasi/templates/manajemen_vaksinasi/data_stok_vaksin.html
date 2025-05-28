@@ -227,6 +227,29 @@
     </div>
 </div>
 
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mb-0">Memeriksa penggunaan vaksin...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" id="deleteModalContent">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+</div>
+
 <!-- Modal for Create New Vaccine -->
 <div class="modal fade" id="createVaccineModal" tabindex="-1" aria-labelledby="createVaccineModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -275,6 +298,7 @@
 
 {% endblock %}
 
+
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -282,16 +306,18 @@
         const clearSearchBtn = document.getElementById('clearSearch');
         const vaccineTableBody = document.getElementById('vaccineTableBody');
         const noResultsMessage = document.getElementById('noResultsMessage');
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     
+        // Search functionality
         function performSearch() {
-            const query = searchInput.value.trim();
+            const query = searchInput ? searchInput.value.trim() : '';
     
             fetch(`/manajemen_vaksinasi/search-vaccine/?q=${encodeURIComponent(query)}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log("🔎 JSON Response:", data);
                     if (data.results) {
-                        // Filter client-side, in case you're still using JSON
                         const rows = data.results;
                         let html = '';
     
@@ -324,15 +350,169 @@
                 });
         }
     
-        searchInput.addEventListener('input', performSearch);
-        clearSearchBtn.addEventListener('click', function () {
-            searchInput.value = '';
+        if (searchInput) {
+            searchInput.addEventListener('input', performSearch);
+        }
+        
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', function () {
+                searchInput.value = '';
+                performSearch();
+                searchInput.focus();
+            });
+        }
+
+        // Delete vaccine functionality with usage check
+        function handleDeleteClick(event) {
+            const button = event.target.closest('.delete-vaccine-btn');
+            if (!button) return;
+
+            const vaccineCode = button.getAttribute('data-vaccine-code');
+            const vaccineName = button.getAttribute('data-vaccine-name');
+            const vaccineStock = button.getAttribute('data-vaccine-stock');
+
+            // Show loading modal
+            loadingModal.show();
+
+            // Check vaccine usage
+            fetch(`/manajemen_vaksinasi/check-vaccine-usage/${vaccineCode}/`)
+                .then(response => response.json())
+                .then(data => {
+                    loadingModal.hide();
+                    
+                    if (data.success) {
+                        showDeleteModal(data);
+                    } else {
+                        showErrorModal(data.error || 'Terjadi kesalahan saat memeriksa penggunaan vaksin');
+                    }
+                })
+                .catch(error => {
+                    loadingModal.hide();
+                    console.error('Error checking vaccine usage:', error);
+                    showErrorModal('Terjadi kesalahan saat memeriksa penggunaan vaksin');
+                });
+        }
+
+        function showDeleteModal(vaccineData) {
+            const canDelete = vaccineData.can_delete;
+            const modalContent = document.getElementById('deleteModalContent');
+            
+            if (canDelete) {
+                // Show confirmation modal for deletion
+                modalContent.innerHTML = `
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title fw-bold">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Delete Vaccine
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-trash-alt text-danger" style="font-size: 3rem;"></i>
+                        </div>
+                        <p class="mb-2">Apakah Anda yakin ingin menghapus vaksin ini?</p>
+                        <div class="alert alert-warning">
+                            <strong>Nama:</strong> ${vaccineData.vaccine_name}<br>
+                            <strong>ID:</strong> ${vaccineData.vaccine_code}<br>
+                            <strong>Stok:</strong> ${vaccineData.stock} unit<br>
+                            <strong>Status:</strong> <span class="badge bg-success">Belum pernah digunakan</span>
+                        </div>
+                        <small class="text-muted">Tindakan ini tidak dapat dibatalkan!</small>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </button>
+                        <form method="post" action="/manajemen_vaksinasi/delete-vaccine/${vaccineData.vaccine_code}/" style="display: inline;">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${getCSRFToken()}">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-1"></i>Confirm Deletion
+                            </button>
+                        </form>
+                    </div>
+                `;
+            } else {
+                // Show error modal - vaccine cannot be deleted
+                modalContent.innerHTML = `
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title fw-bold">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Cannot Delete Vaccine
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-ban text-warning" style="font-size: 3rem;"></i>
+                        </div>
+                        <div class="alert alert-danger">
+                            <h6 class="alert-heading"><i class="fas fa-exclamation-circle me-2"></i>ERROR: Vaksin Tidak Dapat Dihapus</h6>
+                            <p class="mb-0">Vaksin tidak dapat dihapus dikarenakan telah digunakan untuk vaksinasi.</p>
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>Nama:</strong> ${vaccineData.vaccine_name}<br>
+                            <strong>ID:</strong> ${vaccineData.vaccine_code}<br>
+                            <strong>Stok:</strong> ${vaccineData.stock} unit<br>
+                            <strong>Jumlah Penggunaan:</strong> <span class="badge bg-danger">${vaccineData.usage_count} kali</span>
+                        </div>
+                        <small class="text-muted">Vaksin yang sudah digunakan untuk vaksinasi tidak dapat dihapus dari sistem.</small>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                            <i class="fas fa-check me-1"></i>Understood
+                        </button>
+                    </div>
+                `;
+            }
+            
+            deleteModal.show();
+        }
+
+        function showErrorModal(errorMessage) {
+            const modalContent = document.getElementById('deleteModalContent');
+            modalContent.innerHTML = `
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Error
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <div class="mb-3">
+                        <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                    </div>
+                    <div class="alert alert-danger">
+                        <p class="mb-0">${errorMessage}</p>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Close
+                    </button>
+                </div>
+            `;
+            deleteModal.show();
+        }
+
+        function getCSRFToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return value;
+                }
+            }
+            // Fallback: try to get from meta tag
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            return csrfMeta ? csrfMeta.getAttribute('content') : '';
+        }
+
+        // Event delegation for delete buttons
+        document.addEventListener('click', handleDeleteClick);
+        
+        // Initialize search if elements exist
+        if (searchInput) {
             performSearch();
-            searchInput.focus();
-        });
-    
-        performSearch();
+        }
     });
 </script>
-    
 {% endblock %}
