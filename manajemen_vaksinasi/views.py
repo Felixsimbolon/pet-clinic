@@ -136,8 +136,10 @@ def create_vaccine(request):
 
 # belom bisa HELPPPP (gak ke update stok vaksin nya)
 @require_POST
-def add_vaccine_stock(request):
+def add_vaccine_stock(request,kode):
     """View untuk memperbarui stok vaksin dengan nilai baru"""
+    
+    print(kode+"jembut")
     
     try:
         kode_vaksin = request.POST.get('kode_vaksin', '').strip()
@@ -309,6 +311,7 @@ def vaksinasi_hewan_klien(request):
         FROM kunjungan k
         LEFT JOIN vaksin v ON k.kode_vaksin = v.kode
         WHERE k.kode_vaksin IS NOT NULL
+        order by k.id_kunjungan
     """
     
     # Apply filters if present
@@ -548,12 +551,17 @@ def create_vaksinasi(request):
                     messages.error(request, f'Gagal mengupdate kunjungan {kunjungan_id}')
                     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
                 
+                cursor.execute("""
+                    select stok from vaksin
+                    WHERE kode = %s 
+                """, [vaksin_id])
+                stok_sekarang = cursor.fetchone()[0]
                 # Kurangi stok vaksin
                 cursor.execute("""
                     UPDATE vaksin
-                    SET stok = stok - 1
+                    SET stok = %s
                     WHERE kode = %s AND stok > 0
-                """, [vaksin_id])
+                """, [stok_sekarang,vaksin_id])
                 
                 vaksin_affected = cursor.rowcount
                 logger.info(f"Vaksin update affected rows: {vaksin_affected}")
@@ -661,7 +669,7 @@ def update_vaksinasi(request, id_kunjungan):
                 if current_vaksin and current_vaksin != vaksin_id:
                     logger.info(f"Mengembalikan stok vaksin lama: {current_vaksin}")
                     cursor.execute("""
-                        UPDATE vaksin SET stok = stok + 1 WHERE kode = %s
+                        UPDATE vaksin SET stok = stok  WHERE kode = %s
                     """, [current_vaksin])
                     affected_rows = cursor.rowcount
                     logger.info(f"UPDATE vaksin lama - Affected rows: {affected_rows}")
@@ -688,7 +696,7 @@ def update_vaksinasi(request, id_kunjungan):
                 # Kurangi stok vaksin baru
                 logger.info(f"Mengurangi stok vaksin baru: {vaksin_id}")
                 cursor.execute("""
-                    UPDATE vaksin SET stok = stok - 1 WHERE kode = %s
+                    UPDATE vaksin SET stok = stok  WHERE kode = %s
                 """, [vaksin_id])
                 affected_rows = cursor.rowcount
                 logger.info(f"UPDATE vaksin baru - Affected rows: {affected_rows}")
@@ -748,7 +756,7 @@ def delete_vaksinasi(request, id_kunjungan):
                 
                 # Return vaccine to stock
                 cursor.execute("""
-                    UPDATE vaksin SET stok = stok + 1 WHERE kode = %s
+                    UPDATE vaksin SET stok = stok  WHERE kode = %s
                 """, [current_vaksin])
                     
                 # Set vaccine code to NULL
