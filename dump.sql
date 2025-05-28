@@ -697,6 +697,16 @@ FOR EACH ROW
 EXECUTE FUNCTION validate_hewan_milik_klien();
 
 
+INSERT INTO HEWAN(nama, no_identitas_klien,tanggal_lahir,id_jenis,url_foto) 
+VALUES
+('Anjing 99', '1245646a-9821-4cd8-95f3-1729be8936ed','2025-01-01','53f6ac39-e535-4d3f-8ab3-b663d69a4572','https://www.google.com/fotoanjing');
+INSERT INTO KUNJUNGAN (id_kunjungan,nama_hewan,no_identitas_klien,no_front_desk,no_perawat_hewan,no_dokter_hewan,kode_vaksin,tipe_kunjungan,timestamp_awal)
+VALUES
+('abcd6500-172e-43b3-aa48-3981aee98825','Anjing 1','1245646a-9821-4cd8-95f3-1729be8936ed','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','VKS001','Darurat','2025-04-24 11:00:00');
+INSERT INTO KUNJUNGAN_KEPERAWATAN (id_kunjungan,nama_hewan,no_identitas_klien,no_front_desk,no_perawat_hewan,no_dokter_hewan,kode_perawatan)
+VALUES
+('abcd6500-172e-43b3-aa48-3981aee98825','Anjing 1','1245646a-9821-4cd8-95f3-1729be8936ed','04c58d7a-98e9-48a7-8b3e-0e9f79a34115','6004e686-8e75-4351-ac76-f640b6da80ad','1b6edf86-07e8-4363-8982-72809df2872e','PRW0000001');
+
 -- INSERT INTO "USER" (email, password, alamat, nomor_telepon) VALUES
 -- ('jeremi.felix67@example.com', 'password123', 'Jl. Raya No.67', '099934567890');
 -- INSERT INTO KLIEN (no_identitas, tanggal_registrasi, email) VALUES
