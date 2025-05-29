@@ -1362,13 +1362,13 @@ def update_profile_dokter(request):
                 SET alamat = %s, nomor_telepon = %s
                 WHERE email = %s
             """, [alamat, nomor_telepon, user_email])
-
+            if tanggal_akhir_kerja: # Update tanggal akhir kerja
             # Update tanggal akhir kerja
-            cursor.execute("""
-                UPDATE PEGAWAI
-                SET tanggal_akhir_kerja = %s
-                WHERE email_user = %s
-            """, [tanggal_akhir_kerja, user_email])
+                cursor.execute("""
+                    UPDATE PEGAWAI
+                    SET tanggal_akhir_kerja = %s
+                    WHERE email_user = %s
+                """, [tanggal_akhir_kerja, user_email])
 
             # --- Cek apakah jadwal praktik dokter masih ada setelah update ---
             cursor.execute("""
