@@ -21,7 +21,8 @@
             background-color: var(--light-color);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
-            padding-top: 100px; /* supaya isi tidak ketimpa navbar */
+            padding-top: 100px;
+            /* supaya isi tidak ketimpa navbar */
         }
 
         /* Navbar */
@@ -62,7 +63,7 @@
             background-color: var(--accent-color);
             color: var(--dark-color);
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         /* Profile Card */
@@ -216,116 +217,120 @@
 
 <body>
 
-<!-- Navbar perawat-->
-<nav class="navbar navbar-expand-lg navbar-custom fixed-top">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">🐾 PetCare</a>
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+    <!-- Navbar perawat-->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">🐾 PetCare</a>
+            <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'dashboard_perawat' %}">Dashboard</a>
-        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard_perawat' %}">Dashboard</a>
+                    </li>
 
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'medicine_list_perawat' %}">Manajemen Obat</a>
-        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'medicine_list_perawat' %}">Manajemen Obat</a>
+                    </li>
 
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'daftar_perawatan_perawat' %}">Manajemen Jenis Perawatan</a>
-        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'daftar_perawatan_perawat' %}">Manajemen Jenis Perawatan</a>
+                    </li>
 
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'manajemen_vaksinasi:data_stok_vaksin' %}">Manajemen Vaksinasi</a>
-        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'manajemen_vaksinasi:data_stok_vaksin' %}">Manajemen
+                            Vaksinasi</a>
+                    </li>
 
-        <li class="nav-item">
-          <a class="btn btn-logout ms-3" href="{% url 'logout' %}">Logout</a>
-        </li>
+                    <li class="nav-item">
+                        <a class="btn btn-logout ms-3" href="{% url 'logout' %}">Logout</a>
+                    </li>
 
-      </ul>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Isi Halaman -->
+    <div class="container mt-5">
+        <div class="profile-card">
+            <div class="profile-header">
+                <h1 class="profile-title">Profile Perawat</h1>
+                <div class="action-buttons">
+                    <a href="{% url 'perawat_update_password' %}" class="btn btn-password">
+                        <i class="fas fa-key"></i>Update Password
+                    </a>
+                    <a href="{% url 'perawat_update_profile' %}" class="btn btn-update">
+                        <i class="fas fa-user-edit"></i>Update Profile
+                    </a>
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <div class="info-item">
+                    <div class="info-label">Nomor Identitas</div>
+                    <div class="info-value">{{ perawat.no_perawat_hewan }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Nomor Izin Praktik</div>
+                    <div class="info-value">{{ perawat.no_izin_praktik }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ perawat.email }}m</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Tanggal Diterima</div>
+                    <div class="info-value">{{ perawat.tanggal_mulai_kerja }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Tanggal Akhir Kerja</div>
+                    <div class="info-value">{{ perawat.tanggal_akhir_kerja }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Alamat</div>
+                    <div class="info-value">{{ perawat.alamat }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Nomor Telepon</div>
+                    <div class="info-value">{{ perawat.nomor_telepon }}</div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Daftar Sertifikat</h2>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nomor Sertifikat</th>
+                            <th>Nama Sertifikat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in sertifikat %}
+                        <tr>
+                            <td>{{ s.no }}</td>
+                            <td>{{ s.nomor_sertifikat }}</td>
+                            <td>{{ s.nama_sertifikat }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3">Belum ada sertifikat.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
     </div>
-  </div>
-</nav>
 
-<!-- Isi Halaman -->
-<div class="container mt-5">
-    <div class="profile-card">
-        <div class="profile-header">
-            <h1 class="profile-title">Profile Perawat</h1>
-            <div class="action-buttons">
-                <a href="{% url 'perawat_update_password' %}" class="btn btn-password">
-                    <i class="fas fa-key"></i>Update Password
-                </a>
-                <a href="{% url 'perawat_update_profile' %}" class="btn btn-update">
-                    <i class="fas fa-user-edit"></i>Update Profile
-                </a>
-            </div>
-        </div>
-
-        <div class="profile-info">
-            <div class="info-item">
-                <div class="info-label">Nomor Identitas</div>
-                <div class="info-value">{{ perawat.no_perawat_hewan }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Nomor Izin Praktik</div>
-                <div class="info-value">{{ perawat.no_izin_praktik }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Email</div>
-                <div class="info-value">{{ perawat.email }}m</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Tanggal Diterima</div>
-                <div class="info-value">{{ perawat.tanggal_mulai_kerja }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Tanggal Akhir Kerja</div>
-                <div class="info-value">{{ perawat.tanggal_akhir_kerja }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Alamat</div>
-                <div class="info-value">{{ perawat.alamat }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Nomor Telepon</div>
-                <div class="info-value">{{ perawat.nomor_telepon }}</div>
-            </div>
-        </div>
-
-        <h2 class="section-title">Daftar Sertifikat</h2>
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Nomor Sertifikat</th>
-                        <th>Nama Sertifikat</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for s in sertifikat %}
-                    <tr>
-                        <td>{{ s.no }}</td>
-                        <td>{{ s.nomor_sertifikat }}</td>
-                        <td>{{ s.nama_sertifikat }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="3">Belum ada sertifikat.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-    </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
