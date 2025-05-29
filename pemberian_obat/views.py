@@ -184,3 +184,49 @@ def delete_prescription(request):
         'treatment_code': kode_p,
         'medicine_code':  kode_o,
     })
+
+def list_prescriptions_client(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        cursor.execute("SET SEARCH_PATH TO pet_clinic;")
+        cursor.execute("""
+            SELECT no_identitas
+              FROM klien
+             WHERE email = %s
+        """, [user_email])
+        row = cursor.fetchone()
+        if not row:
+            return redirect('login')
+        no_identitas = row[0]
+
+    with connection.cursor() as cursor:
+        cursor.execute("SET SEARCH_PATH TO pet_clinic;")
+        cursor.execute("""
+            SELECT
+              p.kode_perawatan,
+              p.kode_obat,
+              p.kuantitas_obat,
+              o.harga
+            FROM kunjungan_keperawatan k
+            JOIN perawatan_obat        p ON p.kode_perawatan = k.kode_perawatan
+            JOIN obat                  o ON o.kode             = p.kode_obat
+            WHERE k.no_identitas = %s
+            ORDER BY p.kode_perawatan, p.kode_obat
+        """, [no_identitas])
+        rows = cursor.fetchall()
+
+    prescriptions = []
+    for kode_prw, kode_ob, qty, harga in rows:
+        prescriptions.append({
+            'kode_perawatan': kode_prw,
+            'kode_obat':      kode_ob,
+            'kuantitas':      qty,
+            'total_str':      f"Rp{qty * harga:,.0f}".replace(',', '.'),
+        })
+
+    return render(request, 'list_prescriptions_client.html', {
+        'prescriptions': prescriptions
+    })
