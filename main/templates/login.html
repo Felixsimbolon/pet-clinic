@@ -159,6 +159,7 @@
     </nav>
 
     <!-- Content -->
+    
     <div class="page-content">
         <div class="card">
             <div class="card-header">
@@ -168,6 +169,9 @@
                 <h3 class="fw-bold mb-2">LOGIN AKUN</h3>
                 <p class="mb-0">Silakan masukkan nama dan password Anda</p>
             </div>
+            {% if errors.wrong_credential %}
+                <div class="invalid-feedback d-block">{{ errors.wrong_credential }}</div>
+            {% endif %}
             <form method="post">
                 {% csrf_token %}
                 <div class="form-group">

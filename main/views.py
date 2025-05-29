@@ -27,6 +27,7 @@ def landing_page(request):
     return render(request, 'landing.html')
 
 def login_view(request):
+    errors = {}
     
     if request.method == 'POST':
         email = request.POST.get('email').strip().lower()
@@ -39,8 +40,8 @@ def login_view(request):
             cursor.execute("""
                 SELECT email, password
                 FROM "USER"
-                WHERE email = %s
-            """, (email,))
+                WHERE email = %s and password = %s
+            """, (email,password))
             user = cursor.fetchone()
             
             if user :
@@ -106,15 +107,23 @@ def login_view(request):
 
 
                 else:
-                    messages.error(request, "Akun tidak dikenali sebagai Dokter, Perawat, Frontdesk, atau Klien.")
-                    return redirect('login')
+                        errors['wrong_credential'] ='ERROR: pengguna tidak ditemukan'                    
+                        return render(request, 'login.html', {
+                        'errors': errors,
+                       
+                    })
 
             else:
                 # Email/password tidak cocok
-                messages.error(request, "Email atau Password salah.")
-                return redirect('login')
+                errors['wrong_credential'] ='ERROR: pengguna tidak ditemukan'
+                return render(request, 'login.html', {
+                        'errors': errors,
+                    })
 
-    return render(request, 'login.html')
+    return render(request, 'login.html',{
+        'errors': errors,
+                       
+    })
 
 def logout_view(request):
     logout(request)  # menghapus sesi user

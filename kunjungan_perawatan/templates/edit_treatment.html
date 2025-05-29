@@ -34,6 +34,9 @@
             <p><span class="font-semibold">Perawat Hewan :</span> {{ perawat_email }}</p>
         </div>
         </div>
+        {% if errors.db %}
+          <p class="text-red-600 text-sm mt-1">{{ errors.db }}</p>
+        {% endif %}
 
       <!-- Jenis Perawatan -->
       <div class=" border-gray-300 rounded-md p-1">
