@@ -216,7 +216,7 @@
 
 <body>
 
-<!-- Navbar -->
+<!-- Navbar klien -->
 <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">🐾 PetCare</a>
@@ -228,23 +228,23 @@
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Dashboard</a>
+          <a class="nav-link" href="{% url 'dashboard_klien' %}">Dashboard</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
+          <a class="nav-link" href="{% url 'list_hewan' %}">Kelola Hewan Peliharaan</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Daftar Kunjungan</a>
+          <a class="nav-link" href="{% url 'daftar_kunjungan_klien' %}">Daftar Kunjungan</a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">Daftar Vaksinasi</a>
+            <a class="nav-link" href="{% url 'manajemen_vaksinasi:vaksinasi_hewan_klien' %}">Daftar Vaksinasi</a>
         </li>
 
         <li class="nav-item">
-          <a class="btn btn-logout ms-3" href="#">Logout</a>
+          <a class="btn btn-logout ms-3" href="{% url 'logout' %}">Logout</a>
         </li>
 
       </ul>

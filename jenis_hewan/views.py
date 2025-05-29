@@ -56,7 +56,8 @@ def list_jenis_hewan(request):
     ]
 
     context = {
-        'jenis_list': jenis_list
+        'jenis_list': jenis_list,
+        'role': role,
     }
     return render(request, 'list_jenis_hewan.html', context)
 
