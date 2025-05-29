@@ -169,7 +169,7 @@
 
 <body>
 
-<!-- Navbar perawat-->
+  <!-- Navbar perawat-->
 <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">🐾 PetCare</a>
@@ -182,6 +182,15 @@
 
         <li class="nav-item">
           <a class="nav-link" href="{% url 'dashboard_perawat' %}">Dashboard</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'daftar_perawatan_perawat' %}">Perawatan Hewan</a>
+        </li>
+
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'daftar_kunjungan_perawat' %}">Daftar Kunjungan</a>
         </li>
 
         <li class="nav-item">
