@@ -9,7 +9,6 @@ def list_prescriptions(request):
         return redirect('login')
 
     user_email = request.session['user_email']
-    
 
     with connection.cursor() as cursor:
         # Cari no_pegawai dari email
@@ -61,6 +60,30 @@ def list_prescriptions(request):
 
 
 def create_prescription(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel dokter_hewan
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di dokter_hewan, redirect login
+            return redirect('login')
+        
     error         = None
     selected_tr   = None
     selected_med  = None
@@ -121,6 +144,30 @@ def create_prescription(request):
 
 
 def delete_prescription(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel dokter_hewan
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di dokter_hewan, redirect login
+            return redirect('login')
+        
     kode_p = request.GET.get('kode_perawatan')
     kode_o = request.GET.get('kode_obat')
 

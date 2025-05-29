@@ -52,6 +52,31 @@ def list_treatment_types(request):
 
 
 def create_treatment_type(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+    
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel dokter_hewan
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di dokter_hewan, redirect login
+            return redirect('login')
+        
     error = None
     if request.method == 'POST':
         nama  = request.POST['nama']
@@ -91,6 +116,31 @@ def create_treatment_type(request):
 
 
 def update_treatment_type(request, kode):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+    
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel dokter_hewan
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di dokter_hewan, redirect login
+            return redirect('login')
+        
     error = None
     if request.method == 'POST':
         nama  = request.POST['nama']
@@ -134,6 +184,31 @@ def update_treatment_type(request, kode):
 
 
 def delete_treatment_type(request, kode):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+    
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel dokter_hewan
+        cursor.execute("SELECT 1 FROM dokter_hewan WHERE no_dokter_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di dokter_hewan, redirect login
+            return redirect('login')
+        
     if request.method == 'POST':
         with connection.cursor() as cursor:
             cursor.execute("SET search_path TO pet_clinic;")
@@ -209,6 +284,30 @@ def list_treatment_types_perawat(request):
 
 
 def create_treatment_type_perawat(request):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel perawat_hewan
+        cursor.execute("SELECT 1 FROM perawat_hewan WHERE no_perawat_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di perawat_hewan, redirect login
+            return redirect('login')
+        
     error = None
     if request.method == 'POST':
         nama  = request.POST['nama']
@@ -248,6 +347,30 @@ def create_treatment_type_perawat(request):
 
 
 def update_treatment_type_perawat(request, kode):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel perawat_hewan
+        cursor.execute("SELECT 1 FROM perawat_hewan WHERE no_perawat_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di perawat_hewan, redirect login
+            return redirect('login')
+        
     error = None
     if request.method == 'POST':
         nama  = request.POST['nama']
@@ -291,6 +414,30 @@ def update_treatment_type_perawat(request, kode):
 
 
 def delete_treatment_type_perawat(request, kode):
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user_email = request.session['user_email']
+
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
+
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
+
+        no_pegawai = result[0]
+
+        # Cek apakah no_pegawai ini ada di tabel perawat_hewan
+        cursor.execute("SELECT 1 FROM perawat_hewan WHERE no_perawat_hewan = %s", [no_pegawai])
+        is_dokter = cursor.fetchone()
+        if not is_dokter:
+            # Jika no_pegawai tidak ada di perawat_hewan, redirect login
+            return redirect('login')
+        
     if request.method == 'POST':
         with connection.cursor() as cursor:
             cursor.execute("SET search_path TO pet_clinic;")
