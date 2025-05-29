@@ -134,41 +134,42 @@
 
 <body>
 
-<!-- Navbar -->
+<!-- Navbar klien -->
 <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">🐾 PetCare</a>
-      <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-  
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-  
-          <li class="nav-item">
-            <a class="nav-link" href="#">Dashboard</a>
-          </li>
-  
-          <li class="nav-item">
-            <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
-          </li>
-  
-          <li class="nav-item">
-            <a class="nav-link" href="#">Daftar Kunjungan</a>
-          </li>
-  
-          <li class="nav-item">
-              <a class="nav-link" href="#">Daftar Vaksinasi</a>
-          </li>
-  
-          <li class="nav-item">
-            <a class="btn btn-logout ms-3" href="#">Logout</a>
-          </li>
-  
-        </ul>
-      </div>
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">🐾 PetCare</a>
+    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'dashboard_klien' %}">Dashboard</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'list_hewan' %}">Kelola Hewan Peliharaan</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'daftar_kunjungan_klien' %}">Daftar Kunjungan</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'manajemen_vaksinasi:vaksinasi_hewan_klien' %}">Daftar Vaksinasi</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="btn btn-logout ms-3" href="{% url 'logout' %}">Logout</a>
+        </li>
+
+      </ul>
     </div>
-  </nav>  
+  </div>
+</nav>
+
 
 <!-- Form Update Profile -->
 {% if messages %}
