@@ -202,7 +202,7 @@ def daftar_kunjungan_perawat(request):
             # Cek apakah kunjungan keperawatan ada catatan (menggunakan PK gabungan)
             cursor.execute("""
                 SELECT EXISTS (
-                    SELECT 1 FROM kunjungan_keperawatan
+                    SELECT 1 FROM kunjungan
                     WHERE id_kunjungan = %s
                       AND no_identitas_klien = %s
                       AND nama_hewan = %s
@@ -311,7 +311,7 @@ def daftar_kunjungan_klien(request):
             # Cek apakah kunjungan keperawatan ada catatan (menggunakan PK gabungan)
             cursor.execute("""
                 SELECT EXISTS (
-                    SELECT 1 FROM kunjungan_keperawatan
+                    SELECT 1 FROM kunjungan
                     WHERE id_kunjungan = %s
                       AND no_identitas_klien = %s
                       AND nama_hewan = %s
