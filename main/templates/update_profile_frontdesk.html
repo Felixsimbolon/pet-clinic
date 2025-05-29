@@ -195,7 +195,7 @@
   
     <div class="mb-3">
       <label for="nomorTelepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" value="{{ nomor_telepon }}" required>
+      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" value="{{ nomor_telepon }}" maxlength="15" pattern="\d*" title="Hanya boleh angka" required>
     </div>
   
     <div class="mb-3">

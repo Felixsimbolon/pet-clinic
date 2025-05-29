@@ -192,22 +192,22 @@
   
     <div class="mb-3">
       <label for="nomorTelepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" placeholder="+62 812-3456-7890" value="{{ nomor_telepon }}">
+      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" placeholder="+62 812-3456-7890" value="{{ nomor_telepon }}" maxlength="15" pattern="\d*" title="Hanya boleh angka" required>
     </div>
   
     <div class="mb-3">
       <label for="namaDepan" class="form-label">Nama Depan <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="namaDepan" name="nama_depan" placeholder="Nama Depan" value="{{ nama_depan }}">
+      <input type="text" class="form-control" id="namaDepan" name="nama_depan" placeholder="Nama Depan" value="{{ nama_depan }}" maxlength="50" required>
     </div>
   
     <div class="mb-3">
       <label for="namaTengah" class="form-label">Nama Tengah</label>
-      <input type="text" class="form-control" id="namaTengah" name="nama_tengah" placeholder="Nama Tengah" value="{{ nama_tengah }}">
+      <input type="text" class="form-control" id="namaTengah" name="nama_tengah" placeholder="Nama Tengah" value="{{ nama_tengah }}" maxlength="50">
     </div>
   
     <div class="mb-3">
       <label for="namaBelakang" class="form-label">Nama Belakang <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="namaBelakang" name="nama_belakang" placeholder="Nama Belakang" value="{{ nama_belakang }}">
+      <input type="text" class="form-control" id="namaBelakang" name="nama_belakang" placeholder="Nama Belakang" value="{{ nama_belakang }}" maxlength="50" required>
     </div>
   
     <div class="form-buttons">
