@@ -3,7 +3,7 @@ from . import views
 
 app_name = 'data_klien_hewan'
 urlpatterns = [
-    path('klien-hewan/', views.data_klien_hewan, name='data_klien_hewan'),
+    path('klien-hewan/', views.data_klien_hewan, name='data_klien_hewan_A'),
     path('client/<str:no_identitas>/', views.detail_client, name='detail_client'),
 
     # KLIEN SIDE

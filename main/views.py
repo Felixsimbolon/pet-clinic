@@ -30,7 +30,7 @@ def login_view(request):
     errors = {}
     
     if request.method == 'POST':
-        email = request.POST.get('email').strip().lower()
+        email = request.POST.get('email').strip()
         password = request.POST.get('password')
 
         with connection.cursor() as cursor:
@@ -141,7 +141,7 @@ def register_individu(request):
 
     if request.method == 'POST':
         # Ambil data
-        data['email']          = request.POST.get('email', '').strip().lower()
+        data['email']          = request.POST.get('email', '').strip()
         data['nama_depan']     = request.POST.get('nama_depan', '').strip()
         data['nama_tengah']    = request.POST.get('nama_tengah', '').strip()
         data['nama_belakang']  = request.POST.get('nama_belakang', '').strip()
@@ -249,7 +249,7 @@ def register_perusahaan(request):
     days = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu']
 
     if request.method == 'POST':
-        data['email'] = request.POST.get('email', '').strip().lower()
+        data['email'] = request.POST.get('email', '').strip()
         data['nama_perusahaan'] = request.POST.get('nama_perusahaan', '').strip()
         data['password'] = request.POST.get('password', '')
         data['nomor_telepon'] = request.POST.get('nomor_telepon', '').strip()
@@ -377,7 +377,7 @@ def register_frontdesk(request):
     errors = {}
     data = {}
     if request.method == 'POST':
-        data['email']            = request.POST.get('email', '').strip().lower()
+        data['email']            = request.POST.get('email', '').strip()
         data['nomor_telepon']    = request.POST.get('nomor_telepon', '').strip()
         data['tanggal_diterima'] = request.POST.get('tanggal_diterima', '').strip()
         data['password']         = request.POST.get('password', '')
@@ -486,7 +486,7 @@ def register_dokter(request):
         for f in ['izin_praktik','nomor_telepon','email','password',
                   'tanggal_diterima','alamat']:
             if f == 'email':
-                data[f] = request.POST.get(f,'').strip().lower()
+                data[f] = request.POST.get(f,'').strip()
             else:
                 data[f] = request.POST.get(f,'').strip()
         # ---------- FIELD DINAMIS ----------
@@ -676,7 +676,7 @@ def register_perawat(request):
         for f in ['izin_praktik','nomor_telepon','email','password',
                   'tanggal_diterima','alamat']:
             if f == 'email':
-                data[f] = request.POST.get(f,'').strip().lower()
+                data[f] = request.POST.get(f,'').strip()
             else:
                 data[f] = request.POST.get(f,'').strip()
 
