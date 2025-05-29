@@ -7,6 +7,6 @@ urlpatterns = [
     path('client/<str:no_identitas>/', views.detail_client, name='detail_client'),
 
     # KLIEN SIDE
-    path('klien-hewan-dariklien/', views.data_klien_hewan_klien, name='data_klien_hewan'),
+    path('klien-hewan-dariklien/', views.data_klien_hewan_klien, name='data_klien_hewan_klien'),
     path('client/<str:no_identitas>/_klien', views.detail_client_klien, name='detail_client'),
 ]
