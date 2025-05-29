@@ -1,276 +1,448 @@
-{% extends 'manajemen_vaksinasi/base_perawat.html' %}
-{% block title %}Data Stok Vaksin - Klinik Hewan{% endblock %}
-{% block header %}List Vaccine{% endblock %}
-{% block content %}
-<div class="row mb-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <!-- Search bar section -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <input type="text" id="searchInput" class="form-control" placeholder="Search Vaccine Name">
-                            <button class="btn btn-outline-secondary" type="button" id="clearSearch">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex justify-content-end">
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createVaccineModal">
-                                Create New Vaccine
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>ID Vaksin</th>
-                                <th>Nama Vaksin</th>
-                                <th>Harga</th>
-                                <th>Stok</th>
-                                <th colspan="2">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="vaccineTableBody">
-                            {% for stok in stok_list %}
-                            <tr class="vaccine-row">
-                                <td>{{ forloop.counter }}</td>
-                                <th class="vaccine-id">{{ stok.kode }}</th>
-                                <td class="vaccine-name">{{ stok.nama }}</td>
-                                <td>{{ stok.harga }}</td>
-                                <td>{{ stok.stok }}</td>
-                                <td>
-                                    <!-- Button to trigger update stock modal -->
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-warning btn-update-stock"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#updateStockModal"
-                                        data-id="{{ stok.kode }}"
-                                        data-name="{{ stok.nama }}"
-                                        data-stock="{{ stok.stok }}"
-                                        data-url="{% url 'manajemen_vaksinasi:add_vaccine_stock' stok.kode %}"
-                                    >
-                                    Update Stock
-                                    </button>
-                                </td>
-                                <td>
-                                    <!-- Button to trigger update vaccine modal -->
-                                    <button type="button" class="btn btn-sm btn-warning btn-update-vaccine" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#updateVaccineModal"
-                                        data-id="{{ stok.kode }}"
-                                        data-name="{{ stok.nama }}"
-                                        data-price="{{ stok.harga }}">
-                                        Update
-                                    </button>
-                                </td>
-                                <td>
-                                    <!-- Button to trigger delete modal -->
-                                    <button type="button" class="btn btn-sm action-btn btn-outline-danger" 
-                                        data-bs-toggle="modal" data-bs-target="#deleteModal-{{ stok.kode }}">
-                                        <i class="fas fa-trash-alt me-1"></i>Delete
-                                    </button>
+kenapa untuk update nya ga works, ketika dipencet drop down nya ga ngap ngapain padahal sudah sama cuman beda di value nya aja dari html option nyadef update_kunjungan(request, id_kunjungan,no_dokter_hewan,no_perawat_hewan,no_front_desk,nama_hewan,no_identitas_klien):
+    # Fetch the current Kunjungan data based on the ID
+    if 'user_email' not in request.session:
+        return redirect('login')
 
-                                    <!-- Modal for Delete Confirmation -->
-                                    <div class="modal fade" id="deleteModal-{{ stok.kode }}" tabindex="-1" aria-labelledby="deleteModalLabel-{{ stok.kode }}" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content border border-dark">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title text-danger fw-bold" id="deleteModalLabel-{{ stok.kode }}">
-                                                        Delete Vaccine
-                                                    </h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body text-center">
-                                                    Apakah kamu yakin untuk menghapus Vaksin 
-                                                    <span class="fw-bold text-danger" id="modalVaccineName-{{ stok.kode }}">{{ stok.nama }}</span> dengan
-                                                    <span class="fw-bold text-danger" id="modalVaccineId-{{ stok.kode }}">{{ stok.kode }}</span>?
-                                                </div>
-                                                <div class="modal-footer justify-content-center">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <form method="post" action="{% url 'manajemen_vaksinasi:delete_vaccine' stok.kode %}">
-                                                        {% csrf_token %}
-                                                        <button type="submit" class="btn btn-danger">Confirm Deletion</button>
-                                                    </form>                                                                                     
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="7" class="text-center">Belum ada data stok vaksin.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <!-- No results message -->
-                    <div id="noResultsMessage" class="alert alert-info text-center d-none">
-                        Tidak ada vaksin yang sesuai dengan pencarian.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    user_email = request.session['user_email']
 
-<!-- Modal for Update Stock (MOVED OUTSIDE LOOP) -->
-<div class="modal fade" id="updateStockModal" tabindex="-1" aria-labelledby="updateStockModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="updateStockModalLabel">Update Vaccine Stock</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="updateStockForm" method="post" action="">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <h6 id="update_stock_title" class="fw-bold"></h6>
-                        <input type="hidden" id="update_stock_id_vaksin" name="kode_vaksin">
-                    </div>
-                    <div class="mb-3">
-                        <label for="update_stock_value" class="form-label">Stok</label>
-                        <input type="number" class="form-control" id="update_stock_value" name="stok" required>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="updateStockForm" class="btn btn-primary">Update Stock</button>
-            </div>
-        </div>
-    </div>
-</div>
+    with connection.cursor() as cursor:
+        # Cari no_pegawai dari email
+        cursor.execute("SET SEARCH_PATH TO PET_CLINIC;")
 
-<!-- Modal for Update Vaccine (MOVED OUTSIDE LOOP) -->
-<div class="modal fade" id="updateVaccineModal" tabindex="-1" aria-labelledby="updateVaccineModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="updateVaccineModalLabel">Update Vaccine</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="updateVaccineForm" method="post" action="">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="update_id_vaksin" class="form-label">ID Vaksin</label>
-                        <input type="text" class="form-control bg-light" 
-                               id="update_id_vaksin" 
-                               name="kode" 
-                               readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label for="update_nama_vaksin" class="form-label">Nama Vaksin</label>
-                        <input type="text" class="form-control" id="update_nama_vaksin" name="nama_vaksin" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="update_harga" class="form-label">Harga</label>
-                        <input type="number" class="form-control" id="update_harga" name="harga" required>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="updateVaccineForm" class="btn btn-primary">Update</button>
-            </div>
-        </div>
-    </div>
-</div>
+        cursor.execute("SELECT no_pegawai FROM pegawai WHERE email_user = %s", [user_email])
+        result = cursor.fetchone()
+        if not result:
+            # Email tidak ditemukan di pegawai
+            return redirect('login')
 
-{% endblock %}
+        no_pegawai = result[0]
 
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Handle update stock button clicks
-        document.querySelectorAll('.btn-update-stock').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                console.log('Update stock button clicked'); // Debug log
-                
-                // Get data from attributes
-                const id = this.dataset.id;
-                const name = this.dataset.name;
-                const stock = this.dataset.stock;
-                const url = this.dataset.url;
-                
-                console.log('Data:', {id, name, stock, url}); // Debug log
-                
-                // Fill form and title
-                document.getElementById('update_stock_title').textContent = name + ' (' + id + ')';
-                document.getElementById('update_stock_id_vaksin').value = id;
-                document.getElementById('update_stock_value').value = stock;
-                document.getElementById('updateStockForm').action = url;
-                
-                console.log('Form action set to:', url); // Debug log
-            });
-        });
+        # Cek apakah no_pegawai ini ada di tabel front_desk
+        cursor.execute("SELECT 1 FROM front_desk WHERE no_front_desk = %s", [no_pegawai])
+        is_fdo = cursor.fetchone()
+        if not is_fdo:
+            # Jika no_pegawai tidak ada di front_desk, redirect login
+            return redirect('login')
         
-        // Handle update vaccine button clicks
-        document.querySelectorAll('.btn-update-vaccine').forEach(function(button) {
-            button.addEventListener('click', function() {
-                console.log('Update vaccine button clicked'); // Debug log
-                
-                var id = this.getAttribute('data-id');
-                var name = this.getAttribute('data-name');
-                var price = this.getAttribute('data-price');
-                
-                // Fill form fields
-                document.getElementById('update_id_vaksin').value = id;
-                document.getElementById('update_nama_vaksin').value = name;
-                document.getElementById('update_harga').value = price.replace(/[^\d]/g, ''); // Remove non-numeric chars
-                
-                // Update form action
-                document.getElementById('updateVaccineForm').action = '{% url "manajemen_vaksinasi:edit_vaccine" "0" %}'.replace('0', id);
-            });
-        });
-
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        const clearSearchBtn = document.getElementById('clearSearch');
-        const vaccineRows = document.querySelectorAll('.vaccine-row');
-        const noResultsMessage = document.getElementById('noResultsMessage');
+    errors = {}
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path TO pet_clinic;")
         
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            let matchFound = false;
+        cursor.execute("""
+            SELECT email_user
+            FROM kunjungan join pegawai on no_dokter_hewan = no_pegawai
+            WHERE id_kunjungan = %s
+            AND no_identitas_klien = %s
+            AND nama_hewan = %s
+            AND no_dokter_hewan = %s
+            AND no_perawat_hewan = %s
+            AND no_front_desk = %s
+""", [id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk])
+        
+        email_dokter_hewan = cursor.fetchone()[0]
+         
+        cursor.execute("""
+            SELECT email_user
+            FROM kunjungan join pegawai on no_perawat_hewan = no_pegawai
+            WHERE id_kunjungan = %s
+            AND no_identitas_klien = %s
+            AND nama_hewan = %s
+            AND no_dokter_hewan = %s
+            AND no_perawat_hewan = %s
+            AND no_front_desk = %s
+""", [id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk])
+        
+        email_perawat_hewan = cursor.fetchone()[0]
+
+        cursor.execute("""
+            SELECT email_user
+            FROM kunjungan join pegawai on no_front_desk = no_pegawai
+            WHERE id_kunjungan = %s
+            AND no_identitas_klien = %s
+            AND nama_hewan = %s
+            AND no_dokter_hewan = %s
+            AND no_perawat_hewan = %s
+            AND no_front_desk = %s
+""", [id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk])
+        
+        email_front_desk = cursor.fetchone()[0]
+
+        
+        # Get the details for the given kunjungan
+        cursor.execute("""
+            SELECT no_identitas_klien, nama_hewan, tipe_kunjungan, timestamp_awal, timestamp_akhir
+            FROM kunjungan
+            WHERE id_kunjungan = %s
+            AND no_identitas_klien = %s
+            AND nama_hewan = %s
+            AND no_dokter_hewan = %s
+            AND no_perawat_hewan = %s
+            AND no_front_desk = %s
+    """, [id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk])
+        
+        kunjungan_data = cursor.fetchone()
+        current_klien = kunjungan_data[0]
+        current_nama_hewan = kunjungan_data[1]
+        current_tipe_kunjungan = kunjungan_data[2]
+        current_waktu_mulai = kunjungan_data[3]
+        current_waktu_selesai = kunjungan_data[4]
+        fmt  = "%Y-%m-%dT%H:%M:%S"                   # titik dua di tengah = ISO
+
+        current_waktu_mulai_iso = current_waktu_mulai.strftime(fmt) if current_waktu_mulai else ''
+        current_waktu_selesai_iso = current_waktu_selesai.strftime(fmt) if current_waktu_selesai else ''
+
+
+        # Get list of available klien, hewan, and metode kunjungan
+        cursor.execute("SET search_path TO pet_clinic;")
+        
+        # 1) Get all ID Klien
+        cursor.execute("SELECT no_identitas FROM klien ORDER BY no_identitas;")
+        klien_list = [row[0] for row in cursor.fetchall()]
+        
+        
+        cursor.execute("""
+            SELECT no_identitas_klien, nama
+            FROM hewan
+            ORDER BY nama
+        """)
+        hewan_map = {}
+        for idc, nama in cursor.fetchall():
+            hewan_map.setdefault(str(idc), []).append(nama)
+        # 2) Get all Nama Hewan for the selected ID Klien
+        cursor.execute("""
+            SELECT id_jenis, nama FROM hewan ORDER BY nama;
+        """)
+        hewan_list = []
+        for row in cursor.fetchall():
+            hewan_list.append({
+                'id': row[0],
+                'nama': row[1],
+            })
+
+        # 3) Get available metode_kunjungan options
+        cursor.execute("""
+            SELECT DISTINCT tipe_kunjungan FROM kunjungan ORDER BY tipe_kunjungan;
+        """)
+        tipe_kunjungan_list = ['Janji Temu','Walk-In','Darurat']
+
+        # 4) Get all available dokter_hewan with their emails and formatted names
+        cursor.execute("""
+            SELECT 
+                k.no_dokter_hewan,
+                p.email_user,
+                'dr. ' || REPLACE(SUBSTRING(p.email_user FROM 1 FOR POSITION('@' IN p.email_user) - 1), '.', ' ')
+            FROM pegawai p
+            JOIN dokter_hewan k ON p.no_pegawai = k.no_dokter_hewan
+            ORDER BY 3;
+            """)
+        # Extract and format the doctor list correctly
+        dokter_list = []
+        for row in cursor.fetchall():
+            dokter_list.append({
+                'id': row[0],
+                'email': row[1],
+                'name': row[2]
+            })
+
+        # 5) Get all available perawat_hewan with their emails and formatted names
+        cursor.execute("""
+            SELECT 
+                k.no_perawat_hewan,
+                p.email_user,
+                REPLACE(SUBSTRING(p.email_user FROM 1 FOR POSITION('@' IN p.email_user) - 1), '.', '          ')
+            FROM pegawai p
+            JOIN perawat_hewan k ON p.no_pegawai = k.no_perawat_hewan
+            ORDER BY 3;
+            """)
+        # Extract and format the nurse list correctly
+        perawat_list = []
+        for row in cursor.fetchall():
+            perawat_list.append({
+                'id': row[0],
+                'email': row[1],
+                'name': row[2]
+            })
+
+        cursor.execute("""
+            SELECT 
+                k.no_front_desk,
+                p.email_user,
+                REPLACE(SUBSTRING(p.email_user FROM 1 FOR POSITION('@' IN p.email_user) - 1), '.', '          ')
+            FROM pegawai p
+            JOIN front_desk k ON p.no_pegawai = k.no_front_desk
+            ORDER BY 3;
+            """)
+        # Extract and format the nurse list correctly
+        front_desk_list = []
+        for row in cursor.fetchall():
+            front_desk_list.append({
+                'id': row[0],
+                'email': row[1],
+                'name': row[2]
+            })
             
-            vaccineRows.forEach(function(row) {
-                const vaccineId = row.querySelector('.vaccine-id').textContent.toLowerCase();
-                const vaccineName = row.querySelector('.vaccine-name').textContent.toLowerCase();
-                
-                if (vaccineId.includes(searchTerm) || vaccineName.includes(searchTerm)) {
-                    row.classList.remove('d-none');
-                    matchFound = true;
-                } else {
-                    row.classList.add('d-none');
-                }
-            });
-            
-            // Show/hide no results message
-            if (matchFound) {
-                noResultsMessage.classList.add('d-none');
-            } else {
-                noResultsMessage.classList.remove('d-none');
-            }
-        });
         
-        // Clear search function
-        clearSearchBtn.addEventListener('click', function() {
-            searchInput.value = '';
-            vaccineRows.forEach(function(row) {
-                row.classList.remove('d-none');
-            });
-            noResultsMessage.classList.add('d-none');
-        });
-    });
-</script>
-{% endblock %}
+    if request.method == "POST":
+        # Get the data from form
+        input_id_klien        = request.POST.get('id_klien', '').strip()
+        input_nama_hewan      = request.POST.get('nama_hewan', '').strip()
+        input_metode_kunjungan= request.POST.get('metode_kunjungan', '').strip()
+        input_waktu_mulai_penanganan= request.POST.get('timestamp_awal', '').strip()
+        input_waktu_selesai_penanganan = request.POST.get('timestamp_akhir', '').strip()
+        input_dokter_email    = request.POST.get('dokter_hewan', '').strip()
+        input_perawat_email   = request.POST.get('perawat_hewan', '').strip()
+        input_front_desk_email= request.POST.get('front_desk', '').strip()
+
+        
+        # timestamp_awal = datetime.strptime(waktu_mulai_penanganan, "%Y-%m-%dT%H:%M:%S")
+        # timestamp_akhir = datetime.strptime(waktu_selesai_penanganan, "%Y-%m-%dT%H:%M:%S")
+        
+        required_drop = {
+            'id_klien':            input_id_klien,
+            'nama_hewan':          input_nama_hewan,
+            'metode_kunjungan':    input_metode_kunjungan,
+            'dokter_hewan':        input_dokter_email,
+            'perawat_hewan':       input_perawat_email,
+            'front_desk':          input_front_desk_email,
+        }
+
+        for field, value in required_drop.items():
+            if not value:                              # ''  atau None
+                errors[field] = f'{field.replace("_", " ").title()} wajib dipilih'
+
+        # ----------- VALIDASI WAKTU --------------- #
+        if not input_waktu_mulai_penanganan:
+            errors['timestamp_awal'] = 'Waktu mulai harus diisi'
+        
+
+        dt_awal = dt_akhir = None
+        if 'timestamp_awal' not in errors:
+            try:
+                timestamp_awal = datetime.strptime(input_waktu_mulai_penanganan, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                errors['timestamp_awal'] = 'Format waktu mulai tidak valid'
+
+        if 'timestamp_akhir' not in errors and input_waktu_selesai_penanganan != '':
+            try:
+                timestamp_akhir = datetime.strptime(input_waktu_selesai_penanganan, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                errors['timestamp_akhir'] = 'Format waktu selesai tidak valid'
+        
+
+
+        # ---------- jika ada error, render ulang form ----------
+        if errors:
+            return render(request, 'update_kunjungan.html', {
+                'errors': errors,
+                'id_kunjungan': id_kunjungan,
+                'klien_list': klien_list,
+                'hewan_list': hewan_list,
+                'dokter_list': dokter_list,
+                'perawat_list': perawat_list,
+                'front_desk_list': front_desk_list,
+                'tipe_kunjungan_list': tipe_kunjungan_list,
+                'current_klien': current_klien,
+                'current_nama_hewan': current_nama_hewan,
+                'current_tipe_kunjungan': current_tipe_kunjungan,
+                'current_waktu_mulai':   current_waktu_mulai_iso,
+                'current_waktu_selesai': current_waktu_selesai_iso,
+                'email_dokter_hewan' : email_dokter_hewan,
+                'email_perawat_hewan' : email_perawat_hewan,
+                'email_front_desk' : email_front_desk,
+                "hewan_map_json": json.dumps(hewan_map),   # ← penting!
+
+            })
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO pet_clinic;")
+
+            cursor.execute("""
+                SELECT no_pegawai
+                FROM PEGAWAI where email_user = %s 
+    """, [input_dokter_email])
+             
+            input_no_dokter_hewan = cursor.fetchone()[0]
+            
+            cursor.execute("""
+                SELECT no_pegawai
+                FROM PEGAWAI where email_user = %s
+    """, [input_perawat_email])
+            
+            input_no_perawat_hewan = cursor.fetchone()[0]
+
+            cursor.execute("""
+                SELECT no_pegawai
+                FROM PEGAWAI where email_user = %s              
+    """, [input_front_desk_email])
+            
+            input_no_front_desk = cursor.fetchone()[0]
+            try:
+                if input_waktu_selesai_penanganan !="":
+                
+                    cursor.execute("""
+                        UPDATE kunjungan
+                        SET no_identitas_klien = %s,
+                        nama_hewan = %s,
+                        tipe_kunjungan = %s,
+                        timestamp_awal = %s,
+                        timestamp_akhir = %s,
+                        no_dokter_hewan = %s,
+                        no_perawat_hewan = %s,
+                        no_front_desk = %s
+                        WHERE id_kunjungan = %s
+                        AND no_identitas_klien = %s
+                        AND nama_hewan = %s
+                        AND no_dokter_hewan = %s
+                        AND no_perawat_hewan = %s
+                        AND no_front_desk = %s
+                    """, [
+                        input_id_klien,
+                        input_nama_hewan,
+                        input_metode_kunjungan,
+                        timestamp_awal,
+                        timestamp_akhir,
+                        input_no_dokter_hewan,
+                        input_no_perawat_hewan,
+                        input_no_front_desk,
+                        id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk
+                        
+                    ])
+                else:
+                    cursor.execute("""
+                        UPDATE kunjungan
+                        SET no_identitas_klien = %s,
+                        nama_hewan = %s,
+                        tipe_kunjungan = %s,
+                        timestamp_awal = %s,
+                        timestamp_akhir = null,
+                        no_dokter_hewan = %s,
+                        no_perawat_hewan = %s,
+                        no_front_desk = %s
+                        WHERE id_kunjungan = %s
+                        AND no_identitas_klien = %s
+                        AND nama_hewan = %s
+                        AND no_dokter_hewan = %s
+                        AND no_perawat_hewan = %s
+                        AND no_front_desk = %s
+                    """, [
+                        input_id_klien,
+                        input_nama_hewan,
+                        input_metode_kunjungan,
+                        timestamp_awal,
+                        input_no_dokter_hewan,
+                        input_no_perawat_hewan,
+                        input_no_front_desk,
+                        id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk
+                        
+                    ])
+                    # Redirect after saving the kunjungan data
+                return redirect('daftar_kunjungan_fdo')
+            
+            except IntegrityError as exc:
+                    root   = exc.__cause__                # psycopg2 error instance
+                    msg    = str(root).split('CONTEXT:')[0].strip()
+                    pgcode = getattr(root, 'pgcode', '')  # contoh '23514'
+
+                    if isinstance(root, pg_err.UniqueViolation) :
+                        errors['timestamp_akhir'] = msg
+                        
+                        return render(request, 'update_kunjungan.html', {
+                            'id_kunjungan': id_kunjungan,
+                            'klien_list': klien_list,
+                            'hewan_list': hewan_list,
+                            'dokter_list': dokter_list,
+                            'perawat_list': perawat_list,
+                            'front_desk_list': front_desk_list,
+                            'tipe_kunjungan_list': tipe_kunjungan_list,
+                            'current_klien': current_klien,
+                            'current_nama_hewan': current_nama_hewan,
+                            'current_tipe_kunjungan': current_tipe_kunjungan,
+                            'current_waktu_mulai':   current_waktu_mulai_iso,
+                            'current_waktu_selesai': current_waktu_selesai_iso,
+                            'email_dokter_hewan' : email_dokter_hewan,
+                            'email_perawat_hewan' : email_perawat_hewan,
+                            'email_front_desk' : email_front_desk,
+                            'errors' : errors,
+                            "hewan_map_json": json.dumps(hewan_map),   # ← penting!
+
+                        })
+                    elif pgcode == '23514' or isinstance(root,
+                        (pg_err.CheckViolation, pg_err.RaiseException)):
+
+                        if 'Timestamp akhir' in msg:          # trigger waktu
+                            errors['timestamp_akhir']= msg
+
+                        elif msg.startswith('ERROR: Hewan'):  # trigger hewan-klien
+                            errors['nama_hewan'] = msg
+
+                        else:                                 # pesan lain dari trigger yg sama
+                            errors.setdefault('db', msg)
+                        return render(request, 'update_kunjungan.html', {
+                            'id_kunjungan': id_kunjungan,
+                            'klien_list': klien_list,
+                            'hewan_list': hewan_list,
+                            'dokter_list': dokter_list,
+                            'perawat_list': perawat_list,
+                            'front_desk_list': front_desk_list,
+                            'tipe_kunjungan_list': tipe_kunjungan_list,
+                            'current_klien': current_klien,
+                            'current_nama_hewan': current_nama_hewan,
+                            'current_tipe_kunjungan': current_tipe_kunjungan,
+                            'current_waktu_mulai':   current_waktu_mulai_iso,
+                            'current_waktu_selesai': current_waktu_selesai_iso,
+                            'email_dokter_hewan' : email_dokter_hewan,
+                            'email_perawat_hewan' : email_perawat_hewan,
+                            'email_front_desk' : email_front_desk,
+                            'errors' : errors,
+                            "hewan_map_json": json.dumps(hewan_map),   # ← penting!
+
+                        })
+
+                    else:
+                        errors['db'] = 'Terjadi kesalahan database, coba lagi.'
+                        return render(request, 'update_kunjungan.html', {
+                            'id_kunjungan': id_kunjungan,
+                            'klien_list': klien_list,
+                            'hewan_list': hewan_list,
+                            'dokter_list': dokter_list,
+                            'perawat_list': perawat_list,
+                            'front_desk_list': front_desk_list,
+                            'tipe_kunjungan_list': tipe_kunjungan_list,
+                            'current_klien': current_klien,
+                            'current_nama_hewan': current_nama_hewan,
+                            'current_tipe_kunjungan': current_tipe_kunjungan,
+                            'current_waktu_mulai':   current_waktu_mulai_iso,
+                            'current_waktu_selesai': current_waktu_selesai_iso,
+                            'email_dokter_hewan' : email_dokter_hewan,
+                            'email_perawat_hewan' : email_perawat_hewan,
+                            'email_front_desk' : email_front_desk,
+                            'errors' : errors,
+                            "hewan_map_json": json.dumps(hewan_map),   # ← penting!
+
+
+                        })
+
+
+    # Fetch the existing values to populate the form
+    
+    return render(request, 'update_kunjungan.html', {
+        'id_kunjungan': id_kunjungan,
+        'klien_list': klien_list,
+        'hewan_list': hewan_list,
+        'dokter_list': dokter_list,
+        'perawat_list': perawat_list,
+        'front_desk_list': front_desk_list,
+        'tipe_kunjungan_list': tipe_kunjungan_list,
+        'current_klien': current_klien,
+        'current_nama_hewan': current_nama_hewan,
+        'current_tipe_kunjungan': current_tipe_kunjungan,
+        'current_waktu_mulai':   current_waktu_mulai_iso,
+        'current_waktu_selesai': current_waktu_selesai_iso,
+        'email_dokter_hewan' : email_dokter_hewan,
+        'email_perawat_hewan' : email_perawat_hewan,
+        'email_front_desk' : email_front_desk,
+        'errors' : errors,
+        "hewan_map_json": json.dumps(hewan_map),   # ← penting!
+
+
+    })
