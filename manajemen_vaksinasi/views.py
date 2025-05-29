@@ -638,10 +638,6 @@ def create_vaksinasi(request):
                     messages.error(request, f'Kunjungan {kunjungan_id} sudah memiliki vaksinasi')
                     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
                 
-                # Trigger database akan otomatis:
-                # 1. Mengecek apakah vaksin exists
-                # 2. Mengecek apakah stok mencukupi (akan error jika stok 0)
-                # 3. Mengurangi stok jika berhasil
                 cursor.execute("""
                     UPDATE kunjungan
                     SET kode_vaksin = %s
@@ -772,42 +768,3 @@ def delete_vaksinasi(request, id_kunjungan):
         messages.error(request, f'Terjadi kesalahan: {str(e)}')
             
     return redirect('manajemen_vaksinasi:vaksinasi_hewan')
-
-def check_vaccine_deletable(request, kode):
-    """AJAX view untuk mengecek apakah vaksin bisa dihapus"""
-    if request.method == 'GET':
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("SET search_path TO pet_clinic;")
-                
-                # Check if vaccine is used
-                cursor.execute("""
-                    SELECT COUNT(*) FROM kunjungan WHERE kode_vaksin = %s
-                """, [kode])
-                count = cursor.fetchone()[0]
-                
-                can_delete = count == 0
-                message = "Vaksin dapat dihapus" if can_delete else "Vaksin tidak dapat dihapus karena sedang digunakan"
-                
-                return JsonResponse({
-                    'can_delete': can_delete,
-                    'message': message
-                })
-                
-        except Exception as e:
-            logger.error(f"Error in check_vaccine_deletable: {e}")
-            return JsonResponse({
-                'can_delete': False,
-                'message': f'Terjadi kesalahan: {str(e)}'
-            }, status=500)
-    
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-def vaccination_context_processor(request):
-    """Context processor untuk menambahkan context vaccination"""
-    return {
-        'vaccination_errors': {
-            'stock_insufficient': 'ERROR: Stok vaksin tidak mencukupi untuk vaksinasi.',
-            'vaccine_in_use': 'ERROR: Vaksin tidak dapat dihapus dikarenakan telah digunakan untuk vaksinasi.'
-        }
-    }
