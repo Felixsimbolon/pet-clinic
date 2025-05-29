@@ -1349,9 +1349,9 @@ def update_profile_dokter(request):
         nomor_telepon = request.POST.get('nomor_telepon')
         tanggal_akhir_kerja = request.POST.get('tanggal_akhir_kerja')
 
-        if not alamat or not nomor_telepon or not tanggal_akhir_kerja:
+        if not alamat or not nomor_telepon  :
             messages.error(request, "Semua field wajib diisi.")
-            return redirect('frontdesk_update_profile')
+            return redirect('dokter_update_profile')
 
         with connection.cursor() as cursor:
             cursor.execute("SET search_path TO pet_clinic;")
