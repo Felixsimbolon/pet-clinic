@@ -216,7 +216,7 @@
 
 <body>
 
-<!-- Navbar -->
+<!-- Navbar perawat-->
 <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">🐾 PetCare</a>
@@ -228,23 +228,23 @@
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Dashboard</a>
+          <a class="nav-link" href="{% url 'dashboard_perawat' %}">Dashboard</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Manajemen Obat</a>
+          <a class="nav-link" href="{% url 'medicine_list_perawat' %}">Manajemen Obat</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Manajemen Jenis Perawatan</a>
+          <a class="nav-link" href="{% url 'daftar_perawatan_perawat' %}">Manajemen Jenis Perawatan</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Manajemen Vaksinasi</a>
+          <a class="nav-link" href="{% url 'manajemen_vaksinasi:data_stok_vaksin' %}">Manajemen Vaksinasi</a>
         </li>
 
         <li class="nav-item">
-          <a class="btn btn-logout ms-3" href="#">Logout</a>
+          <a class="btn btn-logout ms-3" href="{% url 'logout' %}">Logout</a>
         </li>
 
       </ul>

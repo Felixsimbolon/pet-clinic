@@ -5,16 +5,14 @@ from django.http import HttpResponseForbidden
 
 def get_user_role(email_user):
     with connection.cursor() as cursor:
-        # Cek apakah email ini adalah dokter
+        # Cek apakah email ini adalah klien (individu atau perusahaan)
         cursor.execute("""
             SELECT 1
-            FROM pet_clinic.dokter_hewan dh
-            JOIN pet_clinic.tenaga_medis tm ON dh.no_dokter_hewan = tm.no_tenaga_medis
-            JOIN pet_clinic.pegawai p ON tm.no_tenaga_medis = p.no_pegawai
-            WHERE p.email_user = %s
+            FROM pet_clinic.klien
+            WHERE email = %s
         """, [email_user])
         if cursor.fetchone():
-            return 'dokter'
+            return 'klien'
 
         # Cek apakah email ini adalah front desk
         cursor.execute("""
@@ -39,8 +37,8 @@ def list_hewan(request):
     email_user = request.session['user_email']
     role = get_user_role(email_user)
 
-    if role != 'frontdesk':
-        return HttpResponseForbidden("Hanya front desk yang boleh mengakses halaman ini.")
+    if role not in ['frontdesk', 'klien']:
+        return HttpResponseForbidden("Hanya front desk atau klien yang boleh mengakses halaman ini.")
     
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -72,7 +70,7 @@ def list_hewan(request):
     for i, row in enumerate(hasil)
     ]
 
-    return render(request, 'list_hewan.html', {'hewan_list': hewan_list})
+    return render(request, 'list_hewan.html', {'hewan_list': hewan_list, 'role': role})
 
 # Update hewan
 def update_hewan(request, nama, no_identitas_klien):
@@ -82,8 +80,8 @@ def update_hewan(request, nama, no_identitas_klien):
     email_user = request.session['user_email']
     role = get_user_role(email_user)
 
-    if role != 'frontdesk':
-        return HttpResponseForbidden("Hanya front desk yang boleh melakukan aksi ini.")
+    if role not in ['frontdesk', 'klien']:
+        return HttpResponseForbidden("Hanya front desk atau klien yang boleh mengakses halaman ini.")
 
     with connection.cursor() as cursor:
         # Ambil data hewan
@@ -131,7 +129,8 @@ def update_hewan(request, nama, no_identitas_klien):
         'nama_jenis': data[4],
         'tanggal_lahir': data[5].strftime('%Y-%m-%d'),
         'foto_url': data[6],
-        'jenis_list': jenis_list
+        'jenis_list': jenis_list,
+        'role': role,
     }
 
     return render(request, 'update_hewan.html', context)
@@ -182,7 +181,8 @@ def delete_hewan(request, nama, no_identitas_klien):
 
     context = {
         'nama_hewan': nama_hewan,
-        'nama_pemilik': nama_pemilik
+        'nama_pemilik': nama_pemilik,
+        'role': role
     }
 
     return render(request, 'delete_hewan.html', context)
@@ -196,9 +196,9 @@ def create_hewan(request):
     email_user = request.session['user_email']
     role = get_user_role(email_user)
     
-    if role != 'frontdesk':
-        return HttpResponseForbidden("Hanya front desk yang boleh menambahkan hewan peliharaan.")
-
+    if role not in ['frontdesk', 'klien']:
+        return HttpResponseForbidden("Hanya front desk atau klien yang boleh mengakses halaman ini.")
+    
     # Ambil daftar klien dan jenis hewan untuk dropdown
     with connection.cursor() as cursor:
         cursor.execute("""SELECT k.no_identitas,
@@ -244,5 +244,6 @@ def create_hewan(request):
     context = {
         'klien_list': klien_list,
         'jenis_list': jenis_list,
+        'role': role,
     }
     return render(request, 'create_hewan.html', context)

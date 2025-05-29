@@ -1,5 +1,6 @@
 import uuid
 from django.db import connection
+from django.contrib.auth import logout
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -114,6 +115,10 @@ def login_view(request):
                 return redirect('login')
 
     return render(request, 'login.html')
+
+def logout_view(request):
+    logout(request)  # menghapus sesi user
+    return redirect('landing')  # redirect ke halaman landing setelah logout
 
 def landing_page(request):
     return render(request, 'landing.html')
@@ -1070,72 +1075,72 @@ def update_password(request):
 
         if new_password != confirm_password:
             messages.error(request, "Konfirmasi password tidak cocok.")
-            return redirect('update_password')
+        else:
 
-        with connection.cursor() as cursor:
-            cursor.execute("SET search_path TO pet_clinic;")
+            with connection.cursor() as cursor:
+                cursor.execute("SET search_path TO pet_clinic;")
 
-            # Ambil password lama dari database
-            cursor.execute("""
-                SELECT password FROM "USER" WHERE email = %s
-            """, [user_email])
-            result = cursor.fetchone()
-
-            if result:
-                current_password = result[0]
-
-                if old_password != current_password:
-                    messages.error(request, "Password lama salah.")
-                    return redirect('update_password')
-
-                # Jika semua valid → update password
+                # Ambil password lama dari database
                 cursor.execute("""
-                    UPDATE "USER"
-                    SET password = %s
-                    WHERE email = %s
-                """, [new_password, user_email])
-
-                # Cek apakah Dokter
-                cursor.execute("""
-                    SELECT no_dokter_hewan
-                    FROM dokter_hewan
-                    WHERE no_dokter_hewan = (
-                        SELECT no_pegawai FROM pegawai WHERE email_user = %s
-                    )
+                    SELECT password FROM "USER" WHERE email = %s
                 """, [user_email])
-                if cursor.fetchone():
-                    return redirect('dashboard_dokter')
+                result = cursor.fetchone()
 
-                # Cek apakah Perawat
-                cursor.execute("""
-                    SELECT no_perawat_hewan
-                    FROM perawat_hewan
-                    WHERE no_perawat_hewan = (
-                        SELECT no_pegawai FROM pegawai WHERE email_user = %s
-                    )
-                """, [user_email])
-                if cursor.fetchone():
-                    return redirect('dashboard_perawat')
+                if result:
+                    current_password = result[0]
 
-                # Cek apakah Frontdesk
-                cursor.execute("""
-                    SELECT no_front_desk
-                    FROM front_desk
-                    WHERE no_front_desk = (
-                        SELECT no_pegawai FROM pegawai WHERE email_user = %s
-                    )
-                """, [user_email])
-                if cursor.fetchone():
-                    return redirect('dashboard_frontdesk')
+                    if old_password != current_password:
+                        messages.error(request, "Password lama salah.")
+                        return render(request, 'update_password.html')
 
-                # Cek apakah Klien
-                cursor.execute("""
-                    SELECT no_identitas
-                    FROM klien
-                    WHERE email = %s
-                """, [user_email])
-                if cursor.fetchone():
-                    return redirect('dashboard_klien')
+                    # Jika semua valid → update password
+                    cursor.execute("""
+                        UPDATE "USER"
+                        SET password = %s
+                        WHERE email = %s
+                    """, [new_password, user_email])
+
+                    # Cek apakah Dokter
+                    cursor.execute("""
+                        SELECT no_dokter_hewan
+                        FROM dokter_hewan
+                        WHERE no_dokter_hewan = (
+                            SELECT no_pegawai FROM pegawai WHERE email_user = %s
+                        )
+                    """, [user_email])
+                    if cursor.fetchone():
+                        return redirect('dashboard_dokter')
+
+                    # Cek apakah Perawat
+                    cursor.execute("""
+                        SELECT no_perawat_hewan
+                        FROM perawat_hewan
+                        WHERE no_perawat_hewan = (
+                            SELECT no_pegawai FROM pegawai WHERE email_user = %s
+                        )
+                    """, [user_email])
+                    if cursor.fetchone():
+                        return redirect('dashboard_perawat')
+
+                    # Cek apakah Frontdesk
+                    cursor.execute("""
+                        SELECT no_front_desk
+                        FROM front_desk
+                        WHERE no_front_desk = (
+                            SELECT no_pegawai FROM pegawai WHERE email_user = %s
+                        )
+                    """, [user_email])
+                    if cursor.fetchone():
+                        return redirect('dashboard_frontdesk')
+
+                    # Cek apakah Klien
+                    cursor.execute("""
+                        SELECT no_identitas
+                        FROM klien
+                        WHERE email = %s
+                    """, [user_email])
+                    if cursor.fetchone():
+                        return redirect('dashboard_klien')
 
     return render(request, 'update_password.html')
 

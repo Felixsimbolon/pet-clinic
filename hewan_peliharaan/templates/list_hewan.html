@@ -22,47 +22,48 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      padding-top: 100px; /* ⬅️ Tambahkan baris ini */
     }
 
     /* Navbar */
     .navbar-custom {
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      padding: 15px 20px;
-      border-radius: 0 0 15px 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        padding: 15px 20px;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .navbar-brand {
-      color: white;
-      font-weight: bold;
-      font-size: 1.5rem;
+        color: white;
+        font-weight: bold;
+        font-size: 1.5rem;
     }
 
     .nav-link {
-      color: white;
-      font-weight: 500;
-      margin-right: 20px;
-      font-size: 1rem;
+        color: white;
+        font-weight: 500;
+        margin-right: 20px;
+        font-size: 1rem;
     }
 
     .nav-link:hover {
-      color: var(--accent-color);
+        color: var(--accent-color);
     }
 
     .btn-logout {
-      background-color: white;
-      color: var(--primary-color);
-      font-weight: 600;
-      border-radius: 8px;
-      padding: 8px 16px;
-      transition: all 0.3s;
+        background-color: white;
+        color: var(--primary-color);
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 8px 16px;
+        transition: all 0.3s;
     }
 
     .btn-logout:hover {
-      background-color: var(--accent-color);
-      color: var(--dark-color);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        background-color: var(--accent-color);
+        color: var(--dark-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     /* Content */
@@ -149,38 +150,82 @@
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-custom">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">🐾 PetCare</a>
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+{% if role == 'frontdesk' %}
+  <!-- Navbar frontdesk-->
+  <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">🐾 PetCare</a>
+      <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link" href="#">Dashboard</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Kelola Jenis Hewan</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Kelola Kunjungan</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Daftar Klien</a>
-        </li>
-        <li class="nav-item">
-          <a class="btn btn-logout ms-3" href="#">Logout</a>
-        </li>
-      </ul>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'dashboard_frontdesk' %}">Dashboard</a>
+          </li>
+
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'list_jenis_hewan' %}">Daftar Jenis Hewan</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'list_hewan' %}">Kelola Hewan Peliharaan</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'daftar_kunjungan_fdo' %}">Kelola Kunjungan</a>
+          </li>
+
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'data_klien_hewan:data_klien_hewan' %}">Daftar Klien</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="btn btn-logout ms-3" href="{% url 'logout' %}">Logout</a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
+{% elif role == 'klien' %}
+  <!-- Navbar klien -->
+  <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">🐾 PetCare</a>
+      <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'dashboard_klien' %}">Dashboard</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'list_hewan' %}">Kelola Hewan Peliharaan</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'daftar_kunjungan_klien' %}">Daftar Kunjungan</a>
+          </li>
+
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'manajemen_vaksinasi:vaksinasi_hewan_klien' %}">Daftar Vaksinasi</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="btn btn-logout ms-3" href="{% url 'logout' %}">Logout</a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+{% endif %}
 
 <!-- Content -->
 <div class="page-content">
