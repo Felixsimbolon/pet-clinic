@@ -178,14 +178,6 @@
 </nav>
 
 
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-danger" role="alert">
-      {{ message }}
-    </div>
-  {% endfor %}
-{% endif %}
-
 <!-- Page Content -->
 <div class="page-content">
   <div class="card">
@@ -194,7 +186,18 @@
       <p>Konfirmasi penghapusan hewan peliharaan</p>
     </div>
 
-    <form method="post">
+    <!-- Alert messages di dalam card -->
+    {% if messages %}
+      <div class="px-4 pt-3">
+        {% for message in messages %}
+          <div class="alert alert-danger" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" class="px-4 pb-4">
       {% csrf_token %}
       <p>
         Apakah kamu yakin ingin menghapus hewan 
@@ -202,8 +205,8 @@
         milik <span class="highlight-danger">{{ nama_pemilik }}</span>?
       </p>
 
-      <div class="d-flex justify-content-center">
-        <a href="{% url 'list_hewan' %}" class="btn btn-outline-secondary">Cancel</a>
+      <div class="d-flex justify-content-center mt-4">
+        <a href="{% url 'list_hewan' %}" class="btn btn-outline-secondary me-2">Cancel</a>
         <button type="submit" class="btn btn-danger">Confirm Deletion</button>
       </div>
     </form>
