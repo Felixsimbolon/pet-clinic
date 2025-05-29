@@ -595,7 +595,7 @@ def edit_treatment(request, id_kunjungan, kode_perawatan,no_dokter_hewan,no_pera
                 cursor.execute("SET search_path TO pet_clinic;")
                 cursor.execute(
                     "SELECT 1 FROM kunjungan_keperawatan WHERE id_kunjungan = %s AND kode_perawatan = %s",
-                    [id_kunjungan, current_kode]
+                    [id_kunjungan, new_kode]
                 )
                 if cursor.fetchone():
                     errors['jenis_perawatan'] = 'Jenis perawatan ini sudah pernah ditambahkan untuk kunjungan tersebut'
@@ -613,19 +613,40 @@ def edit_treatment(request, id_kunjungan, kode_perawatan,no_dokter_hewan,no_pera
                         'nama_hewan':nama_hewan,
                         'no_identitas_klien':no_identitas_klien
                     })
-                    
-                cursor.execute("SET search_path TO pet_clinic;")
-                cursor.execute("""
-                    UPDATE kunjungan_keperawatan
-                    SET kode_perawatan = %s
-                    WHERE id_kunjungan = %s
-                    AND no_identitas_klien = %s
-                    AND nama_hewan = %s
-                    AND no_dokter_hewan = %s
-                    AND no_perawat_hewan = %s
-                    AND no_front_desk = %s
-                    AND kode_perawatan = %s
-                """, [new_kode,id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk,kode_perawatan ])
+                try:
+                    cursor.execute("SET search_path TO pet_clinic;")
+                    cursor.execute("""
+                        UPDATE kunjungan_keperawatan
+                        SET kode_perawatan = %s
+                        WHERE id_kunjungan = %s
+                        AND no_identitas_klien = %s
+                        AND nama_hewan = %s
+                        AND no_dokter_hewan = %s
+                        AND no_perawat_hewan = %s
+                        AND no_front_desk = %s
+                        AND kode_perawatan = %s
+                    """, [new_kode,id_kunjungan, no_identitas_klien, nama_hewan, no_dokter_hewan, no_perawat_hewan, no_front_desk,kode_perawatan ])
+    
+                except IntegrityError as exc:
+                    root = exc.__cause__
+                    msg = str(root).split('CONTEXT:')[0].strip()
+                    code = getattr(root, 'pgcode', '')
+                    if code == '23514' or isinstance(root, (pg_err.CheckViolation, pg_err.RaiseException)):
+                        errors['db'] = msg
+                    else:
+                        errors['db'] = 'Terjadi kesalahan database, coba lagi.'
+                    return render(request, 'edit_treatment.html', {
+                        'id_kunjungan': id_kunjungan,
+                        'current_kode': current_kode,
+                        'jenis_list': jenis_list,
+                        'errors':errors,
+                        'kode_perawatan':kode_perawatan,
+                        'dokter_email':dokter_email,
+                        'perawat_email':perawat_email,
+                        'front_desk_email':front_desk_email,
+                        'nama_hewan':nama_hewan,
+                        'no_identitas_klien':no_identitas_klien
+                    })
 
         return redirect('daftar_perawatan')
 

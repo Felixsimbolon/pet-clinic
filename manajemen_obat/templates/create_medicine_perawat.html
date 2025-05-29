@@ -1,33 +1,51 @@
-{% extends 'base_perawat.html' %}
+{% extends 'base_perawat_hewan.html' %}
+
+{% block extra_head %}
+  <style>
+    .navbar-collapse { visibility: visible !important; }
+    .dropdown-menu  { visibility: visible !important; }
+    .content-wrapper { margin-top: 80px; }
+  </style>
+{% endblock %}
+
 {% block title %}Create New Medicine{% endblock %}
+
 {% block content %}
-<h1 class="h3 mb-4">Create New Medicine</h1>
+  <div class="content-wrapper">
+    <div class="container mt-5">
+      <h1 class="h3 mb-4">Create New Medicine</h1>
 
-{% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
-{% endif %}
+      {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
 
-<form method="post" novalidate>
-  {% csrf_token %}
-  <div class="mb-3">
-    <label for="nama" class="form-label">Nama Obat</label>
-    <input type="text" id="nama" name="nama" class="form-control" placeholder="Nama Obat" required>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="nama" class="form-label">Nama Obat</label>
+          <input type="text" id="nama" name="nama"
+                 class="form-control" placeholder="Nama Obat" required>
+        </div>
+        <div class="mb-3">
+          <label for="harga" class="form-label">Harga Satuan</label>
+          <input type="number" id="harga" name="harga"
+                 class="form-control" placeholder="Harga Satuan" required>
+        </div>
+        <div class="mb-3">
+          <label for="dosis" class="form-label">Dosis</label>
+          <input type="text" id="dosis" name="dosis"
+                 class="form-control" placeholder="Dosis Obat" required>
+        </div>
+        <div class="mb-3">
+          <label for="stok" class="form-label">Stok Awal</label>
+          <input type="number" id="stok" name="stok"
+                 class="form-control" placeholder="Stok Awal" min="0" required>
+        </div>
+        <div class="d-flex justify-content-end">
+          <a href="{% url 'medicine_list_perawat' %}" class="btn btn-light me-2">Cancel</a>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
   </div>
-  <div class="mb-3">
-    <label for="harga" class="form-label">Harga Satuan</label>
-    <input type="number" id="harga" name="harga" class="form-control" placeholder="Harga Satuan" required>
-  </div>
-  <div class="mb-3">
-    <label for="dosis" class="form-label">Dosis</label>
-    <input type="text" id="dosis" name="dosis" class="form-control" placeholder="Dosis Obat" required>
-  </div>
-  <div class="mb-3">
-    <label for="stok" class="form-label">Stok Awal</label>
-    <input type="number" id="stok" name="stok" class="form-control" placeholder="Stok Awal" min="0" required>
-  </div>
-  <div class="d-flex justify-content-end">
-    <a href="{% url 'medicine_list_perawat' %}" class="btn btn-light me-2">Cancel</a>
-    <button type="submit" class="btn btn-primary">Create</button>
-  </div>
-</form>
 {% endblock %}
