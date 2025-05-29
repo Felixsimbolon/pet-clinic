@@ -243,7 +243,7 @@
   
     <div class="mb-3">
       <label for="nomorTelepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" value="{{ dokter.nomor_telepon }}" required>
+      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" value="{{ dokter.nomor_telepon }}" maxlength="15" pattern="\d*" title="Hanya boleh angka" required>
     </div>
   
     <div class="mb-3">
@@ -269,10 +269,10 @@
                     <input type="hidden" name="nomor_sertifikat_lama" value="{{ s.nomor_sertifikat }}">
                     
                     <td>
-                        <input type="text" class="form-control" name="nomor_sertifikat" value="{{ s.nomor_sertifikat }}" required>
+                        <input type="text" class="form-control" name="nomor_sertifikat" value="{{ s.nomor_sertifikat }}" maxlength="10" required>
                     </td>
                     <td>
-                        <input type="text" class="form-control" name="nama_sertifikat" value="{{ s.nama_sertifikat }}" required>
+                        <input type="text" class="form-control" name="nama_sertifikat" value="{{ s.nama_sertifikat }}" maxlength="100" required>
                     </td>
                 </tr>
                 {% endfor %}
@@ -302,7 +302,7 @@
 
                     <!-- Editable input: nilai baru -->
                     <td>
-                        <input type="text" class="form-control" name="hari_praktik" value="{{ j.hari }}" required>
+                        <input type="text" class="form-control" name="hari_praktik" value="{{ j.hari }}" maxlength="10" required>
                     </td>
                     <td>
                         <div class="d-flex gap-2">

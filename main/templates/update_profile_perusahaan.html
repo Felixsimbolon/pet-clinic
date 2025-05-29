@@ -193,12 +193,12 @@
   
     <div class="mb-3">
       <label for="nomorTelepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" placeholder="+62 812-3456-7890" value="{{ nomor_telepon }}">
+      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" placeholder="+62 812-3456-7890" value="{{ nomor_telepon }}" maxlength="15" pattern="\d*" title="Hanya boleh angka">
     </div>
   
     <div class="mb-3">
       <label for="namaPerusahaan" class="form-label">Nama Perusahaan <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="namaPerusahaan" name="nama_perusahaan" placeholder="Nama Perusahaan" value="{{ nama_perusahaan }}" required>
+      <input type="text" class="form-control" id="namaPerusahaan" name="nama_perusahaan" placeholder="Nama Perusahaan" value="{{ nama_perusahaan }}"  maxlength="100" required>
     </div>
   
     <div class="form-buttons">
