@@ -87,27 +87,35 @@
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Dashboard</a>
+          <a class="nav-link" href="{% url 'dashboard_frontdesk' %}">Dashboard</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Kelola Jenis Hewan</a>
+            <a class="nav-link" href="{% url 'list_jenis_hewan' %}">Daftar Jenis Hewan</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Kelola Hewan Peliharaan</a>
+          <a class="nav-link" href="{% url 'daftar_perawatan_fdo' %}">Perawatan Hewan</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'daftar_kunjungan' %}">Kelola Kunjungan</a>
+          <a class="nav-link" href="{% url 'daftar_kunjungan_fdo' %}">Daftar Kunjungan</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'data_klien_hewan:data_klien_hewan' %}">Daftar Klien</a>
+          <a class="nav-link" href="{% url 'list_hewan' %}">Kelola Hewan Peliharaan</a>
         </li>
 
         <li class="nav-item">
-          <a class="btn btn-logout ms-3" href="#">Logout</a>
+          <a class="nav-link" href="{% url 'daftar_kunjungan_fdo' %}">Kelola Kunjungan</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'data_klien_hewan:data_klien_hewan' %}">Daftar Klien</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="btn btn-logout ms-3" href="{% url 'logout' %}">Logout</a>
         </li>
 
       </ul>

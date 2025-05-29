@@ -1,36 +1,21 @@
 {% extends 'manajemen_vaksinasi/base_perawat.html' %}
-
 {% block title %}Data Stok Vaksin - Klinik Hewan{% endblock %}
-
-{% block extra_head %}
-  <!-- CDN Tailwind (jika belum ada di base) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* ───── Fix konflik Tailwind vs Bootstrap ───── */
-    .navbar-collapse{ visibility:visible!important; }
-  </style>
-{% endblock %}
-
+{% block header %}List Vaccine{% endblock %}
 {% block content %}
-<div class="mx-auto max-w-7xl px-6 py-10">
 
-  <!-- Header -->
-  <div class="flex flex-wrap items-center justify-between mb-8">
-    <div>
-      <h2 class="text-3xl font-semibold text-gray-800">List Vaccine</h2>
+<!-- Display Messages -->
+{% if messages %}
+<div class="row mb-3">
+    <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
     </div>
-  </div>
-
-  <!-- Display Messages -->
-  {% if messages %}
-  <div class="mb-6">
-    {% for message in messages %}
-    <div class="rounded-md bg-blue-100 p-4 text-blue-700 mb-2">
-      {{ message }}
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
+</div>
+{% endif %}
 
 <div class="row mb-4">
     <div class="col-md-12">
