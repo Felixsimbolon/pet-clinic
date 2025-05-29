@@ -90,7 +90,7 @@ def create_jenis_hewan(request):
                 return redirect('list_jenis_hewan')
             except Exception as e:
                 messages.error(request, str(e))
-
+    
     return render(request, 'create_jenis_hewan.html')
 
 # Update Jenis Hewan
