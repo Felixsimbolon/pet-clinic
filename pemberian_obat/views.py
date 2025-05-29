@@ -213,7 +213,7 @@ def list_prescriptions_client(request):
             FROM kunjungan_keperawatan k
             JOIN perawatan_obat        p ON p.kode_perawatan = k.kode_perawatan
             JOIN obat                  o ON o.kode             = p.kode_obat
-            WHERE k.no_identitas_klien = %s
+            WHERE k.no_identitas = %s
             ORDER BY p.kode_perawatan, p.kode_obat
         """, [no_identitas])
         rows = cursor.fetchall()
