@@ -198,7 +198,7 @@
       {% csrf_token %}
       <div class="mb-4">
         <label for="namaJenis" class="form-label">Nama Jenis</label>
-        <input type="text" class="form-control" id="namaJenis" name="nama_jenis" placeholder="Contoh: Kucing, Anjing, Burung" required>
+        <input type="text" class="form-control" id="namaJenis" name="nama_jenis" placeholder="Contoh: Kucing, Anjing, Burung" maxlength="50" required>
         <div class="invalid-feedback">
           Nama jenis wajib diisi.
         </div>
