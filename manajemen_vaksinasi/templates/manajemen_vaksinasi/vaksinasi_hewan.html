@@ -1,10 +1,23 @@
-{% extends 'manajemen_vaksinasi/base_dokter.html' %}
+{% extends "base_dokter_hewan.html" %}
 
-{% block title %}Vaksinasi Hewan - Klinik Hewan{% endblock %}
 
-{% block header %}List Vaccination{% endblock %}
+{% block extra_head %}
+  <!-- CDN Tailwind (jika belum ada di base) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ───── Fix konflik Tailwind vs Bootstrap ───── */
+    .navbar-collapse{ visibility:visible!important; }
+  </style>
+
+{% endblock %}
 
 {% block content %}
+<div class="mx-auto max-w-7xl px-6 py-10">
+{% block title %}   
+{% endblock %}
+
+<!-- Header & tombol -->
+      <h2 class="text-3xl font-semibold text-gray-800">List Vaccination</h2>
 <div class="row mb-4">
     <div class="col-md-12">
         <div class="card">

@@ -1,7 +1,22 @@
-{% extends 'data_klien_hewan/base_klien.html' %}
-{% load static %}
+{% extends "base_klien.html" %}
 
-{% block title %}Detail Client{% endblock %}
+{% block title %}Detail Klien - Klinik Hewan{% endblock %}
+
+{% block extra_head %}
+  <!-- CDN Tailwind (jika belum ada di base) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ───── Fix konflik Tailwind vs Bootstrap ───── */
+    .navbar-collapse { visibility: visible !important; }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="mx-auto max-w-7xl px-6 py-10">
+    
+    <h2 class="text-3xl font-semibold text-gray-800">
+      {% block header %}Detail Client{% endblock %}
+    </h2>
 
 {% block content %}
 <div class="container mt-4">

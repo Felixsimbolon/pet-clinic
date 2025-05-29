@@ -161,6 +161,14 @@
         </li>
 
         <li class="nav-item">
+          <a class="nav-link" href="{% url 'daftar_perawatan_fdo' %}">Perawatan Hewan</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'daftar_kunjungan_fdo' %}">Daftar Kunjungan</a>
+        </li>
+
+        <li class="nav-item">
           <a class="nav-link" href="{% url 'list_hewan' %}">Kelola Hewan Peliharaan</a>
         </li>
 
@@ -180,6 +188,7 @@
   </div>
 </nav>
 
+
 {% if messages %}
   {% for message in messages %}
     <div class="alert alert-danger" role="alert">
@@ -198,7 +207,7 @@
       {% csrf_token %}
       <div class="mb-4">
         <label for="namaJenis" class="form-label">Nama Jenis</label>
-        <input type="text" class="form-control" id="namaJenis" name="nama_jenis" placeholder="Contoh: Kucing, Anjing, Burung" required>
+        <input type="text" class="form-control" id="namaJenis" name="nama_jenis" placeholder="Contoh: Kucing, Anjing, Burung" maxlength="50" required>
         <div class="invalid-feedback">
           Nama jenis wajib diisi.
         </div>

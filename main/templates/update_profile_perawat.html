@@ -169,7 +169,7 @@
 
 <body>
 
-<!-- Navbar perawat-->
+  <!-- Navbar perawat-->
 <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">🐾 PetCare</a>
@@ -182,6 +182,15 @@
 
         <li class="nav-item">
           <a class="nav-link" href="{% url 'dashboard_perawat' %}">Dashboard</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'daftar_perawatan_perawat' %}">Perawatan Hewan</a>
+        </li>
+
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'daftar_kunjungan_perawat' %}">Daftar Kunjungan</a>
         </li>
 
         <li class="nav-item">
@@ -227,7 +236,7 @@
   
     <div class="mb-3">
       <label for="nomorTelepon" class="form-label">Nomor Telepon <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" value="{{ perawat.nomor_telepon }}" required>
+      <input type="text" class="form-control" id="nomorTelepon" name="nomor_telepon" value="{{ perawat.nomor_telepon }}" maxlength="15" pattern="\d*" title="Hanya boleh angka" required>
     </div>
   
     <div class="mb-3">
@@ -253,10 +262,10 @@
                     <input type="hidden" name="nomor_sertifikat_lama" value="{{ s.nomor_sertifikat }}">
                     
                     <td>
-                        <input type="text" class="form-control" name="nomor_sertifikat" value="{{ s.nomor_sertifikat }}" required>
+                        <input type="text" class="form-control" name="nomor_sertifikat" value="{{ s.nomor_sertifikat }}" maxlength="10" required>
                     </td>
                     <td>
-                        <input type="text" class="form-control" name="nama_sertifikat" value="{{ s.nama_sertifikat }}" required>
+                        <input type="text" class="form-control" name="nama_sertifikat" value="{{ s.nama_sertifikat }}" maxlength="100" required>
                     </td>
                 </tr>
                 {% endfor %}

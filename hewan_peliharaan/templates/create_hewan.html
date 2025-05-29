@@ -158,6 +158,14 @@
           </li>
 
           <li class="nav-item">
+            <a class="nav-link" href="{% url 'daftar_perawatan_fdo' %}">Perawatan Hewan</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'daftar_kunjungan_fdo' %}">Daftar Kunjungan</a>
+          </li>
+
+          <li class="nav-item">
             <a class="nav-link" href="{% url 'list_hewan' %}">Kelola Hewan Peliharaan</a>
           </li>
 
@@ -195,6 +203,11 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'list_hewan' %}">Kelola Hewan Peliharaan</a>
           </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'daftar_perawatan_klien' %}">Perawatan Hewan</a>
+          </li>
+
 
           <li class="nav-item">
             <a class="nav-link" href="{% url 'daftar_kunjungan_klien' %}">Daftar Kunjungan</a>
@@ -247,7 +260,7 @@
     
       <div class="mb-3">
         <label for="namaHewan" class="form-label">Nama Hewan Peliharaan</label>
-        <input type="text" class="form-control" id="namaHewan" name="nama_hewan" placeholder="Nama Hewan" required>
+        <input type="text" class="form-control" id="namaHewan" name="nama_hewan" placeholder="Nama Hewan" maxlength="50" required>
       </div>
     
       <div class="mb-3">
@@ -257,7 +270,7 @@
     
       <div class="mb-4">
         <label for="urlFoto" class="form-label">URL Foto Hewan</label>
-        <input type="url" class="form-control" id="urlFoto" name="foto_url" placeholder="https://example.com" required>
+        <input type="url" class="form-control" id="urlFoto" name="foto_url" placeholder="https://example.com" maxlength="255" required>
       </div>
     
       <div class="d-flex justify-content-end">
